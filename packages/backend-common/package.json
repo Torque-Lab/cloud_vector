@@ -1,0 +1,20 @@
+{
+  "name": "backend-common",
+  "module": "common.ts",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/common.ts",
+    "./common": "./src/common.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  },
+
+  "dependencies": {
+    "redis": "^5.8.2",
+    "resend": "^6.0.2"
+  }
+}
