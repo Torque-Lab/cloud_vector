@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model UserBaseAdmin {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password String
+  name      String?
+  stripeCustomerId String? 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  role       Role @default(ADMIN)
+  last_login DateTime?
+  last_logout DateTime?
+  last_active DateTime?
+  login_count Int @default(0)
+  permissions Permission[] 
+  subscription Subscription[]
+  projects Project[]
+  resource_usages Resource_Usage[]
+  payments Payment[]
+  invoices Invoice[]
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  last_login DateTime?
+  last_logout DateTime?
+  last_active DateTime?
+  login_count Int @default(0)
+  role       Role @default(DEVELOPER)
+  permissions Permission[] 
+  projects Project[]
+
+}
+
+enum Role {
+  ADMIN
+  DEVELOPER
+  ADMIN_ASSIGNED
+  
+}
+
+
+model Permission {
+  id              String    @id @default(cuid())
+  userId          String
+  projectId       String
+  databaseId      String
+  userBaseAdminId String
+  role            Role @default(ADMIN_ASSIGNED)
+  permission_given_by String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User @relation(fields: [userId], references: [id])
+  projects        Project @relation(fields: [projectId], references: [id])
+  databases       Database @relation(fields: [databaseId], references: [id])
+  userBaseAdmin   UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  permissionItems PermissionItem[]   
+}
+
+model PermissionItem {
+  id            String @id @default(cuid())
+  permission    String
+  permissionId  String
+  permissionRef Permission @relation(fields: [permissionId], references: [id])
+}
+
+
+model Project {
+  id        String    @id @default(cuid())
+  name      String
+  userId String
+  userBaseAdminId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  permissions Permission[]
+  databases Database[]
+  user User @relation(fields: [userId], references: [id])
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+}
+
+
+model Database {
+  id        String    @id @default(cuid())
+  name      String
+  projectId String
+  is_active Boolean @default(true)
+  is_provisioned Boolean @default(false)
+  api_key String?
+  db_url String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  permissions Permission[]
+  projects   Project @relation(fields: [projectId], references: [id])
+
+}
+enum Tier_Subscription {
+  FREE
+  BASE
+  PRO
+}
+
+model TierRule {
+  id           String @id @default(cuid())
+  tier         Tier_Subscription @unique
+  Max_Projects Int
+  Max_Databases Int
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  userBaseAdminId String
+  stripeSubscriptionId String?   
+  stripePriceId        String?   
+  stripeProductId      String?   
+  status          SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime?   
+  cancelAtPeriodEnd  Boolean @default(false)
+  canceledAt         DateTime?
+  tier              Tier_Subscription
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model Resource_Usage {
+  id        String    @id @default(cuid())
+  userBaseAdminId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+ 
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+
+}
+model Payment {
+  id              String   @id @default(cuid())
+  userBaseAdminId String
+  stripePaymentIntentId String? 
+  stripeInvoiceId       String? 
+  amount         Int              
+  currency       String           
+  status         PaymentStatus
+  paymentMethod  String?          
+  receiptUrl     String?          
+  type           PaymentType @default(CURRENT)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+}
+
+enum PaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum PaymentType {
+  CURRENT
+  HISTORY
+}
+
+model Invoice {
+  id              String   @id @default(cuid())
+  stripeInvoiceId String   @unique
+  userBaseAdminId String
+  amount          Int
+  currency        String
+  status          InvoiceStatus
+  hostedInvoiceUrl String?
+  pdfUrl          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  UNCOLLECTIBLE
+  VOID
+}

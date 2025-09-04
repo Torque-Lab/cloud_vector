@@ -1,0 +1,29 @@
+{
+  "name": "db",
+  "module": "index.ts",
+  "type": "module",
+  "types": "./src/prisma.ts",
+  "private": true,
+  "exports": {
+    ".": "./src/prisma.ts",
+    "./prisma": "./src/prisma.ts"
+
+  },
+  "scripts": {
+    "generate": "bunx prisma generate",
+    "migrate": "bunx prisma migrate",
+    "seed": "bunx prisma db seed",
+    "deploy": "bunx prisma db deploy",
+    "studio": "bunx prisma studio"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/bun": "latest"
+ 
+  },
+  "dependencies": {
+    "@prisma/client": "6.15.0",
+    "prisma": "^6.15.0"
+  }
+}
