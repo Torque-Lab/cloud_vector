@@ -14,6 +14,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-github": "^1.1.12",
     "@types/passport-google-oauth20": "^2.0.16",
+    "axios": "^1.11.0",
     "backend-common": "*",
     "db": "*",
     "express": "^5.1.0",
