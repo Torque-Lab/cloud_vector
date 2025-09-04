@@ -105,8 +105,8 @@ model Database {
   projectId String
   is_active Boolean @default(true)
   is_provisioned Boolean @default(false)
-  api_key String?
-  db_url String?
+  api_key String @unique @default("")
+  db_url String @default("")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   permissions Permission[]

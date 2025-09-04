@@ -1,0 +1,16 @@
+{
+  "name": "control-plane",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  },
+  "dependencies": {
+    "backend-common": "*",
+    "db": "*",
+    "express": "^5.1.0"
+  }
+}
