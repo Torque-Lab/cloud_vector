@@ -1,0 +1,20 @@
+{
+  "name": "infra-provisioner",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  },
+  "dependencies": {
+    "@types/express": "^5.0.3",
+    "@types/js-yaml": "^4.0.9",
+    "backend-common": "*",
+    "db": "*",
+    "express": "^5.1.0",
+    "js-yaml": "^4.1.0",
+    "simple-git": "^3.28.0"
+  }
+}
