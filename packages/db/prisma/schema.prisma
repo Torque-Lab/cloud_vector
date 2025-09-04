@@ -156,6 +156,11 @@ enum SubscriptionStatus {
 model Resource_Usage {
   id        String    @id @default(cuid())
   userBaseAdminId String
+  read_QPM Int @default(0) //Queries Per Month
+  write_QPM Int @default(0) //Queries Per Month
+  bandwidth Int  @default(0) //Bandwidth in GB per month
+  storage Int  @default(0) //Storage in GB per month
+  index_rebuilds Int @default(0) //Index Rebuilds count
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
  

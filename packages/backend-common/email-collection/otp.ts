@@ -132,7 +132,7 @@ export async function DeleteKey(key:string):Promise<boolean>{
     }
 }
 
-export async function IncreaseValueOfKey(key:string,ttlInDay = 7):Promise<{value:number} | null>{
+export async function IncreaseValueOfKey(key:string,ttlInDay = 1):Promise<{value:number} | null>{
     try {
         const client = await getRedisClient();
             const exist = await client.exists(key);

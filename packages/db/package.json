@@ -7,7 +7,6 @@
   "exports": {
     ".": "./src/prisma.ts",
     "./prisma": "./src/prisma.ts"
-
   },
   "scripts": {
     "generate": "bunx prisma generate",
@@ -20,10 +19,11 @@
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/bun": "latest"
- 
   },
   "dependencies": {
     "@prisma/client": "6.15.0",
+    "@types/cookie-parser": "^1.4.9",
+    "cookie-parser": "^1.4.7",
     "prisma": "^6.15.0"
   }
 }

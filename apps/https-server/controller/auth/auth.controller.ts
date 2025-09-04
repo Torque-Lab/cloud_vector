@@ -2,15 +2,13 @@
 import { SignUpSchema } from "../../zodSchema/authSchema";
 import { prismaClient } from "db";
 import type { Request, Response } from "express";   
-import crypto from "crypto";
 import { SignInSchema } from "../../zodSchema/authSchema";
 import { ForgotSchema } from "../../zodSchema/authSchema";
 import { ResetSchema } from "../../zodSchema/authSchema";
 import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "backend-common"
 import { sendPasswordResetEmail } from "backend-common";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+
 
 
 export function setAuthCookie(res: Response, token: string, token_name: string,maxAge:number) {
@@ -102,7 +100,7 @@ export const signIn = async (req: Request, res: Response) => {
         
         const isValid = user && await verifyPassword(password, user.password);
         if (!isValid) {
-            await IncreaseValueOfKey(email,7);
+            await IncreaseValueOfKey(email,1);
             res.status(401).json({ error: "Invalid username or password" });
             return;
         }
@@ -110,17 +108,17 @@ export const signIn = async (req: Request, res: Response) => {
         const payload1= {
             timeId:generateTimeId(),
             userId:user.id,
-            tokenId: crypto.randomUUID(), 
+            tokenId: Bun.randomUUIDv7("hex"), 
             issuedAt: Date.now(), 
-            nonce: crypto.randomBytes(16).toString('hex')
+            nonce: generateRandomString()
 
         }
         const payload2= {
             timeId:generateTimeId(),
             userId:user.id,
-            tokenId: crypto.randomUUID(), 
+            tokenId: Bun.randomUUIDv7("hex"), 
             issuedAt: Date.now(), 
-            nonce: crypto.randomBytes(16).toString('hex')
+            nonce: generateRandomString()
         }
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS!,);
         const refresh_token = jwt.sign({ payload2}, process.env.JWT_SECRET_REFRESH!,);
@@ -137,7 +135,7 @@ export const signIn = async (req: Request, res: Response) => {
 
 export const csurf = async (req: Request, res: Response) => {
     try {
-        const token = crypto.randomBytes(16).toString('hex');
+        const token = generateRandomString()
        setAuthCookie(res, token, "csurf_token",60 * 60 * 1000);
         res.status(200).json({ token });
     } catch (error) {
@@ -172,9 +170,9 @@ export const refresh = async (req: Request, res: Response) => {
         const payload1= {
             timeId:generateTimeId(),
             userId:decoded.userId,
-            tokenId: crypto.randomUUID(), 
+            tokenId: Bun.randomUUIDv7("hex"),
             issuedAt: Date.now(), 
-            nonce: crypto.randomBytes(16).toString('hex')
+            nonce: generateRandomString()
         }
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
      
@@ -216,9 +214,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
             const resetPayload={
                 timeId:generateTimeId(),
                 userId:user.id,
-                tokenId: crypto.randomUUID(), 
+                tokenId: Bun.randomUUIDv7("hex"), 
                 issuedAt: Date.now(), 
-                nonce: crypto.randomBytes(16).toString('hex')
+                nonce: generateRandomString()
             }
 
             const token = jwt.sign({ resetPayload }, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
