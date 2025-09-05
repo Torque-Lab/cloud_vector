@@ -75,10 +75,10 @@ export const signUp = async (req: Request, res: Response) => {
     
         }
        });
-       res.status(201).json({ message: "User created successfully" });
+       res.status(201).json({ message: "User created successfully",success:true });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to create user" });
+        res.status(500).json({ error: "Failed to create user",success:false });
     }
 };
 
