@@ -4,7 +4,8 @@ import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { repoUrl, repoPath, branch } from "../../config/config";
-import { prismaClient } from "db";
+import axios from "axios";
+import {primary_base_backend} from "../../config/config";
 
 export const provisioner = async (req: Request, res: Response) => {
   try {
@@ -88,22 +89,14 @@ export const argocdWebhook =async (req: Request, res: Response) => {
     const db_id=req.body.application.metadata.name;
     const status=req.body.application.status.sync.status;
     let database;
-    if (status=== "Synced") {
+    if (status=="Synced") {
 
       console.log(` ${req.body.application.metadata.name} is deployed and healthy`);
       
-       database=prismaClient.database.create({
-        data: {
-                id: db_id,
-                name: db_id,
-                projectId: "",
-                is_active: true,
-                is_provisioned: true,
-                api_key: "",
-                db_url: "",
-      
-        },  
-      });
+      const response=await axios.post(`${primary_base_backend}/vectordb`, { db_id});
+      if(response.data.success){
+        database=response.data.database;
+      }
 
     }
     

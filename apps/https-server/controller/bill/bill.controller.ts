@@ -5,6 +5,8 @@ import { Tier_Subscription } from "db";
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
 const stripeClient = new stripe(stripeSecretKey);
 
+
+
 export const createCustomer_subscription = async (
     req: Request,
     res: Response
@@ -78,6 +80,8 @@ export const reportWeekalyUsagetoStripe = async () => {
                 tier: true,
             }
         });
+
+        
 
 
    

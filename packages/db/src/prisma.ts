@@ -1,4 +1,4 @@
 import {PrismaClient} from "../generated/prisma";
 export const prismaClient = new PrismaClient();
-// export * from "../generated/prisma";
+export * from "../generated/prisma";
 

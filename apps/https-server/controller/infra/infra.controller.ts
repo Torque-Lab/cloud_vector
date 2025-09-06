@@ -36,7 +36,7 @@ export const infraCreation = async (req: Request, res: Response) => {
             },  
           });
 
-  const response = await axios.post(`${infraUrl}`, { db_id,database_config });
+  const response = await axios.post(`${infraUrl}/vectordb`, { db_id,database_config });
     if(response.data.success){
         res.status(200).json({ message: "DB app provisioned successfully",success:true });
     }else{
@@ -47,3 +47,20 @@ export const infraCreation = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to provision DB app", error });
     }
 };
+
+
+const createCustomInfra=async(req:Request,res:Response)=>{
+    try {
+        const resourceConfig=req.body;
+        const response=await axios.post(`${infraUrl}/custom`, { resourceConfig });
+        if(response.data.success){
+            res.status(200).json({ message: "Your resource provisioned successfully",success:true });
+        }else{
+            res.status(500).json({ message: "Failed to provision resource",success:false });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to provision resource", error });
+    }
+}
+

@@ -18,7 +18,6 @@ model UserBaseAdmin {
   email     String    @unique
   password String
   name      String?
-  stripeCustomerId String? 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   role       Role @default(ADMIN)
@@ -129,10 +128,11 @@ model TierRule {
 model Subscription {
   id              String   @id @default(cuid())
   userBaseAdminId String
+  stripeCustomerId String? 
   stripeSubscriptionId String?   
   stripePriceId        String?   
   stripeProductId      String?   
-  status          SubscriptionStatus @default(ACTIVE)
+  status          SubscriptionStatus @default(INACTIVE)
   currentPeriodStart DateTime?   
   cancelAtPeriodEnd  Boolean @default(false)
   canceledAt         DateTime?
@@ -144,6 +144,7 @@ model Subscription {
 }
 
 enum SubscriptionStatus {
+  INACTIVE
   ACTIVE
   INCOMPLETE
   INCOMPLETE_EXPIRED
@@ -155,7 +156,7 @@ enum SubscriptionStatus {
 
 model Resource_Usage {
   id        String    @id @default(cuid())
-  userBaseAdminId String
+  userBaseAdminId String @unique
   read_QPM Int @default(0) //Queries Per Month
   write_QPM Int @default(0) //Queries Per Month
   bandwidth Int  @default(0) //Bandwidth in GB per month
@@ -169,7 +170,7 @@ model Resource_Usage {
 }
 model Payment {
   id              String   @id @default(cuid())
-  userBaseAdminId String
+  userBaseAdminId String @unique
   stripePaymentIntentId String? 
   stripeInvoiceId       String? 
   amount         Int              

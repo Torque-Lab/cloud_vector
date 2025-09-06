@@ -14,10 +14,6 @@ app.use("/api/auth", authRouter);
 
 
 
-
-
-
-
 app.get("/api/health", (req, res) => {
     const token=req.query.token;
     if(!token){
