@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
-
+import router from "next/router"
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
+  const [error, setError] = useState("")
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -23,9 +23,16 @@ export default function SignInPage() {
         message: string;
       }
       const response = await axios.post<User>("/api/auth/signin", { email, password })
-      console.log(response.data.success)
+      if(response.data.success){
+        setIsLoading(false)
+        router.push("/callback")
+      }else{
+        setIsLoading(false)
+        setError(response.data.message)
+      }
     } catch (error) {
-      console.error(error)
+      setIsLoading(false)
+      setError("Something went wrong")
     } finally {
       setIsLoading(false)
     }
@@ -128,14 +135,11 @@ export default function SignInPage() {
                 required
               />
             </div>
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input type="checkbox" className="rounded border-border" />
-                <span className="ml-2 text-sm text-muted-foreground">Remember me</span>
-              </label>
+            <div className="flex justify-end items-end">
+           
               <Link
-                href="/auth/forgot-password"
-                className="text-sm text-purple-600 hover:text-purple-500 transition-colors"
+                href="/forgot-password"
+                className="text-sm text-purple-600 hover:text-purple-500 transition-colors justify-end"
               >
                 Forgot password?
               </Link>
@@ -148,7 +152,7 @@ export default function SignInPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don't have an account?{" "}
-          <Link href="/auth/signup" className="text-purple-600 hover:text-purple-500 transition-colors">
+          <Link href="/signup" className="text-purple-600 hover:text-purple-500 transition-colors">
             Sign up
           </Link>
         </p>

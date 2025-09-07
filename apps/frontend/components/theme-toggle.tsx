@@ -9,17 +9,12 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
 
-  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
 
   if (!mounted) {
-    return (
-      <Button variant="ghost" size="icon" aria-label="Toggle theme">
-        <div className="h-4 w-4" />
-      </Button>
-    )
+    return null
   }
 
   const toggleTheme = () => {
@@ -29,16 +24,19 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
       onClick={toggleTheme}
       aria-label="Toggle theme"
+      className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50"
     >
       {theme === "light" ? (
-        <Moon className="h-4 w-4" />
+        <>
+          <Moon className="h-4 w-4" />
+        </>
       ) : (
-        <Sun className="h-4 w-4" />
+        <>
+          <Sun className="h-4 w-4" />
+        </>
       )}
-      <span className="sr-only">Toggle theme</span>
     </Button>
   )
 }

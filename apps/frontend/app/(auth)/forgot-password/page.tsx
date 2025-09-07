@@ -12,6 +12,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,9 +23,15 @@ export default function ForgotPasswordPage() {
         message: string;
       }
       const response = await axios.post<User>("/api/auth/forgot-password", { email })
-      console.log(response.data.success)
+      if(response.data.success){
+        setIsSubmitted(true)
+      }else{
+        setIsLoading(false)
+        setError(response.data.message)
+      }
     } catch (error) {
-      console.error(error)
+      setIsLoading(false)
+      setError("Something went wrong")
     } finally {
       setIsLoading(false)
     }
@@ -51,19 +58,14 @@ export default function ForgotPasswordPage() {
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
             <p className="text-muted-foreground mb-6">
-              We've sent a password reset link to <strong>{email}</strong>
+              We&apos;ve sent a password reset link to <strong>{email}</strong>
             </p>
             <p className="text-sm text-muted-foreground mb-6">
-              Didn't receive the email? Check your spam folder or{" "}
-              <button
-                onClick={() => setIsSubmitted(false)}
-                className="text-purple-600 hover:text-purple-500 transition-colors underline"
-              >
-                try again
-              </button>
+              Didn&apos;t receive the email? Check your spam folder
+            
             </p>
             <Button asChild className="w-full">
-              <Link href="/auth/signin">Back to sign in</Link>
+              <Link href="/signin">Back to sign in</Link>
             </Button>
           </Card>
         </div>
@@ -83,7 +85,8 @@ export default function ForgotPasswordPage() {
             <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
           </Link>
           <h1 className="text-2xl font-bold text-foreground mb-2">Forgot your password?</h1>
-          <p className="text-muted-foreground">Enter your email and we'll send you a reset link</p>
+          <p className="text-muted-foreground">Enter your email and we&apos;ll send you a reset link</p>
+          {error && <p className="text-red-500">{error}</p>}
         </div>
 
         <Card className="p-6">
@@ -101,7 +104,7 @@ export default function ForgotPasswordPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
               {isLoading ? "Sending reset link..." : "Send reset link"}
             </Button>
           </form>
@@ -109,7 +112,7 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Remember your password?{" "}
-          <Link href="/auth/signin" className="text-purple-600 hover:text-purple-500 transition-colors">
+          <Link href="/signin" className="text-purple-600 hover:text-purple-500 transition-colors">
             Back to sign in
           </Link>
         </p>

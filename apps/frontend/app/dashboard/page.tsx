@@ -423,26 +423,26 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Used Storage</span>
                       <span className="text-sm text-muted-foreground">
-                        {currentData.storageBreakdown[0].storage} / 500 GB
+                        {currentData.storageBreakdown[0]!.storage} / 500 GB
                       </span>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
                       <div
                         className="bg-primary h-2 rounded-full"
-                        style={{ width: `${Math.min(currentData.storageBreakdown[0].percentage, 100)}%` }}
+                        style={{ width: `${Math.min(currentData.storageBreakdown[0]!.percentage, 100)}%` }}
                       ></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Vector Data</p>
                         <p className="font-medium">
-                          {Math.round(Number.parseFloat(currentData.storageBreakdown[0].storage) * 0.75)} GB
+                          {Math.round(Number.parseFloat(currentData.storageBreakdown[0]!.storage) * 0.75)} GB
                         </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Indexes</p>
                         <p className="font-medium">
-                          {Math.round(Number.parseFloat(currentData.storageBreakdown[0].storage) * 0.25)} GB
+                          {Math.round(Number.parseFloat(currentData.storageBreakdown[0]!.storage) * 0.25)} GB
                         </p>
                       </div>
                     </div>
