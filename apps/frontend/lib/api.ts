@@ -32,30 +32,30 @@ interface GetDatabasesParams {
 
 export const databaseApi = {
   getDatabases: async (params?: GetDatabasesParams): Promise<Database[]> => {
-    const response = await axios.get<Database[]>(`${API_BASE_URL}/postgresql`, {
+    const response = await axios.get<{databases:Database[],success:boolean}>(`${API_BASE_URL}/postgresql`, {
       params,
     });
-    return response.data;
+    return response.data.databases;
   },
 
   getDatabase: async (id: string): Promise<Database> => {
-    const response = await axios.get<Database>(`${API_BASE_URL}/postgresql-get/${id}`);
-    return response.data;
+    const response = await axios.get<{database:Database,success:boolean}>(`${API_BASE_URL}/postgresql-get/${id}`);
+    return response.data.database;
   },
 
   getProjects: async (): Promise<Project[]> => {
-    const response = await axios.get<Project[]>(`${API_BASE_URL}/projects`);
-    return response.data;
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/projects`);
+    return response.data.projects;
   },
 
   createDatabase: async (data: Omit<Database, 'id' | 'createdAt' | 'updatedAt'>): Promise<Database> => {
-    const response = await axios.post<Database>(`${API_BASE_URL}/postgresql-create`, data);
-    return response.data;
+    const response = await axios.post<{database:Database,success:boolean}>(`${API_BASE_URL}/postgresql-create`, data);
+    return response.data.database;
   },
 
   updateDatabase: async (id: string, data: Partial<Database>): Promise<Database> => {
-    const response = await axios.patch<Database>(`${API_BASE_URL}/postgresql-update/${id}`, data);
-    return response.data;
+    const response = await axios.patch<{database:Database,success:boolean}>(`${API_BASE_URL}/postgresql-update/${id}`, data);
+    return response.data.database;
   },
 
   deleteDatabase: async (id: string): Promise<void> => {

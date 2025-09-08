@@ -37,35 +37,32 @@ export default function CreateDatabasePage() {
   })
   const [projects, setProjects] = useState<Project[]>([])
   const [isProjectsLoading, setIsProjectsLoading] = useState(true)
-  const [projectsError, setProjectsError] = useState<string | null>(null)
 
   // Load projects on component mount
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        // const projects = await databaseApi.getProjects()
-        const projects = [
-          { id: "1", name: "Project 1" },
-          { id: "2", name: "Project 2" },
-          { id: "3", name: "Project 3" },
-        ]
-        setProjects(projects)
-        if (projects.length > 0) {
+        const projects = await databaseApi.getProjects()
+        setProjects(projects ?? [])
+        if (projects?.length > 0) {
           setFormData(prev => ({
             ...prev,
-            projectId: projects[0]!.id
+            projectId: projects[0]?.id || ""
           }))
         }
       } catch (error) {
-        console.error("Failed to load projects:", error)
-        setProjectsError("Failed to load projects. Please try again later.")
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to load projects",
+        variant: "destructive"
+      })
       } finally {
         setIsProjectsLoading(false)
       }
     }
     
     loadProjects()
-  }, [])
+  }, [toast])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -249,7 +246,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
           </Link>
         </div>
 
-        <form  className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2 space-y-6">
               {/* Basic Information */}
@@ -278,9 +275,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                     <Label htmlFor="projectId">Project</Label>
                     {isProjectsLoading ? (
                       <div className="h-10 w-full rounded-md border bg-muted animate-pulse" />
-                    ) : projectsError ? (
-                      <div className="text-sm text-red-500">{projectsError}</div>
-                    ) : (
+                     ):(
                       <Select
                         name="projectId"
                         value={formData.projectId}
@@ -293,12 +288,19 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                           <SelectValue placeholder="Select a project" />
                         </SelectTrigger>
                         <SelectContent>
-                          {projects.map((project) => (
-                            <SelectItem key={project.id} value={project.id}>
-                              {project.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
+  {projects?.length > 0 ? (
+    projects.map((project) => (
+      <SelectItem key={project.id} value={project.id}>
+        {project.name}
+      </SelectItem>
+    ))
+  ) : (
+    <SelectItem key="no-projects" value="1">
+      No projects found
+    </SelectItem>
+  )}
+</SelectContent>
+
                       </Select>
                     )}
                   </div>
@@ -598,8 +600,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                 <Button 
                   type="submit" 
                   className="w-full cursor-pointer"
-                  onClick={handleSubmit}
-                  disabled={isLoading || projectsError !== null}
+                  disabled={isLoading }
                 >
                   {isLoading ? "Creating..." : "Create Database"}
                 </Button>
