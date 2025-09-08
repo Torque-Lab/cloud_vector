@@ -9,11 +9,11 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import router from "next/router"
+import { toast } from "@/hooks/use-toast"
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -25,14 +25,27 @@ export default function SignInPage() {
       const response = await axios.post<User>("/api/auth/signin", { email, password })
       if(response.data.success){
         setIsLoading(false)
+        toast({
+          title: "Success",
+          description: response.data.message,
+          variant: "default",
+         })
         router.push("/callback")
       }else{
         setIsLoading(false)
-        setError(response.data.message)
+        toast({
+          title: "Error",
+          description: response.data.message,
+          variant: "destructive",
+        })
       }
-    } catch (error) {
+    } catch  {
       setIsLoading(false)
-      setError("Something went wrong")
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -151,7 +164,7 @@ export default function SignInPage() {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-purple-600 hover:text-purple-500 transition-colors">
             Sign up
           </Link>

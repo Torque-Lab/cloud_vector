@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
+import { toast } from "@/hooks/use-toast"
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams()
@@ -41,11 +42,19 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match")
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      })
       return
     }
     if (formData.password.length < 8) {
-      alert("Password must be at least 8 characters long")
+      toast({
+        title: "Error",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive",
+      })
       return
     }
     setIsLoading(true)
@@ -57,8 +66,12 @@ export default function ResetPasswordPage() {
       const response = await axios.post<User>("/api/auth/reset-password", { oneTimeToken, formData })
       console.log(response.data.success)
       setIsSuccess(true)
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
       setIsSuccess(false)
@@ -96,7 +109,7 @@ export default function ResetPasswordPage() {
               This password reset link is invalid or has expired. Please request a new one.
             </p>
             <Button asChild className="w-full">
-              <Link href="/auth/forgot-password">Request new reset link</Link>
+              <Link href="/forgot-password">Request new reset link</Link>
             </Button>
           </Card>
         </div>
@@ -129,7 +142,7 @@ export default function ResetPasswordPage() {
               Your password has been successfully updated. You can now sign in with your new password.
             </p>
             <Button asChild className="w-full">
-              <Link href="/auth/signin">Sign in to your account</Link>
+              <Link href="/signin">Sign in to your account</Link>
             </Button>
           </Card>
         </div>
@@ -193,7 +206,7 @@ export default function ResetPasswordPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Remember your password?{" "}
-          <Link href="/auth/signin" className="text-purple-600 hover:text-purple-500 transition-colors">
+          <Link href="/signin" className="text-purple-600 hover:text-purple-500 transition-colors">
             Back to sign in
           </Link>
         </p>

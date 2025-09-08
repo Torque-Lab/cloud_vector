@@ -8,7 +8,7 @@ export default function CallbackHandlingPage() {
 
   useEffect(() => {
     setTimeout(() => {
-      router.push('/home');
+      router.push('/dashboard');
     }, 2000);
   }, [router]);
 

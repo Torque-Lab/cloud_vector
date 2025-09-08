@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import router from "next/router";
+import { toast } from "@/hooks/use-toast";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -20,10 +21,7 @@ export default function SignUpPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [isPasswordNotMatch, setIsPasswordNotMatch] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -43,16 +41,28 @@ export default function SignUpPage() {
       }
       const response = await axios.post<User>("/api/auth/signup", formData);
       if (response.data.success) {
-        setSuccess(response.data.message);
+       toast({
+        title: "Success",
+        description: response.data.message,
+        variant: "default",
+       })
         setIsLoading(false);
         router.push("/otp-verification");
       }else{
         setIsLoading(false);
-        setError(response.data.message);
+      toast({
+        title: "Error",
+        description: response.data.message,
+        variant: "destructive",
+      })
       }
 
     } catch (e) {
-      setError("Something went wrong");
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false);
     }
@@ -294,7 +304,6 @@ export default function SignUpPage() {
                 </Link>
               </label>
             </div>
-            {error && <p className="text-red-500">{error}</p>}
             <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create account"}
             </Button>

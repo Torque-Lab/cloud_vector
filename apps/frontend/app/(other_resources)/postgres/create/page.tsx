@@ -166,8 +166,8 @@ function parseCpuToCores(value: string | undefined | null): number | null {
     }
   
     for (const { min, max, label, kind } of numericChecks) {
-      const minRaw = (formData as any)[min]
-      const maxRaw = (formData as any)[max]
+      const minRaw = (formData as unknown as Record<string, string>)[min]
+      const maxRaw = (formData as unknown as Record<string, string>)[max]
   
       const minVal =
         kind === "cpu" ? parseCpuToCores(minRaw) : parseSizeToBytes(minRaw)
@@ -226,7 +226,6 @@ function parseCpuToCores(value: string | undefined | null): number | null {
       // Redirect to the new database
       router.push(`/postgres/${newDb.id}`)
     } catch (error) {
-      console.error("Failed to create database:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create database",
