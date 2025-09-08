@@ -26,7 +26,7 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-background font-sans antialiased overflow-y-scroll overflow-x-hidden">
         <ThemeProvider>
           {children}
         </ThemeProvider>

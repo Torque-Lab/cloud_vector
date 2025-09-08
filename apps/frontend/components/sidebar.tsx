@@ -128,7 +128,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   return (
     <div
       className={cn(
-        "bg-card border-r h-full transition-all duration-300 ease-in-out flex flex-col",
+        "bg-card border-r h-full transition-all duration-300 ease-in-out flex flex-col fixed",
         isOpen ? "w-64" : "w-16",
       )}
     >

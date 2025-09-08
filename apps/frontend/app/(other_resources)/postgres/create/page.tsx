@@ -22,17 +22,17 @@ export default function CreateDatabasePage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: "my-postgres-db",
+    name: "",
     projectId: "",
-    region: "us-east-1",
-   initialMemory: "200",
-   maxMemory: "200",
-   initialStorage: "200",
-   maxStorage: "200",
-   initialVCpu: "2",
-   maxVCpu: "2",
-   autoScale: "false",
-   backFrequency: "daily",
+    region: "",
+   initialMemory: "",
+   maxMemory: "",
+   initialStorage: "",
+   maxStorage: "",
+   initialVCpu: "",
+   maxVCpu: "",
+   autoScale: "",
+   backFrequency: "",
     
   })
   const [projects, setProjects] = useState<Project[]>([])
@@ -129,7 +129,7 @@ export default function CreateDatabasePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex-1 space-y-6 p-6">
+      <div className="flex-1 space-y-6 p-6 h-full ">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Create Postgres instance</h2>
@@ -157,7 +157,7 @@ export default function CreateDatabasePage() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="my-vector-db"
+                      placeholder="my-postgres-db"
                       required
                     />
                     <p className="text-sm text-muted-foreground">
@@ -217,16 +217,43 @@ export default function CreateDatabasePage() {
                           <SelectValue placeholder="Select initial memory" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="200">200MB</SelectItem>
-                          <SelectItem value="500">500MB</SelectItem>
-                          <SelectItem value="1024">1GB</SelectItem>
+                          <SelectItem value="200Mi">200MB</SelectItem>
+                          <SelectItem value="500Mi">500MB</SelectItem>
+                          <SelectItem value="1Gi">1GB</SelectItem>
+                          <SelectItem value="2Gi">2GB</SelectItem>
+                          <SelectItem value="4Gi">4GB</SelectItem>
+                          <SelectItem value="8Gi">8GB</SelectItem>
+                         
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">
-                        Initial memory for your database (e.g., 200MB )
-                      </p>
+              
                     </div>
 
+                    <div className="space-y-2">
+                      <Label htmlFor="maxMemory">Max Memory</Label>
+                      <Select
+                        name="maxMemory"
+                        value={formData.maxMemory}
+                        onValueChange={(value) => 
+                          setFormData(prev => ({ ...prev, maxMemory: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select max memory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="4Gi">4GB</SelectItem>
+                        <SelectItem value="8Gi">8GB</SelectItem>
+                        <SelectItem value="16Gi">16GB</SelectItem>
+                          <SelectItem value="32Gi">32GB</SelectItem>
+                          <SelectItem value="64Gi">64GB</SelectItem>
+                          <SelectItem value="128Gi">128GB</SelectItem>
+                          <SelectItem value="256Gi">256GB</SelectItem>
+                          <SelectItem value="512Gi">512GB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="initialStorage">Initial Storage</Label>
                       <Select
@@ -240,18 +267,42 @@ export default function CreateDatabasePage() {
                           <SelectValue placeholder="Select initial storage" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="5">5GB</SelectItem>
-                          <SelectItem value="10">10GB</SelectItem>
-                          <SelectItem value="20">20GB</SelectItem>
+                        <SelectItem value="5Gi">5GB</SelectItem>
+                          <SelectItem value="10Gi">10GB</SelectItem>
+                          <SelectItem value="20Gi">20GB</SelectItem>
+                          <SelectItem value="40Gi">40GB</SelectItem>
+                          <SelectItem value="80Gi">80GB</SelectItem>
+                          <SelectItem value="160Gi">160GB</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">
-                        Initial storage for your database (e.g., 5GB for OpenAI embeddings)
-                      </p>
+                      
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="maxStorage">Max Storage</Label>
+                      <Select
+                        name="maxStorage"
+                        value={formData.maxStorage}
+                        onValueChange={(value) => 
+                          setFormData(prev => ({ ...prev, maxStorage: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select max storage" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="5Gi">5GB</SelectItem>
+                          <SelectItem value="10Gi">10GB</SelectItem>
+                          <SelectItem value="20Gi">20GB</SelectItem>
+                          <SelectItem value="40Gi">40GB</SelectItem>
+                          <SelectItem value="80Gi">80GB</SelectItem>
+                          <SelectItem value="160Gi">160GB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="initialVCpu">Initial VCPU</Label>
+                      <Label htmlFor="initialVCpu">Initial vCPU</Label>
                       <Select
                         name="initialVCpu"
                         value={formData.initialVCpu}
@@ -266,12 +317,13 @@ export default function CreateDatabasePage() {
                           <SelectItem value="1">1vCPU</SelectItem>
                           <SelectItem value="2">2vCPU</SelectItem>
                           <SelectItem value="4">4vCPU</SelectItem>
+                          <SelectItem value="8">8vCPU</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="maxVCpu">Max VCPU</Label>
+                      <Label htmlFor="maxVCpu">Max vCPU</Label>
                     <Select
                       name="maxVCpu"
                       value={formData.maxVCpu}
@@ -283,9 +335,12 @@ export default function CreateDatabasePage() {
                       <SelectValue placeholder="Select max vcpu" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1vCPU</SelectItem>
-                      <SelectItem value="2">2vCPU</SelectItem>
                       <SelectItem value="4">4vCPU</SelectItem>
+                      <SelectItem value="8">8vCPU</SelectItem>
+                      <SelectItem value="16">16vCPU</SelectItem>
+                      <SelectItem value="32">32vCPU</SelectItem>
+                      <SelectItem value="64">64vCPU</SelectItem>
+                     
                     </SelectContent>
                     </Select>
                     </div>
@@ -324,6 +379,14 @@ export default function CreateDatabasePage() {
                           <SelectItem value="us-west-2">US West (Oregon)</SelectItem>
                           <SelectItem value="eu-west-1">EU (Ireland)</SelectItem>
                           <SelectItem value="ap-southeast-1">Asia Pacific (Singapore)</SelectItem>
+                          <SelectItem value="ap-northeast-1">Asia Pacific (Tokyo)</SelectItem>
+                          <SelectItem value="ap-south-1">Asia Pacific (Mumbai)</SelectItem>
+                    
+                          <SelectItem value="eu-west-2">EU (London)</SelectItem>
+                          <SelectItem value="eu-west-3">EU (Paris)</SelectItem>
+                          <SelectItem value="eu-west-4">EU (Frankfurt)</SelectItem>
+                          <SelectItem value="eu-west-5">EU (Zurich)</SelectItem>
+                  
                         </SelectContent>
                       </Select>
                     </div>
@@ -356,16 +419,34 @@ export default function CreateDatabasePage() {
                       <span className="text-sm font-medium">{formData.initialMemory}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Max storage</span>
+                      <span className="text-sm text-muted-foreground">Max Memory</span>
+                      <span className="text-sm font-medium">{formData.maxMemory}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Initial Storage</span>
+                      <span className="text-sm font-medium">{formData.initialStorage}</span>
+                    </div>
+
+
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Max Storage</span>
                       <span className="text-sm font-medium">{formData.maxStorage}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Max vcpu</span>
+                      <span className="text-sm text-muted-foreground">Initial VCPU</span>
+                      <span className="text-sm font-medium">{formData.initialVCpu}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Max VCPU</span>
                       <span className="text-sm font-medium">{formData.maxVCpu}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Auto scale</span>
                       <span className="text-sm font-medium">{formData.autoScale}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Region</span>
+                      <span className="text-sm font-medium">{formData.region}</span>
                     </div>
                   </div>
 
