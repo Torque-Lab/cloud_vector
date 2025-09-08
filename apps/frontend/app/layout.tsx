@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
+import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: "VectorDB Cloud - Managed Vector Database Service",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased overflow-y-scroll overflow-x-hidden">
         <ThemeProvider>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export interface Database {
     id: string;
@@ -16,6 +16,8 @@ export interface Database {
   maxVCpu: number;
   autoScale: string;
   backFrequency: 'daily' | 'weekly' | 'monthly';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Project {
@@ -30,14 +32,14 @@ interface GetDatabasesParams {
 
 export const databaseApi = {
   getDatabases: async (params?: GetDatabasesParams): Promise<Database[]> => {
-    const response = await axios.get<Database[]>(`${API_BASE_URL}/databases`, {
+    const response = await axios.get<Database[]>(`${API_BASE_URL}/postgresql`, {
       params,
     });
     return response.data;
   },
 
   getDatabase: async (id: string): Promise<Database> => {
-    const response = await axios.get<Database>(`${API_BASE_URL}/databases/${id}`);
+    const response = await axios.get<Database>(`${API_BASE_URL}/postgresql-get/${id}`);
     return response.data;
   },
 
@@ -46,17 +48,17 @@ export const databaseApi = {
     return response.data;
   },
 
-  createDatabase: async (data: Omit<Database, 'id'>): Promise<Database> => {
-    const response = await axios.post<Database>(`${API_BASE_URL}/databases`, data);
+  createDatabase: async (data: Omit<Database, 'id' | 'createdAt' | 'updatedAt'>): Promise<Database> => {
+    const response = await axios.post<Database>(`${API_BASE_URL}/postgresql-create`, data);
     return response.data;
   },
 
   updateDatabase: async (id: string, data: Partial<Database>): Promise<Database> => {
-    const response = await axios.patch<Database>(`${API_BASE_URL}/databases/${id}`, data);
+    const response = await axios.patch<Database>(`${API_BASE_URL}/postgresql-update/${id}`, data);
     return response.data;
   },
 
   deleteDatabase: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/databases/${id}`);
+    await axios.delete(`${API_BASE_URL}/postgresql-delete/${id}`);
   },
 };

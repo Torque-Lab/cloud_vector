@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { databaseApi } from "@/lib/api"
 import Link from "next/link"
 import { useEffect } from "react"
@@ -43,7 +43,12 @@ export default function CreateDatabasePage() {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const projects = await databaseApi.getProjects()
+        // const projects = await databaseApi.getProjects()
+        const projects = [
+          { id: "1", name: "Project 1" },
+          { id: "2", name: "Project 2" },
+          { id: "3", name: "Project 3" },
+        ]
         setProjects(projects)
         if (projects.length > 0) {
           setFormData(prev => ({
@@ -70,25 +75,130 @@ export default function CreateDatabasePage() {
     }))
   }
 
+function parseSizeToBytes(value: string | undefined | null): number | null {
+  if (value == null) return null
+  const s = String(value).trim()
+  if (!s) return null
+
+  // Accept "200Mi", "2Gi", "10GiB", "512M", "123", "1.5G", "1T", "1TiB"
+  const m = s.match(/^([0-9]*\.?[0-9]+)\s*([a-zA-Z]+)?$/)
+  if (!m) return null
+
+  const num = parseFloat(m[1]!)
+  if (Number.isNaN(num)) return null
+
+  // normalize unit: remove trailing "b" or "ib" e.g. "MiB" -> "mi", "GiB" -> "gi"
+  let unit = (m[2] || "").toLowerCase()
+  unit = unit.replace(/i?b$/i, "") // removes "b" or "ib" if present
+
+  // decimal (SI) vs binary (IEC)
+  const multipliers: Record<string, number> = {
+    // binary (iec)
+    ki: 1024,
+    mi: 1024 ** 2,
+    gi: 1024 ** 3,
+    ti: 1024 ** 4,
+    pi: 1024 ** 5,
+    ei: 1024 ** 6,
+    // decimal (si)
+    k: 1000,
+    m: 1000 ** 2,
+    g: 1000 ** 3,
+    t: 1000 ** 4,
+    p: 1000 ** 5,
+    e: 1000 ** 6,
+  }
+
+  // no unit => treat as bytes (you can change to assume bytes or MiB as you prefer)
+  if (!unit) return num
+
+  // allow single-letter units like "M" or "G" and "Mi"/"Gi"
+  const mult = multipliers[unit]
+  return mult ? num * mult : null
+}
+
+function parseCpuToCores(value: string | undefined | null): number | null {
+  if (value == null) return null
+  const s = String(value).trim()
+  if (!s) return null
+
+  // Accept "500m" (millicores), "0.5", "2"
+  const m = s.match(/^([0-9]*\.?[0-9]+)\s*(m)?$/i)
+  if (!m) return null
+  const num = parseFloat(m[1]!)
+  if (Number.isNaN(num)) return null
+  // if "m" suffix => millicores => divide by 1000
+  return m[2] ? num / 1000 : num
+}
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Database name is required",
-        variant: "destructive"
-      })
-      return
+    const validations = [
+      { field: "name", message: "Database name is required" },
+      { field: "projectId", message: "Please select a project" },
+      { field: "region", message: "Please select a region" },
+      { field: "initialMemory", message: "Initial memory is required" },
+      { field: "maxMemory", message: "Max memory is required" },
+      { field: "initialStorage", message: "Initial storage is required" },
+      { field: "maxStorage", message: "Max storage is required" },
+      { field: "initialVCpu", message: "Initial vCPU is required" },
+      { field: "maxVCpu", message: "Max vCPU is required" },
+      { field: "autoScale", message: "Auto scale setting is required" },
+      { field: "backFrequency", message: "Backup frequency is required" },
+    ]
+    const numericChecks = [
+      { min: "initialMemory", max: "maxMemory", label: "Memory", kind: "bytes" },
+      { min: "initialStorage", max: "maxStorage", label: "Storage", kind: "bytes" },
+      { min: "initialVCpu", max: "maxVCpu", label: "vCPU", kind: "cpu" },
+    ]
+    for (const { field, message } of validations) {
+      const value = formData[field as keyof typeof formData]
+      if (!value || (typeof value === "string" && !value.trim())) {
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        })
+        return
+      }
     }
-
-    if (!formData.projectId) {
-      toast({
-        title: "Error",
-        description: "Please select a project",
-        variant: "destructive"
-      })
-      return
+  
+    for (const { min, max, label, kind } of numericChecks) {
+      const minRaw = (formData as any)[min]
+      const maxRaw = (formData as any)[max]
+  
+      const minVal =
+        kind === "cpu" ? parseCpuToCores(minRaw) : parseSizeToBytes(minRaw)
+      const maxVal =
+        kind === "cpu" ? parseCpuToCores(maxRaw) : parseSizeToBytes(maxRaw)
+  
+      if (minVal === null) {
+        toast({
+          title: "Error",
+          description: `${label}: invalid value for ${min} ("${minRaw}")`,
+          variant: "destructive",
+        })
+        return
+      }
+      if (maxVal === null) {
+        toast({
+          title: "Error",
+          description: `${label}: invalid value for ${max} ("${maxRaw}")`,
+          variant: "destructive",
+        })
+        return
+      }
+  
+      if (maxVal < minVal) {
+        toast({
+          title: "Error",
+          description: `${label}: Max should be greater than or equal to Initial`,
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     setIsLoading(true)
@@ -109,8 +219,8 @@ export default function CreateDatabasePage() {
       })
 
       toast({
-        title: "Database created",
-        description: `${formData.name} has been created successfully!`,
+        title: "Database creatation added to Task Queue",
+        description: `${formData.name} will be created soon!`,
       })
       
       // Redirect to the new database
@@ -140,7 +250,7 @@ export default function CreateDatabasePage() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form  className="space-y-6">
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2 space-y-6">
               {/* Basic Information */}
@@ -363,6 +473,29 @@ export default function CreateDatabasePage() {
                     </Select>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="backFrequency">Backup Frequency</Label>
+                    <Select
+                      name="backFrequency"
+                      value={formData.backFrequency}
+                      onValueChange={(value) => 
+                        setFormData(prev => ({ ...prev, backFrequency: value }))
+                      }
+                    >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select backup frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                     
+                    </SelectContent>
+                    </Select>
+                    </div>
+
+
+
+                    <div className="space-y-2">
                       <Label htmlFor="region">Region</Label>
                       <Select
                         name="region"
@@ -465,7 +598,8 @@ export default function CreateDatabasePage() {
               <div className="space-y-4">
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full cursor-pointer"
+                  onClick={handleSubmit}
                   disabled={isLoading || projectsError !== null}
                 >
                   {isLoading ? "Creating..." : "Create Database"}
