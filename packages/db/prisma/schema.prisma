@@ -53,8 +53,6 @@ model User {
 enum Role {
   ADMIN
   DEVELOPER
-  ADMIN_ASSIGNED
-  
 }
 
 
@@ -62,16 +60,21 @@ model Permission {
   id              String    @id @default(cuid())
   userId          String
   projectId       String
-  databaseId      String
+  postgresDBId      String
+  rabbitmqId      String
+  redisId         String
+  vectorDBId      String
   userBaseAdminId String
-  role            Role @default(ADMIN_ASSIGNED)
+  role            Role @default(DEVELOPER)
   permission_given_by String
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-
   user            User @relation(fields: [userId], references: [id])
   projects        Project @relation(fields: [projectId], references: [id])
-  databases       Database @relation(fields: [databaseId], references: [id])
+  postgresDB       PostgresDB @relation(fields: [postgresDBId], references: [id])
+  rabbitmq        RabbitMQ @relation(fields: [rabbitmqId], references: [id])
+  redis           Redis @relation(fields: [redisId], references: [id])
+  vectorDB        VectorDB @relation(fields: [vectorDBId], references: [id])
   userBaseAdmin   UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
   permissionItems PermissionItem[]   
 }
@@ -92,26 +95,71 @@ model Project {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   permissions Permission[]
-  databases Database[]
+  postgresDB PostgresDB[]
+  rabbitmq RabbitMQ[]
+  redis Redis[]
+  vectorDB VectorDB[]
   user User @relation(fields: [userId], references: [id])
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
 }
 
-
-model Database {
+model VectorDB {
   id        String    @id @default(cuid())
   name      String
   projectId String
   is_active Boolean @default(true)
   is_provisioned Boolean @default(false)
   api_key String @unique @default("")
-  db_url String @default("")
+  vectordb_url String @default("")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   permissions Permission[]
   projects   Project @relation(fields: [projectId], references: [id])
 
 }
+model PostgresDB {
+  id        String    @id @default(cuid())
+  name      String
+  projectId String
+  is_active Boolean @default(true)
+  is_provisioned Boolean @default(false)
+  api_key String @unique @default("")
+  postgres_url String @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  permissions Permission[]
+  projects   Project @relation(fields: [projectId], references: [id])
+
+}
+model RabbitMQ {
+  id        String    @id @default(cuid())
+  name      String
+  projectId String
+  is_active Boolean @default(true)
+  is_provisioned Boolean @default(false)
+  api_key String @unique @default("")
+  rabbitmq_url String @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  permissions Permission[]
+  projects   Project @relation(fields: [projectId], references: [id])
+
+}
+model Redis {
+  id        String    @id @default(cuid())
+  name      String
+  projectId String
+  is_active Boolean @default(true)
+  is_provisioned Boolean @default(false)
+  api_key String @unique @default("")
+  redis_url String @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  permissions Permission[]
+  projects   Project @relation(fields: [projectId], references: [id])
+
+}
+
 enum Tier_Subscription {
   FREE
   BASE
