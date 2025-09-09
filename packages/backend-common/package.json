@@ -12,9 +12,9 @@
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*"
   },
-
   "dependencies": {
     "redis": "^5.8.2",
-    "resend": "^6.0.2"
+    "resend": "^6.0.2",
+    "zod": "^4.1.5"
   }
 }

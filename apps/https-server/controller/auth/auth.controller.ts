@@ -1,10 +1,10 @@
 
-import { SignUpSchema } from "../../zodSchema/authSchema";
+import { SignUpSchema } from "backend-common";
 import { prismaClient } from "db";
 import type { Request, Response } from "express";   
-import { SignInSchema } from "../../zodSchema/authSchema";
-import { ForgotSchema } from "../../zodSchema/authSchema";
-import { ResetSchema } from "../../zodSchema/authSchema";
+import { SignInSchema } from "backend-common";
+import { ForgotSchema } from "backend-common";
+import { ResetSchema } from "backend-common";
 import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "backend-common"
 import { sendPasswordResetEmail } from "backend-common";
 import jwt from "jsonwebtoken";

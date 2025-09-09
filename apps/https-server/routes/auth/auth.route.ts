@@ -2,9 +2,7 @@ import { Router } from "express";
 import { signUp, signIn, forgotPassword, resetPassword, logout, refresh, csurf } from "../../controller/auth/auth.controller";
 import { startGoogleAuth,googleCallbackMiddleware,handleGoogleCallback } from "../../controller/auth/auth.google";
 import { startGithubAuth,githubCallbackMiddleware,handleGithubCallback } from "../../controller/auth/auth.github";
-
 const router = Router();
-
 router.post("/signup", signUp);
 router.post("/signin", signIn);
 router.post("/forgot", forgotPassword);
