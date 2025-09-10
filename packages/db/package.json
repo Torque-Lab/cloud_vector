@@ -9,11 +9,11 @@
     "./prisma": "./src/prisma.ts"
   },
   "scripts": {
-    "generate": "bunx prisma generate",
-    "migrate": "bunx prisma migrate",
-    "seed": "bunx prisma db seed",
-    "deploy": "bunx prisma db deploy",
-    "studio": "bunx prisma studio"
+    "db:generate": "bunx prisma generate",
+    "db:migrate": "bunx prisma migrate dev",
+    "db:seed": "bunx prisma seed",
+    "db:deploy": "bunx prisma deploy",
+    "db:studio": "bunx prisma studio"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

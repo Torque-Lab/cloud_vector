@@ -10,24 +10,21 @@ export const getRedisClient =async() => {
     }
 };
 
-export function generateOTP(length: number = 6): string {
-    return Math.floor(100000 + Math.random() * 900000).toString().substring(0, length);
-}
-
 export async function storeOTP(email: string, otp: string, ttlInMinutes = 15): Promise<boolean> {
     try {
         const key = `otp:${email}`;
         const client = await getRedisClient();
         const result = await client.set(key, JSON.stringify({ otp }), {
             expiration: { type: 'EX', value: ttlInMinutes * 60 },
-            NX: true
         });
+
         return result === 'OK';
     } catch (error) {
         console.error('Error storing OTP in Redis:', error);
         return false;
     }
 }
+
 
 export async function getOTP(email: string): Promise<{otp:string} | null> {
     try {

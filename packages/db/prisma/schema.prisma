@@ -17,7 +17,8 @@ model UserBaseAdmin {
   id        String    @id @default(cuid())
   email     String    @unique
   password String
-  name      String?
+  frist_name   String?
+  last_name   String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   role       Role @default(ADMIN)
@@ -37,7 +38,8 @@ model User {
   id        String    @id @default(cuid())
   email     String    @unique
   password String
-  name      String?
+  frist_name   String?
+  last_name   String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   last_login DateTime?
