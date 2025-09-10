@@ -36,13 +36,8 @@ async function getRabbitMQChannel() {
     }
 }
 
-interface Task {
-    id: string;
-    url: string;
-}
-
 type InfraConfig = {
-      name: string,
+       name: string,
        projectId: string,
        region: string,
        initialMemory: string,

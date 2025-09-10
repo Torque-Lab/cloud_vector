@@ -320,7 +320,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{activity.action}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {activity.database}
                         {selectedProject === "all" && (
                           <span className="ml-2">
@@ -329,7 +329,7 @@ export default function DashboardPage() {
                             </Badge>
                           </span>
                         )}
-                      </p>
+                      </div>
                     </div>
                     <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
                   </div>

@@ -14,41 +14,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model UserBaseAdmin {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password String
-  frist_name   String?
-  last_name   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  role       Role @default(ADMIN)
-  last_login DateTime?
-  last_logout DateTime?
-  last_active DateTime?
-  login_count Int @default(0)
-  permissions Permission[] 
-  subscription Subscription[]
-  projects Project[]
-  resource_usages Resource_Usage[]
-  payments Payment[]
-  invoices Invoice[]
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  password             String
+  frist_name           String?
+  last_name            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  role                 Role @default(ADMIN)
+  last_login           DateTime?
+  last_logout          DateTime?
+  last_active          DateTime?
+  login_count          Int @default(0)
+  permissions          Permission[] 
+  subscription         Subscription[]
+  projects             Project[]
+  resource_usages      Resource_Usage[]
+  payments             Payment[]
+  invoices             Invoice[]
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password String
-  frist_name   String?
-  last_name   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  last_login DateTime?
-  last_logout DateTime?
-  last_active DateTime?
-  login_count Int @default(0)
-  role       Role @default(DEVELOPER)
-  permissions Permission[] 
-  projects Project[]
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  password             String
+  frist_name           String?
+  last_name            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  last_login           DateTime?
+  last_logout          DateTime?
+  last_active          DateTime?
+  login_count          Int @default(0)
+  role                 Role @default(DEVELOPER)
+  permissions          Permission[] 
+  projects             Project[]
 
 }
 
@@ -59,26 +59,27 @@ enum Role {
 
 
 model Permission {
-  id              String    @id @default(cuid())
-  userId          String
-  projectId       String
-  postgresDBId      String
-  rabbitmqId      String
-  redisId         String
-  vectorDBId      String
-  userBaseAdminId String
-  role            Role @default(DEVELOPER)
-  permission_given_by String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  user            User @relation(fields: [userId], references: [id])
-  projects        Project @relation(fields: [projectId], references: [id])
-  postgresDB       PostgresDB @relation(fields: [postgresDBId], references: [id])
-  rabbitmq        RabbitMQ @relation(fields: [rabbitmqId], references: [id])
-  redis           Redis @relation(fields: [redisId], references: [id])
-  vectorDB        VectorDB @relation(fields: [vectorDBId], references: [id])
-  userBaseAdmin   UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
-  permissionItems PermissionItem[]   
+  id                        String    @id @default(cuid())
+  userId                    String
+  projectId                 String
+  postgresDBId              String?
+  rabbitmqId                String?
+  redisId                   String?
+  vectorDBId                String?
+  userBaseAdminId           String
+  permission_given_by       String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  user                      User @relation(fields: [userId], references: [id])
+  projects                  Project @relation(fields: [projectId], references: [id])
+  postgresDB                PostgresDB? @relation(fields: [postgresDBId], references: [id])
+  rabbitmq                  RabbitMQ? @relation(fields: [rabbitmqId], references: [id])
+  redis                     Redis? @relation(fields: [redisId], references: [id])
+  vectorDB                  VectorDB? @relation(fields: [vectorDBId], references: [id])
+  userBaseAdmin             UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  permissionItems           PermissionItem[]  
+  @@index([userId]) 
+  @@index([projectId])
 }
 
 model PermissionItem {
@@ -86,80 +87,97 @@ model PermissionItem {
   permission    String
   permissionId  String
   permissionRef Permission @relation(fields: [permissionId], references: [id])
+  @@index([permissionId])
 }
 
 
 model Project {
-  id        String    @id @default(cuid())
-  name      String
-  userId String
-  userBaseAdminId String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  permissions Permission[]
-  postgresDB PostgresDB[]
-  rabbitmq RabbitMQ[]
-  redis Redis[]
-  vectorDB VectorDB[]
-  user User @relation(fields: [userId], references: [id])
-  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  id                       String    @id @default(cuid())
+  name                     String
+  userId                   String?
+  description              String?
+  userBaseAdminId          String
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  permissions              Permission[]
+  postgresDB               PostgresDB[]
+  rabbitmq                 RabbitMQ[]
+  redis                    Redis[]
+  vectorDB                 VectorDB[]
+  user                     User? @relation(fields: [userId], references: [id])
+  userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  @@index([userBaseAdminId])
 }
 
 model VectorDB {
-  id        String    @id @default(cuid())
-  name      String
-  projectId String
-  is_active Boolean @default(true)
-  is_provisioned Boolean @default(false)
-  api_key String @unique @default("")
-  vectordb_url String @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  permissions Permission[]
-  projects   Project @relation(fields: [projectId], references: [id])
-
+  id                  String    @id @default(cuid())
+  projectId           String
+  is_active           Boolean @default(true)
+  is_provisioned      Boolean @default(false)
+  api_key             String? @unique
+  username            String
+  password            String    
+  host                String
+  port                Int
+  database_name       String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  permissions         Permission[]
+  projects            Project @relation(fields: [projectId], references: [id])
+@@index([projectId])
 }
 model PostgresDB {
-  id        String    @id @default(cuid())
-  name      String
-  projectId String
-  is_active Boolean @default(true)
-  is_provisioned Boolean @default(false)
-  api_key String @unique @default("")
-  postgres_url String @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  permissions Permission[]
-  projects   Project @relation(fields: [projectId], references: [id])
-
+  id                 String    @id @default(cuid())
+  projectId          String
+  is_active          Boolean   @default(true)
+  is_provisioned     Boolean @default(false)
+  api_key            String?   @unique 
+  username           String
+  password           String    
+  host               String
+  port               Int
+  database_name      String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  permissions        Permission[]
+  projects           Project @relation(fields: [projectId], references: [id])
+@@index([projectId])
 }
-model RabbitMQ {
-  id        String    @id @default(cuid())
-  name      String
-  projectId String
-  is_active Boolean @default(true)
-  is_provisioned Boolean @default(false)
-  api_key String @unique @default("")
-  rabbitmq_url String @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  permissions Permission[]
-  projects   Project @relation(fields: [projectId], references: [id])
 
+
+model RabbitMQ {
+  id                  String    @id @default(cuid())
+  projectId           String
+  is_active           Boolean @default(true)
+  is_provisioned      Boolean @default(false)
+  api_key             String? @unique
+  username            String
+  password            String    
+  host                String
+  port                Int
+  queue_name          String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  permissions         Permission[]
+  projects            Project @relation(fields: [projectId], references: [id])
+@@index([projectId])
 }
 model Redis {
-  id        String    @id @default(cuid())
-  name      String
-  projectId String
-  is_active Boolean @default(true)
-  is_provisioned Boolean @default(false)
-  api_key String @unique @default("")
-  redis_url String @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  permissions Permission[]
-  projects   Project @relation(fields: [projectId], references: [id])
-
+  id                    String    @id @default(cuid())
+  projectId             String
+  is_active             Boolean @default(true)
+  is_provisioned        Boolean @default(false)
+  api_key               String? @unique 
+  username              String
+  password              String    
+  host                  String
+  port                  Int
+  redis_name            String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  permissions           Permission[]
+  projects              Project @relation(fields: [projectId], references: [id])
+@@index([projectId])
 }
 
 enum Tier_Subscription {
@@ -169,28 +187,29 @@ enum Tier_Subscription {
 }
 
 model TierRule {
-  id           String @id @default(cuid())
-  tier         Tier_Subscription @unique
-  Max_Projects Int
-  Max_Databases Int
+  id                   String @id @default(cuid())
+  tier                 Tier_Subscription @unique
+  Max_Projects         Int
+  Max_Databases        Int
 }
 
 model Subscription {
-  id              String   @id @default(cuid())
-  userBaseAdminId String
-  stripeCustomerId String? 
-  stripeSubscriptionId String?   
-  stripePriceId        String?   
-  stripeProductId      String?   
-  status          SubscriptionStatus @default(INACTIVE)
-  currentPeriodStart DateTime?   
-  cancelAtPeriodEnd  Boolean @default(false)
-  canceledAt         DateTime?
-  tier              Tier_Subscription
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  userBaseAdminId        String
+  stripeCustomerId       String? 
+  stripeSubscriptionId   String?   
+  stripePriceId          String?   
+  stripeProductId        String?   
+  status                 SubscriptionStatus @default(INACTIVE)
+  currentPeriodStart     DateTime?   
+  cancelAtPeriodEnd      Boolean @default(false)
+  canceledAt             DateTime?
+  tier                   Tier_Subscription
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  @@index([userBaseAdminId])
 }
 
 enum SubscriptionStatus {
@@ -205,32 +224,32 @@ enum SubscriptionStatus {
 }
 
 model Resource_Usage {
-  id        String    @id @default(cuid())
-  userBaseAdminId String @unique
-  read_QPM Int @default(0) //Queries Per Month
-  write_QPM Int @default(0) //Queries Per Month
-  bandwidth Int  @default(0) //Bandwidth in GB per month
-  storage Int  @default(0) //Storage in GB per month
-  index_rebuilds Int @default(0) //Index Rebuilds count
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                   String    @id @default(cuid())
+  userBaseAdminId      String @unique
+  read_QPM             Int @default(0) //Queries Per Month
+  write_QPM            Int @default(0) //Queries Per Month
+  bandwidth            Int  @default(0) //Bandwidth in GB per month
+  storage              Int  @default(0) //Storage in GB per month
+  index_rebuilds       Int? @default(0) //Index Rebuilds count
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
  
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
-
+  @@index([userBaseAdminId])
 }
 model Payment {
-  id              String   @id @default(cuid())
-  userBaseAdminId String @unique
-  stripePaymentIntentId String? 
-  stripeInvoiceId       String? 
-  amount         Int              
-  currency       String           
-  status         PaymentStatus
-  paymentMethod  String?          
-  receiptUrl     String?          
-  type           PaymentType @default(CURRENT)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  userBaseAdminId        String @unique
+  stripePaymentIntentId  String? 
+  stripeInvoiceId        String? 
+  amount                 Int              
+  currency               String           
+  status                 PaymentStatus
+  paymentMethod          String?          
+  receiptUrl             String?          
+  type                   PaymentType @default(CURRENT)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
 }
@@ -251,18 +270,19 @@ enum PaymentType {
 }
 
 model Invoice {
-  id              String   @id @default(cuid())
-  stripeInvoiceId String   @unique
-  userBaseAdminId String
-  amount          Int
-  currency        String
-  status          InvoiceStatus
-  hostedInvoiceUrl String?
-  pdfUrl          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  stripeInvoiceId        String   @unique
+  userBaseAdminId        String
+  amount                 Int
+  currency               String
+  status                 InvoiceStatus
+  hostedInvoiceUrl       String?
+  pdfUrl                 String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  @@index([userBaseAdminId])
 }
 
 enum InvoiceStatus {

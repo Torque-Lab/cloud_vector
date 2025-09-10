@@ -5,6 +5,8 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import axios from "axios"
+import { toast } from "@/hooks/use-toast"
 
 interface ProjectModalProps {
   isOpen: boolean
@@ -14,16 +16,47 @@ interface ProjectModalProps {
 export function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
   const [projectName, setProjectName] = useState("")
   const [description, setDescription] = useState("")
-  const [region, setRegion] = useState("us-east-1")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
-    // Handle project creation logic here
-    console.log("Creating project:", { projectName, description, region })
     onClose()
-    setProjectName("")
-    setDescription("")
-    setRegion("us-east-1")
+    setIsLoading(true)
+    interface Project {
+      projectId:string
+      success:boolean
+      message:string
+    }
+try{
+  const response = await axios.post<Project>("/api/projects", { name: projectName, description:description })
+  if(response.data.success){
+    setIsLoading(false)
+    toast({
+      title: "Success",
+      description: response.data.message,
+      variant: "default",
+     })
+    onClose()
+  }else{
+    setIsLoading(false)
+    toast({
+      title: "Error",
+      description: response.data.message,
+      variant: "destructive",
+    })
+  }
+
+}
+catch(e){
+  setIsLoading(false)
+  toast({
+    title: "Error",
+    description: "Something went wrong",
+    variant: "destructive",
+  })
+
+}
+   
   }
 
   if (!isOpen) return null
@@ -61,25 +94,11 @@ export function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Region</label>
-            <select
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
-            >
-              <option value="us-east-1">US East (N. Virginia)</option>
-              <option value="us-west-2">US West (Oregon)</option>
-              <option value="eu-west-1">Europe (Ireland)</option>
-              <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-            </select>
-          </div>
-
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? "Creating..." : "Create Project"}</Button>
           </div>
         </form>
       </Card>

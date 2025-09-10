@@ -8,21 +8,23 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
-import router from "next/router"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    interface User {
+      success: boolean;
+      message: string;
+    }
     try {
-      interface User {
-        success: boolean;
-        message: string;
-      }
       const response = await axios.post<User>("/api/auth/signin", { email, password })
+      console.log(response.data)
       if(response.data.success){
         setIsLoading(false)
         toast({
@@ -39,8 +41,9 @@ export default function SignInPage() {
           variant: "destructive",
         })
       }
-    } catch  {
+    } catch (e) {
       setIsLoading(false)
+      console.log(e)
       toast({
         title: "Error",
         description: "Something went wrong",

@@ -62,34 +62,36 @@ export function generateTimeId(): string{
 export function generateOTP(length: number = 6): string {
     return Math.floor(100000 + Math.random() * 900000).toString().substring(0, length);
 }
-
 export const signUp = async (req: Request, res: Response) => {
-    try {
-      const parsedData = SignUpSchema.safeParse(req.body);
-      if (!parsedData.success) {
-        res.status(400).json({ error: "Invalid data", success: false });
-        return;
-      }
-      
-      const { email } = parsedData.data;
-      const otp=generateOTP();
-  
-      if(await storeOTP(email, otp,15)){
-        const isSent = await sendOTPEmail(email, otp, "Your OTP For Account Verification");
-        if (!isSent) {
-            res.status(500).json({ error: "Failed to send OTP email", success: false });
-            return;
-          }
-        res.status(201).json({ message: "OTP sent successfully", success: true });
-        return;
-      }
-      res.status(500).json({ error: "Failed to send OTP", success: false });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Failed to send OTP", success: false });
+  try {
+    const parsedData = SignUpSchema.safeParse(req.body);
+
+    if (!parsedData.success) {
+      return res.status(400).json({ error: "Invalid data", success: false });
     }
-  };
-  
+
+    const { email } = parsedData.data;
+    const otp = generateOTP();
+    const otpStored = await storeOTP(email, otp, 15);
+
+    if (!otpStored) {
+      res.status(500).json({ error: "Failed to store OTP", success: false });
+      return;
+    }
+
+    const emailSent = await sendOTPEmail(email, otp, "Your OTP For Account Verification");
+    if (!emailSent) {
+      res.status(500).json({ error: "Failed to send OTP email", success: false });
+      return;
+    }
+
+    res.status(201).json({ message: "OTP sent successfully", success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to send OTP", success: false });
+  }
+};
+
 export const verifyOTP = async (req: Request, res: Response) => {
     try {
         const parsedData = VerifySchema.safeParse(req.body);
@@ -104,7 +106,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
             return;
         }
         const hashedPassword = await hashPassword(password)
-        const user= await prismaClient.userBaseAdmin.create({
+         await prismaClient.userBaseAdmin.create({
             data:{
                 email,
                 frist_name,
@@ -123,6 +125,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
   
 export const signIn = async (req: Request, res: Response) => {
     try {
+      console.log(req.body)
         const parsedData = SignInSchema.safeParse(req.body);
         if(!parsedData.success) {
             res.status(400).json({ error: "Invalid data" });
@@ -165,10 +168,10 @@ export const signIn = async (req: Request, res: Response) => {
         setAuthCookie(res, access_token, "access_token",60 * 60 * 1000);
         setAuthCookie(res, refresh_token, "refresh_token",60 * 60 * 1000*24*7);
         
-        res.status(200).json({ message: "User signed in successfully" });
+        res.status(200).json({ message: "User signed in successfully",success:true});
     } catch (error) {
-       console.log(error);
-       res.status(500).json({ error: "Failed to sign in" });
+  
+       res.status(500).json({ error: "Failed to sign in",success:false });
     }
 };
 
@@ -223,60 +226,51 @@ export const refresh = async (req: Request, res: Response) => {
     }
 };
 export const forgotPassword = async (req: Request, res: Response) => {
-    try {
-        const parsedData = ForgotSchema.safeParse(req.body);
-    
-        if (!parsedData.success) {
-            res.status(400).json({ message: "Invalid data",success:false });
-            return;
-        }
-    
-        const email = parsedData.data.email;
-        const forgotAttempts = await GetKeyValue(email);
-        if(forgotAttempts?.value!=null && forgotAttempts.value>4){
-            res.status(403).json({ message: "Too many requests try after 24 hours",success:false });
-            return;
-        }
-        const user = await prismaClient.userBaseAdmin.findFirst({
-          where: {
-             email: email,
-          },
-        });
-    
-        if (!user) {
-            res.status(403).json({ message: "Invalid Credentials",success:false });
-            return;
-        }
-    
-        if (user) {
-            await IncreaseValueOfKey(email,1);
-            const resetPayload={
-                timeId:generateTimeId(),
-                userId:user.id,
-                tokenId: Bun.randomUUIDv7("hex"), 
-                issuedAt: Date.now(), 
-                nonce: generateRandomString()
-            }
+  try {
+    const parsedData = ForgotSchema.safeParse(req.body);
+    if (!parsedData.success) {
+      res.status(400).json({ message: "Invalid data", success: false });
+      return
+    }
 
-            const token = jwt.sign({ resetPayload }, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
-            if(await storeToken(token)){
-                const link = `${process.env.NEXT_PUBLIC_URL}/reset-password?oneTimeToken=${token}`;
-                 await sendPasswordResetEmail(email, link);
-            }  
-            
-        }
-    
-        res.status(200).json({
-          message:
-            "if the user is registered,you will received password reset link in 5 minutes",
-            success:true
-        });
-      } catch (error) {
-         console.log(error);
-         res.status(500).json({ error: "Internal server error",success:false });
-         return;
+    const { email } = parsedData.data;
+
+    const forgotAttempts = await GetKeyValue(email);
+    if (forgotAttempts?.value != null && forgotAttempts.value >= 6) {
+      res.status(403).json({ message: "Too many requests, try after 24 hours", success: false });
+      return;
+    }
+
+    const user = await prismaClient.userBaseAdmin.findFirst({ where: { email } });
+    if (user) {
+      await IncreaseValueOfKey(email, 1);
+
+      const resetPayload = {
+        timeId: generateTimeId(),
+        userId: user.id,
+        tokenId: Bun.randomUUIDv7("hex"),
+        issuedAt: Date.now(),
+        nonce: generateRandomString()
+      };
+
+      const token = jwt.sign({ resetPayload }, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
+
+      if (await storeToken(token)) {
+        const link = `${process.env.NEXT_PUBLIC_URL}/reset-password?oneTimeToken=${token}`;
+        await sendPasswordResetEmail(email, link);
       }
+    }
+
+    res.status(200).json({
+      message: "If the user is registered, you will receive a password reset link within 5 minutes",
+      success: true
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error", success: false });
+  }
 };
+
 
 export const resetPassword = async (req: Request, res: Response) => {
     try {

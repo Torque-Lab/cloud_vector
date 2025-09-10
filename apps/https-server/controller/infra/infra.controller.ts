@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Request, Response } from "express";
 import { prismaClient } from "@cloud/db";
-import { postgresqlSchema} from "@cloud/backend-common";
+import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
 const infraUrl= process.env.INFRA_URL || "http://localhost:3000/provisioner";
 export const infraCreation = async (req: Request, res: Response) => {
     try {
@@ -15,7 +15,8 @@ export const infraCreation = async (req: Request, res: Response) => {
             select: {
                 id: true,
                 email: true,
-                name: true,
+                frist_name: true,
+                last_name: true,
                 createdAt: true,
             },
         });
@@ -24,40 +25,51 @@ export const infraCreation = async (req: Request, res: Response) => {
             return;
         }
 
-        const database=prismaClient.database.create({
-            data: {
-                    id: db_id,
-                    name: db_id,
-                    projectId: user.id,
-                    is_active: true,
-                    is_provisioned: false,
-                    api_key: "",
-                    db_url: "",
-          
-            },  
-          });
-
   const response = await axios.post(`${infraUrl}/vectordb`, { db_id,database_config });
-    if(response.data.success){
-        res.status(200).json({ message: "DB app provisioned successfully",success:true });
-    }else{
+    if(!response.data.success){
         res.status(500).json({ message: "Failed to provision DB app",success:false });
+        return;
     }
+    res.status(200).json({ message: "DB app provisioned successfully",success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to provision DB app", error });
     }
 };
 
+export const createProject=async(req:Request,res:Response)=>{
+    try {
+        const { name, description } = projectSchema.parse(req.body);
+       const project=prismaClient.project.create({
+        data:{
+            name,
+            description,
+            userBaseAdmin:{
+                connect:{
+                    id:req.userId
+                }
+            }
+        }
+       })
+       if(!project){
+           res.status(500).json({ message: "Failed to create project",success:false });
+       }
+       res.status(200).json({ message: "Project created successfully",success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to create project", error });
+    }
+}
+
 export const createCustomInfra=async(req:Request,res:Response)=>{
     try {
         const resourceConfig=req.body;
         const response=await axios.post(`${infraUrl}/custom`, { resourceConfig });
-        if(response.data.success){
-            res.status(200).json({ message: "Your resource provisioned successfully",success:true });
-        }else{
+        if(!response.data.success){
             res.status(500).json({ message: "Failed to provision resource",success:false });
+            return;
         }
+        res.status(200).json({ message: "Your resource provisioned successfully",success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to provision resource", error });
@@ -91,27 +103,30 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
             return;
         }
         const response=await axios.post(`${infraUrl}/postgres-create`, { database_config:parsedData.data });
-        if(response.data.success){
-            res.status(200).json({ message: "Task added to Queue",success:true });
-        }else{
+        if(!response.data.success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
+            return;
         }
+        res.status(200).json({ message: "Task added to Queue",success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-export const deletePostgres=async(req:Request,res:Response)=>{
+export const deletePostgres = async (req: Request, res: Response) => {
     try {
-        const {db_id}=req.body;
-        const response=await axios.post(`${infraUrl}/postgres-delete`, { db_id });
-        if(response.data.success){
-            res.status(200).json({ message: "Task added to Queue",success:true });
-        }else{
-            res.status(500).json({ message: "Failed to add task to queue",success:false });
-        }
+      const { db_id } = req.body;
+      const response = await axios.post(`${infraUrl}/postgres-delete`, { db_id });
+  
+      if (!response.data.success) {
+        res.status(500).json({ message: "Failed to add task to queue", success: false });
+        return;
+      }
+  
+      res.status(200).json({ message: "Task added to Queue", success: true });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to add task to queue", error });
+      console.error(error);
+      res.status(500).json({ message: "Failed to add task to queue", error });
     }
-}
+  };
+  
