@@ -1,5 +1,5 @@
 
-import { SignUpSchema } from "@cloud/backend-common";
+import { getOTP, isOTPValid, sendOTPEmail, SignUpSchema, storeOTP, VerifySchema } from "@cloud/backend-common";
 import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";   
 import { SignInSchema } from "@cloud/backend-common";
@@ -58,30 +58,69 @@ export function generateTimeId(): string{
     return timeId;
 }
 
+
+export function generateOTP(length: number = 6): string {
+    return Math.floor(100000 + Math.random() * 900000).toString().substring(0, length);
+}
+
 export const signUp = async (req: Request, res: Response) => {
     try {
-       const parsedData = SignUpSchema.safeParse(req.body);
-       if(!parsedData.success) {
-         res.status(400).json({ error: "Invalid data" });
-         return;
-       }
-       const { email, password, name,} = parsedData.data;
-       const hashedPassword = await hashPassword(password)
-       const user = await prismaClient.userBaseAdmin.create({
-        data: {
-            email:email,
-            password: hashedPassword,
-            name,
-    
-        }
-       });
-       res.status(201).json({ message: "User created successfully",success:true });
+      const parsedData = SignUpSchema.safeParse(req.body);
+      if (!parsedData.success) {
+        res.status(400).json({ error: "Invalid data", success: false });
+        return;
+      }
+      
+      const { email } = parsedData.data;
+      const otp=generateOTP();
+  
+      if(await storeOTP(email, otp,15)){
+        const isSent = await sendOTPEmail(email, otp, "Your OTP For Account Verification");
+        if (!isSent) {
+            res.status(500).json({ error: "Failed to send OTP email", success: false });
+            return;
+          }
+        res.status(201).json({ message: "OTP sent successfully", success: true });
+        return;
+      }
+      res.status(500).json({ error: "Failed to send OTP", success: false });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "Failed to create user",success:false });
+      console.error(error);
+      res.status(500).json({ error: "Failed to send OTP", success: false });
     }
-};
+  };
+  
+export const verifyOTP = async (req: Request, res: Response) => {
+    try {
+        const parsedData = VerifySchema.safeParse(req.body);
+        if (!parsedData.success) {
+            res.status(400).json({ error: "Invalid data", success: false });
+            return;
+        }
+        const { email, otp, password, frist_name, last_name } = parsedData.data;
+        const isValid = await isOTPValid(email, otp);
+        if (!isValid) {
+            res.status(401).json({ error: "Invalid OTP", success: false });
+            return;
+        }
+        const hashedPassword = await hashPassword(password)
+        const user= await prismaClient.userBaseAdmin.create({
+            data:{
+                email,
+                frist_name,
+                last_name,
+                password:hashedPassword,
+                
+            }
+        })
+        res.status(201).json({ message: "User created successfully", success: true });
 
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to create user", success: false });
+    }
+  };
+  
 export const signIn = async (req: Request, res: Response) => {
     try {
         const parsedData = SignInSchema.safeParse(req.body);
@@ -89,7 +128,7 @@ export const signIn = async (req: Request, res: Response) => {
             res.status(400).json({ error: "Invalid data" });
             return;
         }
-        const {email, password } = parsedData.data;
+        const {email, password,  } = parsedData.data;
         const failedAttempts = await GetKeyValue(email);
         if (failedAttempts?.value != null && failedAttempts.value >= 6) {
            res.status(403).json({ message: "Too many failed login attempts. Try again in 24 hours  or reset your password" });
@@ -120,7 +159,7 @@ export const signIn = async (req: Request, res: Response) => {
             issuedAt: Date.now(), 
             nonce: generateRandomString()
         }
-        const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS!,);
+        const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS! ,);
         const refresh_token = jwt.sign({ payload2}, process.env.JWT_SECRET_REFRESH!,);
         
         setAuthCookie(res, access_token, "access_token",60 * 60 * 1000);
@@ -289,7 +328,8 @@ const user = await prismaClient.userBaseAdmin.findUnique({
     select: {
         id: true,
         email: true,
-        name: true,
+        frist_name: true,
+        last_name: true,
         createdAt: true,
     },
 });

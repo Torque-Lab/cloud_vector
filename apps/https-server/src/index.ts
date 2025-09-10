@@ -22,10 +22,10 @@ app.get("/api/health", (req, res) => {
    if(token!=process.env.health_check_token){
     return res.status(401).json({ message: "Unauthorized" });
    }
-    res.status(200).json({ message: "server is running on port 3000" });
+    res.status(200).json({ message: "server is running on port 3005" });
 });
 
 
-app.listen(3000, () => {
-    console.log("Server started on port 3000");
+app.listen(3005, () => {
+    console.log("Server started on port 3005");
 });

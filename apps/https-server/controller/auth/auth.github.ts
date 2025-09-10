@@ -31,7 +31,8 @@ passport.use(new GitHubStrategy(
           data: {
             id: dbId,
             email: email,
-            name: profile?.displayName ?? '',
+            frist_name: profile?.name?.givenName?? '',
+            last_name: profile?.name?.familyName?? '',
             password: await hashPassword(generateRandomString())
           },
         });
@@ -51,7 +52,8 @@ interface githubUser {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  name: string | null;
+  frist_name: string | null;
+  last_name: string | null;
   image: string | null;
   username: string;
   password: string;

@@ -29,7 +29,8 @@ passport.use(new GoogleStrategy(
           data: {
             id:profile.id,
             email: email,
-            name: profile.displayName,
+            frist_name: profile?.name?.givenName,
+            last_name: profile?.name?.familyName,
             password:  generateRandomString()
           },
         });
@@ -50,7 +51,8 @@ interface googleUser{
     id: string;
     createdAt: Date;
     updatedAt: Date;
-    name: string | null;
+    frist_name: string | null;
+    last_name: string | null;
     image: string | null;
     email: string;
     password: string;
