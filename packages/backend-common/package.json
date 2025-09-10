@@ -1,5 +1,5 @@
 {
-  "name": "backend-common",
+  "name": "@cloud/backend-common",
   "module": "common.ts",
   "type": "module",
   "private": true,
@@ -13,6 +13,7 @@
     "@repo/typescript-config": "*"
   },
   "dependencies": {
+    "@react-email/render": "^1.2.3",
     "redis": "^5.8.2",
     "resend": "^6.0.2",
     "zod": "^4.1.5"

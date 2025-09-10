@@ -1,5 +1,5 @@
 {
-  "name": "db",
+  "name": "@cloud/db",
   "module": "index.ts",
   "type": "module",
   "types": "./src/prisma.ts",

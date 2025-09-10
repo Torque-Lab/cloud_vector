@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@cloud/frontend",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "build:prod": "next build",
+    "start:prod": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

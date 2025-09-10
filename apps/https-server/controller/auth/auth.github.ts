@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github';
 import type { Profile } from 'passport-github';
-import { prismaClient } from 'db';
+import { prismaClient } from '@cloud/db';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie, generateTimeId, hashPassword, generateRandomString } from './auth.controller';

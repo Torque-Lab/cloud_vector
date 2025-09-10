@@ -1,12 +1,12 @@
 
-import { SignUpSchema } from "backend-common";
-import { prismaClient } from "db";
+import { SignUpSchema } from "@cloud/backend-common";
+import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";   
-import { SignInSchema } from "backend-common";
-import { ForgotSchema } from "backend-common";
-import { ResetSchema } from "backend-common";
-import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "backend-common"
-import { sendPasswordResetEmail } from "backend-common";
+import { SignInSchema } from "@cloud/backend-common";
+import { ForgotSchema } from "@cloud/backend-common";
+import { ResetSchema } from "@cloud/backend-common";
+import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "@cloud/backend-common"
+import { sendPasswordResetEmail } from "@cloud/backend-common";
 import jwt from "jsonwebtoken";
 
 

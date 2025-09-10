@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import stripe from "stripe";
-import { prismaClient, SubscriptionStatus } from "db";
-import { Tier_Subscription } from "db";
+import { prismaClient, SubscriptionStatus } from "@cloud/db";
+import { Tier_Subscription } from "@cloud/db";
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
 const stripeClient = new stripe(stripeSecretKey);
 

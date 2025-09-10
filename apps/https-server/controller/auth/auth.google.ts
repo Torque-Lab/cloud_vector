@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy,  } from 'passport-google-oauth20';
 import type { Profile } from 'passport-google-oauth20';
-import { prismaClient } from 'db';
+import { prismaClient } from '@cloud/db';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie } from './auth.controller';

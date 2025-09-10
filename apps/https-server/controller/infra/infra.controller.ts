@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Request, Response } from "express";
-import { prismaClient } from "db";
-import { postgresqlSchema} from "backend-common";
+import { prismaClient } from "@cloud/db";
+import { postgresqlSchema} from "@cloud/backend-common";
 const infraUrl= process.env.INFRA_URL || "http://localhost:3000/provisioner";
 export const infraCreation = async (req: Request, res: Response) => {
     try {
