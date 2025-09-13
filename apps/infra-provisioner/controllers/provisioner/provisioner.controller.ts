@@ -1,21 +1,18 @@
 import type { Request, Response } from "express";
-import { simpleGit } from "simple-git";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { repoUrl, repoPath, branch } from "../../config/config";
 import axios from "axios";
 import {primary_base_backend} from "../../config/config";
+import { runCommand } from "../../git/runCommand";
 
 export const provisioner = async (req: Request, res: Response) => {
   try {
-    const git = simpleGit();
+
     const { db_id, database_config } = req.body;
-
-
-    await git.clone(repoUrl, repoPath);
-    git.cwd(repoPath);
-    await git.checkout(branch);
+    await runCommand(["git", "clone", repoUrl, ],{cwd:repoPath});
+    await runCommand(["git", "checkout", branch], { cwd: repoPath });
 
     const baseDbPath = path.join(repoPath, "gitops", "apps", "db");
     const newDbPath = path.join(repoPath, "gitops", "apps", db_id);
@@ -72,9 +69,9 @@ if(!fs.existsSync(newDbPath)){
     fs.writeFileSync(argocdPath, yaml.dump(argocdApp), "utf8");
 
   
-    await git.add(".");
-    await git.commit(`Add new DB app ${db_id}`);
-    await git.push("origin", branch);
+    await runCommand(["git", "add", "-A"], { cwd: repoPath });
+    await runCommand(["git", "commit", "-m", `Add new DB app ${db_id}`], { cwd: repoPath });
+    await runCommand(["git", "push", "origin", branch], { cwd: repoPath });
 
     res.status(200).json({
       message: `DB app ${db_id} created and pushed successfully`,
