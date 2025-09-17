@@ -6,24 +6,32 @@ import { repoUrl, repoPath, branch } from "../../config/config";
 import axios from "axios";
 import {primary_base_backend} from "../../config/config";
 import { runCommand } from "../../git/runCommand";
+import {postgresqlSchema} from "@cloud/backend-common";
 
+
+function genrateID(
+
+){
+  return Math.floor(Math.random() * 1000000).toString();
+}
 export const provisioner = async (req: Request, res: Response) => {
   try {
 
-    const { db_id, database_config } = req.body;
+    const { projectId,region,initialMemory,maxMemory,initialStorage,maxStorage,initialVCpu,maxVCpu,autoScale,backFrequency } = postgresqlSchema.parse(req.body);
+    const db_id=genrateID()+"-"+projectId;
     await runCommand(["git", "clone", repoUrl, ],{cwd:repoPath});
     await runCommand(["git", "checkout", branch], { cwd: repoPath });
 
-    const baseDbPath = path.join(repoPath, "gitops", "apps", "db");
-    const newDbPath = path.join(repoPath, "gitops", "apps", db_id);
-    const argocdPath = path.join(repoPath, "gitops", "argocd", `${db_id}.yaml`);
+    const baseDbPath = path.join(repoPath, "cloud-infra-ops", "apps", "baseconfig","postgres");
+    const newDbPath = path.join(repoPath, "cloud-infra-ops", "apps", "external-charts",db_id);
+    const argocdPath = path.join(repoPath, "cloud-infra-ops", "argocd", "external",`${db_id}.yaml`);
 
     if (!fs.existsSync(baseDbPath)) {
       return res.status(404).json({ message: "Base DB app not found" });
     }
 if(!fs.existsSync(newDbPath)){
     fs.mkdirSync(newDbPath, { recursive: true });
-    fs.cpSync(path.join(baseDbPath, "templates"), path.join(newDbPath, "templates"), { recursive: true });
+    fs.cpSync(baseDbPath, newDbPath, { recursive: true });
 
 }
   
@@ -36,7 +44,40 @@ if(!fs.existsSync(newDbPath)){
       valuesYaml = yaml.load(fileContent) || {};
     }
 
-    const mergedValues = { ...valuesYaml, ...database_config };
+    const mergedValues = { ...valuesYaml, ...{
+      "postgres": {
+        "db_id": db_id,
+        "name": "postgres",
+        "resources": {
+          "requests": {
+            "cpu": initialVCpu,
+            "memory": initialMemory
+          },
+          "limits": {
+            "cpu": maxVCpu,
+            "memory": maxMemory
+          }
+        },
+        "autoscaling": {
+          "enabled": false,
+          "minReplicas": 1,
+          "maxReplicas": 2,
+          "targetCPUUtilizationPercentage": 80,
+          "targetMemoryUtilizationPercentage": 80
+        },
+        "service": {
+          "port": 5432,
+          "targetPort": 5432,
+          "type": "ClusterIP"
+        },
+        "storage": initialStorage,
+        "backup": {
+          "enabled": true,
+          "schedule": "0 0 * * *",
+       
+        }
+      }
+    } };
     fs.writeFileSync(newValuesFile, yaml.dump(mergedValues), "utf8");
 
     const argocdApp = {

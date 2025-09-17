@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export interface Database {
-    id: string;
+  id: string;
   name: string;
   description?: string;
   region: string;

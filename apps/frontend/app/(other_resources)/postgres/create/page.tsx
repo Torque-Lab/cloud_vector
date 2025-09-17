@@ -216,7 +216,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
       })
 
       toast({
-        title: "Database creatation added to Task Queue",
+        title: "Database provisioning added to Task Queue",
         description: `${formData.name} will be created soon!`,
       })
       
