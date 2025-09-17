@@ -2,18 +2,17 @@ import type { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
-import { repoUrl, repoPath, branch } from "../../config/config";
+import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config/config";
 import axios from "axios";
 import { primary_base_backend } from "../../config/config";
 import { runCommand } from "../../git/runCommand";
 import { postgresqlSchema } from "@cloud/backend-common";
 
-function genrateID() {
+function generateRandomString() {
   return Math.floor(Math.random() * 1000000).toString();
 }
 export const PostgresProvisioner = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
     const {
       projectId,
       region,
@@ -27,9 +26,9 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
       backFrequency,
     } = postgresqlSchema.parse(req.body);
     
-    const db_id = genrateID() + "-" + projectId;
-    await runCommand(["git", "clone", repoUrl], { cwd: repoPath() });
-    await runCommand(["git", "checkout", branch], { cwd: repoPath() });
+    const db_id = generateRandomString() + "-" + projectId;
+    await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
+    await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
 
     const baseDbPath = path.join(
       repoPath(),
@@ -118,13 +117,13 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
       spec: {
         project: "default",
         source: {
-          repoURL: repoUrl,
+          repoURL: repoUrlWithOutPAT,
           targetRevision: branch,
           path: `gitops/apps/${db_id}`,
         },
         destination: {
           server: "https://kubernetes.default.svc",
-          namespace: db_id,
+          namespace: "argocd",
         },
         syncPolicy: {
           automated: {
@@ -140,20 +139,25 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
     const filepath = path.join(argocdPath, `${db_id}.yaml`);
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
-    await runCommand(["git", "add", "-A"], { cwd: repoPath() });
-    await runCommand(["git", "commit", "-m", `Added new DB app ${db_id}`], {
-      cwd: repoPath(),
+    const addres=await runCommand(["git", "add", "-A"], { cwd: repoPath()+"/cloud-infra-ops" });
+    const commitres=await runCommand(["git", "commit", "-m", `Added new postgresDB app ${db_id}`], {
+      cwd: repoPath()+"/cloud-infra-ops",
     });
-    await runCommand(["git", "push", "origin", branch], { cwd: repoPath() });
-
+    
+    // const pushres=await runCommand(
+    //   ["git", "push", repoUrlWithPAT, branch],
+    //   { cwd: repoPath() + "/cloud-infra-ops" }
+    // );
+console.log(addres,commitres);
     res.status(200).json({
-      message: `DB app ${db_id} created and pushed successfully`,
+      message: `PostgresDB app ${db_id} created and pushed successfully`,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to provision DB app", error });
+    res.status(500).json({ message: "Failed to provision DB app" });
   }
 };
+
 
 export const argocdWebhook = async (req: Request, res: Response) => {
   const db_id = req.body.application.metadata.name;
@@ -172,5 +176,5 @@ export const argocdWebhook = async (req: Request, res: Response) => {
     }
   }
 
-  res.status(200).json({ message: "DB app deployed and healthy", database });
+  res.status(200).json({ message: "PostgresDB app deployed and healthy", database });
 };

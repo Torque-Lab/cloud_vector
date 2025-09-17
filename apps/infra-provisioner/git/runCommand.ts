@@ -13,9 +13,7 @@ export const runCommand = async (
   command: string[],
   options: RunCommandOptions
 ): Promise<RunCommandResult> => {
-  const { cwd , env = process.env, timeoutMs = 100000 } = options;
-  console.log(cwd, timeoutMs, command);
-
+  const { cwd , env = process.env, timeoutMs = 200000 } = options;
   const proc = Bun.spawn({
     cmd: command,
     cwd: cwd,
@@ -38,9 +36,16 @@ export const runCommand = async (
   const execution = (async () => {
     const stdout = await new Response(proc.stdout).text();
     const stderr = await new Response(proc.stderr).text();
-    const exitCode = proc.exitCode;
-    return { stdout, stderr, exitCode: exitCode!, success: exitCode === 0 };
+    await proc.exited;
+    const exitCode = proc.exitCode ?? -1;
+    return { 
+      stdout, 
+      stderr, 
+      exitCode, 
+      success: exitCode === 0 
+    };
   })();
+  
 
   return Promise.race([execution, timmeout]);
 };
