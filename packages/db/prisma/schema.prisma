@@ -131,11 +131,14 @@ model PostgresDB {
   projectId          String
   is_active          Boolean   @default(true)
   is_provisioned     Boolean @default(false)
+  status             String @default("PENDING")
+  backup_history      BackupHistory[]
+  provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
   api_key            String?   @unique 
   username           String
   password           String    
   host               String
-  port               Int
+  port               String
   database_name      String
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
@@ -143,13 +146,33 @@ model PostgresDB {
   projects           Project @relation(fields: [projectId], references: [id])
 @@index([projectId])
 }
-
+enum ProvisioningFlowStatus {
+  PUSHED_TO_ARGOCD
+  SYNCED_TO_ARGOCD
+  COMPLETED
+  FAILED
+}
+model BackupHistory{
+  id                 String    @id @default(cuid())
+  resource_id        String
+  backup_time_taken  String?
+  status             BackupStatus @default(PENDING)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  postgresDB          PostgresDB @relation(fields: [resource_id], references: [id])
+}
+enum BackupStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
 
 model RabbitMQ {
   id                  String    @id @default(cuid())
   projectId           String
   is_active           Boolean @default(true)
   is_provisioned      Boolean @default(false)
+  provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
   api_key             String? @unique
   username            String
   password            String    
@@ -167,6 +190,7 @@ model Redis {
   projectId             String
   is_active             Boolean @default(true)
   is_provisioned        Boolean @default(false)
+  provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
   api_key               String? @unique 
   username              String
   password              String    
