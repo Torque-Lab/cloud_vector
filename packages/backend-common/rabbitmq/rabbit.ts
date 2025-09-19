@@ -46,12 +46,12 @@ type InfraConfig = {
        maxStorage: string,
        initialVCpu: string,
        maxVCpu: string,
-       autoScale: string,
-       backFrequency: string,
+       autoScale: boolean,
+       backFrequency?: "daily" | "weekly" | "monthly" 
     
 }
 
-export async function pushInfraConfigToQueue(queue_name: string, item: InfraConfig) {
+export async function pushInfraConfigToQueueToCreate(queue_name: string, item: InfraConfig) {
     try {
         const { channel } = await getRabbitMQChannel();
         await channel.assertQueue(queue_name, { durable: true });
@@ -60,13 +60,26 @@ export async function pushInfraConfigToQueue(queue_name: string, item: InfraConf
             Buffer.from(JSON.stringify(item)), 
             { persistent: true }
         );
-        
-        if (!success) {
-            console.log("Failed to enqueue:", item);
-        }
+        return success;
     } catch (e) {
         console.error("Error in pushToQueue:", e);
+        return false;
+    }
+}
 
+export async function pushInfraConfigToQueueToDelete(queue_name: string, item:string) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        const success = channel.sendToQueue(
+            queue_name, 
+            Buffer.from(JSON.stringify(item)), 
+            { persistent: true }
+        );
+        return success;
+    } catch (e) {
+        console.error("Error in pushToQueue:", e);
+        return false;
     }
 }
 

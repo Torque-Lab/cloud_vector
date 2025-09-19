@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Request, Response } from "express";
 import { prismaClient } from "@cloud/db";
 import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
+import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 const infraUrl= process.env.INFRA_URL || "http://localhost:3000/provisioner";
 export const infraCreation = async (req: Request, res: Response) => {
     try {
@@ -102,12 +103,12 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
             res.status(400).json({ message: "Invalid data",success:false });
             return;
         }
-        const response=await axios.post(`${infraUrl}/postgres-create`, { database_config:parsedData.data });
-        if(!response.data.success){
+        const success=await pushInfraConfigToQueueToCreate  ("postgres_create_queue",parsedData.data)
+        if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
         }
-        res.status(200).json({ message: "Task added to Queue",success:true });
+        res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to add task to queue", error });
@@ -116,14 +117,14 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 export const deletePostgres = async (req: Request, res: Response) => {
     try {
       const { db_id } = req.body;
-      const response = await axios.post(`${infraUrl}/postgres-delete`, { db_id });
+      const response = await pushInfraConfigToQueueToDelete("postgres_delete_queue",db_id)
   
-      if (!response.data.success) {
+      if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
   
-      res.status(200).json({ message: "Task added to Queue", success: true });
+      res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to add task to queue", error });

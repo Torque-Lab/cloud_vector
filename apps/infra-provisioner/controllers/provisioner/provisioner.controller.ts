@@ -144,10 +144,10 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
       cwd: repoPath()+"/cloud-infra-ops",
     });
     
-    // const pushres=await runCommand(
-    //   ["git", "push", repoUrlWithPAT, branch],
-    //   { cwd: repoPath() + "/cloud-infra-ops" }
-    // );
+    const pushres=await runCommand(
+      ["git", "push", repoUrlWithPAT, branch],
+      { cwd: repoPath() + "/cloud-infra-ops" }
+    );
 console.log(addres,commitres);
     res.status(200).json({
       message: `PostgresDB app ${db_id} created and pushed successfully`,
