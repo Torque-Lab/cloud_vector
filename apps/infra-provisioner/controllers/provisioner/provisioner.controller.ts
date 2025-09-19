@@ -158,7 +158,6 @@ console.log(addres,commitres);
   }
 };
 
-
 export const argocdWebhook = async (req: Request, res: Response) => {
   const db_id = req.body.application.metadata.name;
   const status = req.body.application.status.sync.status;

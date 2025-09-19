@@ -99,7 +99,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
             res.status(400).json({ error: "Invalid data", success: false });
             return;
         }
-        const { email, otp, password, frist_name, last_name } = parsedData.data;
+        const { email, otp, password, first_name, last_name } = parsedData.data;
         const isValid = await isOTPValid(email, otp);
         if (!isValid) {
             res.status(401).json({ error: "Invalid OTP", success: false });
@@ -109,7 +109,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
          await prismaClient.userBaseAdmin.create({
             data:{
                 email,
-                frist_name,
+                first_name,
                 last_name,
                 password:hashedPassword,
                 
@@ -322,7 +322,7 @@ const user = await prismaClient.userBaseAdmin.findUnique({
     select: {
         id: true,
         email: true,
-        frist_name: true,
+        first_name: true,
         last_name: true,
         createdAt: true,
     },

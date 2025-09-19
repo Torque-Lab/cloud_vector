@@ -1,9 +1,13 @@
 import axios from "axios";
 import type { Request, Response } from "express";
-import { prismaClient } from "@cloud/db";
+import { PermissionList, prismaClient } from "@cloud/db";
 import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
+import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
+import { generateRandomString } from "../auth/auth.controller";
 const infraUrl= process.env.INFRA_URL || "http://localhost:3000/provisioner";
+
+
 export const infraCreation = async (req: Request, res: Response) => {
     try {
         const { db_id } = req.body;
@@ -16,7 +20,7 @@ export const infraCreation = async (req: Request, res: Response) => {
             select: {
                 id: true,
                 email: true,
-                frist_name: true,
+                first_name: true,
                 last_name: true,
                 createdAt: true,
             },
@@ -103,20 +107,57 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
             res.status(400).json({ message: "Invalid data",success:false });
             return;
         }
+        const user=await prismaClient.userBaseAdmin.findUnique({
+            where:{
+                id:req.userId
+            },
+        })
+        if(!user){
+            const isHasCreatePermission = await prismaClient.permission.findFirst({
+                where: {
+                  id: req.userId, 
+                  permissionItems: {
+                    some: {
+                      permission: PermissionList.CREATE_POSTGRES,
+                    },
+                  },
+                },
+              });
+              if(!isHasCreatePermission){
+                res.status(403).json({ message: "You don't have permission to create postgres",success:false });
+                return;
+              }
+
         const success=await pushInfraConfigToQueueToCreate  ("postgres_create_queue",parsedData.data)
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
         }
+
+        const postgresDB=await prismaClient.postgresDB.create({
+            data:{
+                projectId:parsedData.data.projectId,
+                database_name:parsedData.data.name,
+                username:generateUsername(),
+                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                port:"5672",
+                
+
+                
+            }
+        })
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
-    } catch (error) {
+    } }catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
+
+
+
 export const deletePostgres = async (req: Request, res: Response) => {
     try {
-      const { db_id } = req.body;
+      const { db_id } = req.body as { db_id: string };
       const response = await pushInfraConfigToQueueToDelete("postgres_delete_queue",db_id)
   
       if (!response) {

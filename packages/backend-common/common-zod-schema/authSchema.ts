@@ -13,7 +13,7 @@ export const SignUpSchema = z.object({
         /[@$!%*?&#]/,
         "Password must contain at least one special character"
       ),
-    frist_name: z.string().optional(),
+    first_name: z.string().optional(),
     last_name: z.string().optional(),
 });
 
@@ -31,7 +31,7 @@ export const VerifySchema = z.object({
         /[@$!%*?&#]/,
         "Password must contain at least one special character"
       ),
-    frist_name: z.string().optional(),
+    first_name: z.string().optional(),
     last_name: z.string().optional(),
 })
 

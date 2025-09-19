@@ -83,8 +83,7 @@ export async function pushInfraConfigToQueueToDelete(queue_name: string, item:st
     }
 }
 
-
-export async function consumeInfraConfigFromQueue(queue_name: string, provisioner: (infraConfig: InfraConfig) => Promise<boolean>) {
+export async function consumeInfraConfigFromQueueToCreate(queue_name: string, provisioner: (infraConfig: InfraConfig) => Promise<boolean>) {
     try {
         const { channel } = await getRabbitMQChannel();
         await channel.assertQueue(queue_name, { durable: true });
@@ -112,6 +111,35 @@ export async function consumeInfraConfigFromQueue(queue_name: string, provisione
         console.error("Error in consumeFromQueue:", e);
     }
 }
+export async function consumeInfraConfigFromQueueToDelete(queue_name: string, destroyer: (infraConfig: string) => Promise<boolean>) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        channel.prefetch(100);
+        
+        channel.consume(queue_name, async (msg) => {
+            if (!msg) return;
+            
+            const task:string = JSON.parse(msg.content.toString());
+            try {
+                const success = await destroyer(task);
+                if (success) {
+                    channel.ack(msg);
+                    console.log("Processed and acked:", task);
+                } else {
+                    channel.nack(msg, false, false);
+                    console.log("Processing failed:", task);
+                }
+            } catch (e) {
+                channel.nack(msg, false, false);
+                console.error("Error processing message:", e);
+            }
+        }, { noAck: false });
+    } catch (e) {
+        console.error("Error in consumeFromQueue:", e);
+    }
+}
+
 
 process.on('SIGINT', async () => {
     if (channel) {

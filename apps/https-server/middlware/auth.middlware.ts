@@ -20,7 +20,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
        return;
     }
  
-    const decoded = jwt.verify(access_token, process.env.JWT_SECRET_ACCESS || 'z78h98yryvei7ritgfb67385vg7667') as { payload1: { userId: string, timeId: string, tokenId: string, issuedAt: number } };
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET_ACCESS!) as { payload1: { userId: string, timeId: string, tokenId: string, issuedAt: number } };
 
     if(!decoded?.payload1?.userId) {
       res.status(401).json({ error: 'Invalid token' });
@@ -32,7 +32,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       where: { id: userId },
       select: {
         id: true,
-        name: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        role: true,
         createdAt: true,
       },
     });

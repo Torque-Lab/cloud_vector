@@ -17,7 +17,7 @@ model UserBaseAdmin {
   id                   String    @id @default(cuid())
   email                String    @unique
   password             String
-  frist_name           String?
+  first_name           String?
   last_name            String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
@@ -38,7 +38,7 @@ model User {
   id                   String    @id @default(cuid())
   email                String    @unique
   password             String
-  frist_name           String?
+  first_name           String?
   last_name            String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
@@ -62,6 +62,7 @@ model Permission {
   id                        String    @id @default(cuid())
   userId                    String
   projectId                 String
+  virtualMachineId          String?
   postgresDBId              String?
   rabbitmqId                String?
   redisId                   String?
@@ -72,6 +73,7 @@ model Permission {
   updatedAt                 DateTime  @updatedAt
   user                      User @relation(fields: [userId], references: [id])
   projects                  Project @relation(fields: [projectId], references: [id])
+  virtualMachine            VirtualMachine? @relation(fields: [virtualMachineId], references: [id])
   postgresDB                PostgresDB? @relation(fields: [postgresDBId], references: [id])
   rabbitmq                  RabbitMQ? @relation(fields: [rabbitmqId], references: [id])
   redis                     Redis? @relation(fields: [redisId], references: [id])
@@ -84,12 +86,39 @@ model Permission {
 
 model PermissionItem {
   id            String @id @default(cuid())
-  permission    String
+  permission    PermissionList @default(NONE)
   permissionId  String
   permissionRef Permission @relation(fields: [permissionId], references: [id])
   @@index([permissionId])
 }
-
+enum PermissionList {
+  NONE
+  CREATE_USER
+  READ_USER
+  UPDATE_USER
+  DELETE_USER
+  CREATE_PROJECT
+  READ_PROJECT
+  UPDATE_PROJECT
+  DELETE_PROJECT
+  CREATE_POSTGRES
+  READ_POSTGRES
+  UPDATE_POSTGRES
+  DELETE_POSTGRES
+  DOWNLOAD_BACKUP
+  CREATE_RABBITMQ
+  READ_RABBITMQ
+  UPDATE_RABBITMQ
+  DELETE_RABBITMQ
+  CREATE_REDIS
+  READ_REDIS
+  UPDATE_REDIS
+  DELETE_REDIS
+  CREATE_VECTORDB
+  READ_VECTORDB
+  UPDATE_VECTORDB
+  DELETE_VECTORDB
+}
 
 model Project {
   id                       String    @id @default(cuid())
@@ -100,6 +129,7 @@ model Project {
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
   permissions              Permission[]
+  virtualMachines          VirtualMachine[]
   postgresDB               PostgresDB[]
   rabbitmq                 RabbitMQ[]
   redis                    Redis[]
@@ -107,6 +137,21 @@ model Project {
   user                     User? @relation(fields: [userId], references: [id])
   userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
   @@index([userBaseAdminId])
+}
+model VirtualMachine{
+  id                 String @id @default(cuid())
+  projectId          String
+  is_active          Boolean @default(true)
+  is_provisioned     Boolean @default(false)
+  api_key            String? @unique
+  vm_name            String
+  public_key         String?
+  host               String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  permissions        Permission[]
+  projects           Project @relation(fields: [projectId], references: [id])
+@@index([projectId])
 }
 
 model VectorDB {
@@ -131,22 +176,22 @@ model PostgresDB {
   projectId          String
   is_active          Boolean   @default(true)
   is_provisioned     Boolean @default(false)
-  status             String @default("PENDING")
-  backup_history      BackupHistory[]
-  provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
+  provisioning_flow_status ProvisioningFlowStatus @default(ADDED_TO_QUEUE)
   api_key            String?   @unique 
-  username           String
-  password           String    
-  host               String
-  port               String
-  database_name      String
+  username           String @default("")
+  password           String @default("")    
+  host               String @default("")
+  port               String @default("")
+  database_name      String @default("")
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  backup_history     BackupHistory[]
   permissions        Permission[]
   projects           Project @relation(fields: [projectId], references: [id])
 @@index([projectId])
 }
 enum ProvisioningFlowStatus {
+  ADDED_TO_QUEUE
   PUSHED_TO_ARGOCD
   SYNCED_TO_ARGOCD
   COMPLETED
@@ -159,7 +204,7 @@ model BackupHistory{
   status             BackupStatus @default(PENDING)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-  postgresDB          PostgresDB @relation(fields: [resource_id], references: [id])
+  postgresDB         PostgresDB @relation(fields: [resource_id], references: [id])
 }
 enum BackupStatus {
   PENDING
@@ -250,10 +295,12 @@ enum SubscriptionStatus {
 model Resource_Usage {
   id                   String    @id @default(cuid())
   userBaseAdminId      String @unique
+  memory               Int @default(0) //Memory in GB per month
+  cpu                  Int @default(0) //CPU in vCPU per month
+  storage              Int  @default(0) //Storage in GB per month
   read_QPM             Int @default(0) //Queries Per Month
   write_QPM            Int @default(0) //Queries Per Month
   bandwidth            Int  @default(0) //Bandwidth in GB per month
-  storage              Int  @default(0) //Storage in GB per month
   index_rebuilds       Int? @default(0) //Index Rebuilds count
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
