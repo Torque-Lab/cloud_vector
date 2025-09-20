@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { argocdWebhook, PostgresProvisioner } from "../../controllers/provisioner/provisioner.controller";
+import { argocdWebhook, PostgresProvisioner } from "../../controllers/provisioner/postgres.controller";
 
 const router = Router();
 

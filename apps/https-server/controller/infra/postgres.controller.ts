@@ -1,46 +1,11 @@
 import axios from "axios";
 import type { Request, Response } from "express";
-import { PermissionList, prismaClient } from "@cloud/db";
+import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
 import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
 import { generateRandomString } from "../auth/auth.controller";
-const infraUrl= process.env.INFRA_URL || "http://localhost:3000/provisioner";
 
-
-export const infraCreation = async (req: Request, res: Response) => {
-    try {
-        const { db_id } = req.body;
-        const {database_config}=req.body;
-        const userId=req.userId;
-        const user = await prismaClient.userBaseAdmin.findUnique({
-            where: {
-                id: userId,
-            },
-            select: {
-                id: true,
-                email: true,
-                first_name: true,
-                last_name: true,
-                createdAt: true,
-            },
-        });
-        if (!user) {
-            res.status(401).json({ error: "User not found",success:false });
-            return;
-        }
-
-  const response = await axios.post(`${infraUrl}/vectordb`, { db_id,database_config });
-    if(!response.data.success){
-        res.status(500).json({ message: "Failed to provision DB app",success:false });
-        return;
-    }
-    res.status(200).json({ message: "DB app provisioned successfully",success:true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to provision DB app", error });
-    }
-};
 
 export const createProject=async(req:Request,res:Response)=>{
     try {
@@ -63,21 +28,6 @@ export const createProject=async(req:Request,res:Response)=>{
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to create project", error });
-    }
-}
-
-export const createCustomInfra=async(req:Request,res:Response)=>{
-    try {
-        const resourceConfig=req.body;
-        const response=await axios.post(`${infraUrl}/custom`, { resourceConfig });
-        if(!response.data.success){
-            res.status(500).json({ message: "Failed to provision resource",success:false });
-            return;
-        }
-        res.status(200).json({ message: "Your resource provisioned successfully",success:true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to provision resource", error });
     }
 }
 export const getProject=async (req:Request,res:Response)=>{
@@ -115,20 +65,23 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         if(!user){
             const isHasCreatePermission = await prismaClient.permission.findFirst({
                 where: {
-                  id: req.userId, 
+                  id: req.userId,
+                },
+                include: {
                   permissionItems: {
-                    some: {
+                    where: {
                       permission: PermissionList.CREATE_POSTGRES,
                     },
                   },
                 },
               });
-              if(!isHasCreatePermission){
+              
+              if(isHasCreatePermission?.permissionItems.length===0){
                 res.status(403).json({ message: "You don't have permission to create postgres",success:false });
                 return;
               }
 
-        const success=await pushInfraConfigToQueueToCreate  ("postgres_create_queue",parsedData.data)
+        const success=await pushInfraConfigToQueueToCreate("postgres_create_queue",parsedData.data)
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -152,7 +105,6 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-
 export const deletePostgres = async (req: Request, res: Response) => {
     try {
       const { db_id } = req.body as { db_id: string };
@@ -169,4 +121,62 @@ export const deletePostgres = async (req: Request, res: Response) => {
       res.status(500).json({ message: "Failed to add task to queue", error });
     }
   };
-  
+export const postgresStatusWebhook=async(req:Request,res:Response)=>{
+    try {
+        const {projectId,status}=req.body as {projectId:string,status:string};
+        let statusEnum:ProvisioningFlowStatus;
+        if(status==="Pushed to ArgoCD"){
+            statusEnum=ProvisioningFlowStatus.PUSHED_TO_ARGOCD;
+        }else if(status==="Synced to ArgoCD"){
+            statusEnum=ProvisioningFlowStatus.SYNCED_TO_ARGOCD;
+        }else if(status==="Completed"){
+            statusEnum=ProvisioningFlowStatus.COMPLETED;
+        }else{
+            statusEnum=ProvisioningFlowStatus.FAILED;
+        }
+        const response=await prismaClient.postgresDB.update({
+            data:{
+                provisioning_flow_status:statusEnum
+            },
+            where:{
+                projectId:projectId
+            }
+        })
+        res.status(200).json({ message: statusEnum,success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to update postgresDB status", error });
+    }
+}
+export const getPostgresStatus=async(req:Request,res:Response)=>{
+    try {
+        const {projectId}=req.body as {projectId:string};
+        const response=await prismaClient.postgresDB.findUnique({
+            where:{
+                projectId:projectId
+            }
+        })
+        res.status(200).json({ postgresDB:response,success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to get postgresDB status", error });
+    }
+}
+export const updatePostgres=async(req:Request,res:Response)=>{
+    try {
+        const {projectId}=req.body as {projectId:string};
+        const response=await prismaClient.postgresDB.update({
+            data:{
+                username:generateUsername(),
+                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+            },
+            where:{
+                projectId:projectId
+            }
+        })
+        res.status(200).json({ postgresDB:response,success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to update postgresDB status", error });
+    }
+}

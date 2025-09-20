@@ -109,7 +109,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
         },
         destination: {
           server: "https://kubernetes.default.svc",
-          namespace: "argocd",
+          namespace: "free",
         },
         syncPolicy: {
           automated: {
@@ -170,6 +170,7 @@ export function scheduleGitPush(repoUrlWithPAT: string, branch: string) {
     if (gitPushInterval) {
         clearInterval(gitPushInterval);
     }
+    let  gitPushResult:{success:boolean,message:string}={success:false,message:""};
 
     gitPushInterval = setInterval(async () => {
         if (requireGitPush) {
@@ -182,14 +183,17 @@ export function scheduleGitPush(repoUrlWithPAT: string, branch: string) {
                     { cwd: repoPath() + "/cloud-infra-ops" }
                 );
                 console.log("Git push completed successfully.");
+                gitPushResult={success:true,message:"Git push completed successfully"}
             } catch (err) {
                 console.error("Git push failed:", err);
+                gitPushResult={success:false,message:"Git push failed"}
             } finally {
                 requireGitPush = false;
                 pauseCommit = false;
             }
         }
-    }, 30000);
+    }, 60000);
+    return gitPushResult;
 }
 
 export const argocdWebhook = async (req: Request, res: Response) => {
@@ -211,4 +215,5 @@ export const argocdWebhook = async (req: Request, res: Response) => {
 
   res.status(200).json({ message: "PostgresDB app deployed and healthy", database });
 };
+
 
