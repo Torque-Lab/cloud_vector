@@ -6,27 +6,14 @@ import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config
 import axios from "axios";
 import { primary_base_backend } from "../../config/config";
 import { runCommand } from "../../git/runCommand";
-import { postgresqlSchema } from "@cloud/backend-common";
-
+import { postgresqlSchema, type InfraConfig } from "@cloud/backend-common";
 function generateRandomString() {
   return Math.floor(Math.random() * 1000000).toString();
 }
-export const PostgresProvisioner = async (req: Request, res: Response) => {
+export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
   try {
-    const {
-      projectId,
-      region,
-      initialMemory,
-      maxMemory,
-      initialStorage,
-      maxStorage,
-      initialVCpu,
-      maxVCpu,
-      autoScale,
-      backFrequency,
-    } = postgresqlSchema.parse(req.body);
-    
-    const db_id = generateRandomString() + "-" + projectId;
+   
+    const db_id = generateRandomString() + "-" + infraConfig.projectId;
     await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
     await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
 
@@ -52,7 +39,7 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
     );
 
     if (!fs.existsSync(baseDbPath)) {
-      return res.status(404).json({ message: "Base DB app not found" });
+      return {success:false,message:"Base DB app not found"};
     }
     if (!fs.existsSync(newDbPath)) {
       fs.mkdirSync(newDbPath, { recursive: true });
@@ -76,12 +63,12 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
           name: "postgres",
           resources: {
             requests: {
-              cpu: initialVCpu,
-              memory: initialMemory,
+              cpu: infraConfig.initialVCpu  ,
+              memory: infraConfig.initialMemory,
             },
             limits: {
-              cpu: maxVCpu,
-              memory: maxMemory,
+              cpu: infraConfig.maxVCpu,
+              memory: infraConfig.maxMemory,
             },
           },
           autoscaling: {
@@ -96,15 +83,14 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
             targetPort: 5432,
             type: "ClusterIP",
           },
-          storage: initialStorage,
+          storage: infraConfig.initialStorage,
           backup: {
             enabled: true,
             schedule: "0 0 * * *",
           },
         },
       },
-    };
-    console.log(yaml.dump(mergedValues));
+    };  
     fs.writeFileSync(newValuesFile, yaml.dump(mergedValues), "utf8");
 
     const argocdApp = {
@@ -139,24 +125,72 @@ export const PostgresProvisioner = async (req: Request, res: Response) => {
     const filepath = path.join(argocdPath, `${db_id}.yaml`);
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
-    const addres=await runCommand(["git", "add", "-A"], { cwd: repoPath()+"/cloud-infra-ops" });
-    const commitres=await runCommand(["git", "commit", "-m", `Added new postgresDB app ${db_id}`], {
-      cwd: repoPath()+"/cloud-infra-ops",
-    });
-    
-    const pushres=await runCommand(
-      ["git", "push", repoUrlWithPAT, branch],
-      { cwd: repoPath() + "/cloud-infra-ops" }
-    );
-console.log(addres,commitres);
-    res.status(200).json({
+   await safeGitCommit(db_id);
+    requireGitPush=true;
+    return {
+      success:true,
       message: `PostgresDB app ${db_id} created and pushed successfully`,
-    });
+    };
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to provision DB app" });
+    return {
+      success:false,
+      message: "Failed to provision DB app",
+    };
   }
 };
+
+async function waitForPauseToFinish(): Promise<void> {
+  return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+          if (!pauseCommit) {
+              clearInterval(checkInterval);
+              resolve();
+          }
+      }, 100); 
+  });
+}
+
+export async function safeGitCommit(db_id: string) {
+  await waitForPauseToFinish();
+  await runCommand(["git", "add", "-A"], { cwd: repoPath() + "/cloud-infra-ops" });
+  await runCommand(
+      ["git", "commit", "-m", `Added new postgresDB app ${db_id}`],
+      { cwd: repoPath() + "/cloud-infra-ops" }
+  );
+}
+
+
+
+
+let gitPushInterval: NodeJS.Timeout | null = null;
+let requireGitPush = false;
+let pauseCommit = false;
+
+export function scheduleGitPush(repoUrlWithPAT: string, branch: string) {
+    if (gitPushInterval) {
+        clearInterval(gitPushInterval);
+    }
+
+    gitPushInterval = setInterval(async () => {
+        if (requireGitPush) {
+            pauseCommit = true;
+
+            try {
+                console.log("Starting git push...");
+                await runCommand(
+                    ["git", "push", repoUrlWithPAT, branch],
+                    { cwd: repoPath() + "/cloud-infra-ops" }
+                );
+                console.log("Git push completed successfully.");
+            } catch (err) {
+                console.error("Git push failed:", err);
+            } finally {
+                requireGitPush = false;
+                pauseCommit = false;
+            }
+        }
+    }, 30000);
+}
 
 export const argocdWebhook = async (req: Request, res: Response) => {
   const db_id = req.body.application.metadata.name;
@@ -177,3 +211,4 @@ export const argocdWebhook = async (req: Request, res: Response) => {
 
   res.status(200).json({ message: "PostgresDB app deployed and healthy", database });
 };
+

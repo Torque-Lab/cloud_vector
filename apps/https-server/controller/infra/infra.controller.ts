@@ -153,8 +153,6 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
     }
 }
 
-
-
 export const deletePostgres = async (req: Request, res: Response) => {
     try {
       const { db_id } = req.body as { db_id: string };

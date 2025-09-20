@@ -36,7 +36,7 @@ async function getRabbitMQChannel() {
     }
 }
 
-type InfraConfig = {
+export type InfraConfig = {
        name: string,
        projectId: string,
        region: string,
@@ -83,7 +83,7 @@ export async function pushInfraConfigToQueueToDelete(queue_name: string, item:st
     }
 }
 
-export async function consumeInfraConfigFromQueueToCreate(queue_name: string, provisioner: (infraConfig: InfraConfig) => Promise<boolean>) {
+export async function consumeInfraConfigFromQueueToCreate(queue_name: string, provisioner: (infraConfig: InfraConfig) => Promise<{message:string,success:boolean}>) {
     try {
         const { channel } = await getRabbitMQChannel();
         await channel.assertQueue(queue_name, { durable: true });
@@ -94,7 +94,7 @@ export async function consumeInfraConfigFromQueueToCreate(queue_name: string, pr
             
             const task:InfraConfig = JSON.parse(msg.content.toString());
             try {
-                const success = await provisioner(task);
+                const {success,message} = await provisioner(task);
                 if (success) {
                     channel.ack(msg);
                     console.log("Processed and acked:", task);
