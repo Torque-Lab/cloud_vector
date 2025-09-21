@@ -94,7 +94,7 @@ export async function consumeInfraConfigFromQueueToCreate(queue_name: string, pr
             
             const task:InfraConfig = JSON.parse(msg.content.toString());
             try {
-                const {success,message} = await provisioner(task);
+                const {success} = await provisioner(task);
                 if (success) {
                     channel.ack(msg);
                     console.log("Processed and acked:", task);

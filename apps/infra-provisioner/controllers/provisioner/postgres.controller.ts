@@ -6,7 +6,10 @@ import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config
 import axios from "axios";
 import { primary_base_backend } from "../../config/config";
 import { runCommand } from "../../git/runCommand";
-import { postgresqlSchema, type InfraConfig } from "@cloud/backend-common";
+import { safeGitCommit, triggerGitPush } from "../../git/git-tools";
+import type { InfraConfig } from "@cloud/backend-common";
+
+
 function generateRandomString() {
   return Math.floor(Math.random() * 1000000).toString();
 }
@@ -125,8 +128,9 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
     const filepath = path.join(argocdPath, `${db_id}.yaml`);
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
-   await safeGitCommit(db_id);
-    requireGitPush=true;
+    await safeGitCommit("Added new postgresDB app",db_id);
+    triggerGitPush();
+    
     return {
       success:true,
       message: `PostgresDB app ${db_id} created and pushed successfully`,
@@ -138,64 +142,6 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
     };
   }
 };
-
-async function waitForPauseToFinish(): Promise<void> {
-  return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-          if (!pauseCommit) {
-              clearInterval(checkInterval);
-              resolve();
-          }
-      }, 100); 
-  });
-}
-
-export async function safeGitCommit(db_id: string) {
-  await waitForPauseToFinish();
-  await runCommand(["git", "add", "-A"], { cwd: repoPath() + "/cloud-infra-ops" });
-  await runCommand(
-      ["git", "commit", "-m", `Added new postgresDB app ${db_id}`],
-      { cwd: repoPath() + "/cloud-infra-ops" }
-  );
-}
-
-
-
-
-let gitPushInterval: NodeJS.Timeout | null = null;
-let requireGitPush = false;
-let pauseCommit = false;
-
-export function scheduleGitPush(repoUrlWithPAT: string, branch: string) {
-    if (gitPushInterval) {
-        clearInterval(gitPushInterval);
-    }
-    let  gitPushResult:{success:boolean,message:string}={success:false,message:""};
-
-    gitPushInterval = setInterval(async () => {
-        if (requireGitPush) {
-            pauseCommit = true;
-
-            try {
-                console.log("Starting git push...");
-                await runCommand(
-                    ["git", "push", repoUrlWithPAT, branch],
-                    { cwd: repoPath() + "/cloud-infra-ops" }
-                );
-                console.log("Git push completed successfully.");
-                gitPushResult={success:true,message:"Git push completed successfully"}
-            } catch (err) {
-                console.error("Git push failed:", err);
-                gitPushResult={success:false,message:"Git push failed"}
-            } finally {
-                requireGitPush = false;
-                pauseCommit = false;
-            }
-        }
-    }, 60000);
-    return gitPushResult;
-}
-
 export const argocdWebhook = async (req: Request, res: Response) => {
   const db_id = req.body.application.metadata.name;
   const status = req.body.application.status.sync.status;

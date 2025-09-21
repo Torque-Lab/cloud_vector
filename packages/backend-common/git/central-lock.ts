@@ -1,6 +1,5 @@
 import { getRedisClient } from "../src/common";
 
-
 export async function acquireGitPushLock(ttlInSeconds = 120): Promise<boolean> {
     try {
         const client = await getRedisClient();
@@ -20,8 +19,6 @@ export async function acquireGitPushLock(ttlInSeconds = 120): Promise<boolean> {
         return false;
     }
 }
-
-
 export async function releaseGitPushLock(): Promise<boolean> {
     try {
         const client = await getRedisClient();
