@@ -71,14 +71,14 @@ model Permission {
   permission_given_by       String?
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
-  user                      User @relation(fields: [userId], references: [id])
-  projects                  Project @relation(fields: [projectId], references: [id])
-  virtualMachine            VirtualMachine? @relation(fields: [virtualMachineId], references: [id])
-  postgresDB                PostgresDB? @relation(fields: [postgresDBId], references: [id])
-  rabbitmq                  RabbitMQ? @relation(fields: [rabbitmqId], references: [id])
-  redis                     Redis? @relation(fields: [redisId], references: [id])
-  vectorDB                  VectorDB? @relation(fields: [vectorDBId], references: [id])
-  userBaseAdmin             UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  user                      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects                  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  virtualMachine            VirtualMachine? @relation(fields: [virtualMachineId], references: [id], onDelete: Cascade)
+  postgresDB                PostgresDB? @relation(fields: [postgresDBId], references: [id], onDelete: Cascade)
+  rabbitmq                  RabbitMQ? @relation(fields: [rabbitmqId], references: [id], onDelete: Cascade)
+  redis                     Redis? @relation(fields: [redisId], references: [id], onDelete: Cascade)
+  vectorDB                  VectorDB? @relation(fields: [vectorDBId], references: [id], onDelete: Cascade)
+  userBaseAdmin             UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   permissionItems           PermissionItem[]  
   @@index([userId]) 
   @@index([projectId])
@@ -88,7 +88,7 @@ model PermissionItem {
   id            String @id @default(cuid())
   permission    PermissionList @default(NONE)
   permissionId  String
-  permissionRef Permission @relation(fields: [permissionId], references: [id])
+  permissionRef Permission @relation(fields: [permissionId], references: [id] , onDelete: Cascade)
   @@index([permissionId])
 }
 enum PermissionList {
@@ -134,8 +134,8 @@ model Project {
   rabbitmq                 RabbitMQ[]
   redis                    Redis[]
   vectorDB                 VectorDB[]
-  user                     User? @relation(fields: [userId], references: [id])
-  userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  user                     User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }
 model VirtualMachine{
@@ -150,7 +150,7 @@ model VirtualMachine{
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   permissions        Permission[]
-  projects           Project @relation(fields: [projectId], references: [id])
+  projects           Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 @@index([projectId])
 }
 
@@ -168,7 +168,7 @@ model VectorDB {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   permissions         Permission[]
-  projects            Project @relation(fields: [projectId], references: [id])
+  projects            Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 @@index([projectId])
 }
 model PostgresDB {
@@ -187,7 +187,7 @@ model PostgresDB {
   updatedAt          DateTime  @updatedAt
   backup_history     BackupHistory[]
   permissions        Permission[]
-  projects           Project @relation(fields: [projectId], references: [id])
+  projects           Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 @@index([projectId])
 }
 enum ProvisioningFlowStatus {
@@ -204,7 +204,7 @@ model BackupHistory{
   status             BackupStatus @default(PENDING)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-  postgresDB         PostgresDB @relation(fields: [resource_id], references: [id])
+  postgresDB         PostgresDB @relation(fields: [resource_id], references: [id], onDelete: Cascade)
 }
 enum BackupStatus {
   PENDING
@@ -227,7 +227,7 @@ model RabbitMQ {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   permissions         Permission[]
-  projects            Project @relation(fields: [projectId], references: [id])
+  projects            Project @relation(fields: [projectId], references: [id],onDelete: Cascade)
 @@index([projectId])
 }
 model Redis {
@@ -245,7 +245,7 @@ model Redis {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   permissions           Permission[]
-  projects              Project @relation(fields: [projectId], references: [id])
+  projects              Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 @@index([projectId])
 }
 
@@ -277,7 +277,7 @@ model Subscription {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }
 
@@ -305,7 +305,7 @@ model Resource_Usage {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
  
-  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }
 model Payment {
@@ -322,7 +322,7 @@ model Payment {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id],onDelete: Cascade)
 }
 
 enum PaymentStatus {
@@ -352,7 +352,7 @@ model Invoice {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id])
+  userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }
 
