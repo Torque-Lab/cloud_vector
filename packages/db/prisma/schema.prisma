@@ -168,6 +168,7 @@ model VectorDB {
   host                String
   port                String
   database_name       String
+  namespace           String
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   permissions         Permission[]
@@ -186,6 +187,7 @@ model PostgresDB {
   host               String @default("")
   port               String @default("")
   database_name      String @default("")
+  namespace          String
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   backup_history     BackupHistory[]
@@ -226,6 +228,7 @@ model RabbitMQ {
   password            String @default("")    
   host                String @default("")
   port                String @default("")
+  namespace           String
   queue_name          String @default("")
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -245,6 +248,7 @@ model Redis {
   host                  String @default("")
   port                  String @default("")
   redis_name            String @default("")
+  namespace             String
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   permissions           Permission[]

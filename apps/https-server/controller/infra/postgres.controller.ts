@@ -140,6 +140,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 username:generateUsername(),
                 password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
                 port:"5672",
+                namespace:namespace,
                 
 
                 
