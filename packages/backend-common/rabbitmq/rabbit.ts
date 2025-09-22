@@ -48,6 +48,8 @@ export type InfraConfig = {
        maxVCpu: string,
        autoScale: boolean,
        backFrequency?: "daily" | "weekly" | "monthly" 
+       resource_id:string,
+       namespace:string
     
 }
 

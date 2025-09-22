@@ -28,7 +28,7 @@ export async function releaseGitPushLock(): Promise<boolean> {
             return true; 
         } else {
             console.warn('Git push lock already expired or not present');
-            return false;
+            return true;
         }
     } catch (error) {
         console.error('Error releasing git push lock in Redis:', error);

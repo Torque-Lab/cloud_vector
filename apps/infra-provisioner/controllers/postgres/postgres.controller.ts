@@ -1,22 +1,15 @@
-import type { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config/config";
-import axios from "axios";
-import { primary_base_backend } from "../../config/config";
 import { runCommand } from "../../git/runCommand";
 import { safeGitCommit, triggerGitPush } from "../../git/git-tools";
 import type { InfraConfig } from "@cloud/backend-common";
 
-
-function generateRandomString() {
-  return Math.floor(Math.random() * 1000000).toString();
-}
 export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
   try {
-   
-    const db_id = generateRandomString() + "-" + infraConfig.projectId;
+   const db_id=infraConfig.resource_id;
+   const namespace=infraConfig.namespace;
     await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
     await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
 
@@ -32,7 +25,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
       "cloud-infra-ops",
       "apps",
       "external-charts",
-      db_id
+       db_id
     );
     const argocdPath = path.join(
       repoPath(),
@@ -102,6 +95,9 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
       metadata: {
         name: db_id,
         namespace: "argocd",
+        annotations: {
+      "argocd.argoproj.io/sync-options": "CreateNamespace=true"
+    }
       },
       spec: {
         project: "default",
@@ -112,7 +108,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
         },
         destination: {
           server: "https://kubernetes.default.svc",
-          namespace: "free",
+          namespace: namespace,
         },
         syncPolicy: {
           automated: {
@@ -141,25 +137,6 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
       message: "Failed to provision DB app",
     };
   }
-};
-export const argocdWebhook = async (req: Request, res: Response) => {
-  const db_id = req.body.application.metadata.name;
-  const status = req.body.application.status.sync.status;
-  let database;
-  if (status == "Synced") {
-    console.log(
-      ` ${req.body.application.metadata.name} is deployed and healthy`
-    );
-
-    const response = await axios.post(`${primary_base_backend}/vectordb`, {
-      db_id,
-    });
-    if (response.data.success) {
-      database = response.data.database;
-    }
-  }
-
-  res.status(200).json({ message: "PostgresDB app deployed and healthy", database });
 };
 
 

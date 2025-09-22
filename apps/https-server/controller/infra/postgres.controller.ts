@@ -6,7 +6,9 @@ import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@
 import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
 import { generateRandomString } from "../auth/auth.controller";
 
-
+function generateCuid(){
+    return Bun.randomUUIDv7()
+}
 export const createProject=async(req:Request,res:Response)=>{
     try {
         const { name, description } = projectSchema.parse(req.body);
@@ -53,6 +55,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 
     try {
         const parsedData=postgresqlSchema.safeParse(req.body);
+        let namespace=""
         if(!parsedData.success){
             res.status(400).json({ message: "Invalid data",success:false });
             return;
@@ -80,8 +83,66 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 res.status(403).json({ message: "You don't have permission to create postgres",success:false });
                 return;
               }
+              const subscription=await prismaClient.subscription.findUnique({
+                where:{
+                    userBaseAdminId:req.userId
+                },
+                include:{
+                    tierRule:true
+                }
+              })
+             if(subscription?.tier==="FREE"){
+                const postgresDBCount=await prismaClient.postgresDB.count({
+                    where:{
+                        projectId:parsedData.data.projectId
+                    }
+                })
+                if(postgresDBCount>=subscription?.tierRule.Max_Databases){
+                    res.status(403).json({ message: "You don't have enough databases",success:false });
+                    return;
+                }
 
-        const success=await pushInfraConfigToQueueToCreate("postgres_create_queue",parsedData.data)
+                if(parseMemory(parsedData.data.initialMemory)>parseMemory(subscription?.tierRule.initialMemory) || parseMemory(parsedData.data.maxMemory)>parseMemory(subscription?.tierRule.maxMemory) || parseMemory(parsedData.data.initialStorage)>parseMemory(subscription?.tierRule.initialStorage) || parseMemory(parsedData.data.maxStorage)>parseMemory(subscription?.tierRule.maxStorage) || parseMemory(parsedData.data.initialVCpu)>parseMemory(subscription?.tierRule.initialVCpu) || parseMemory(parsedData.data.maxVCpu)>parseMemory(subscription?.tierRule.maxVCpu)){
+                    res.status(403).json({ message: "You don't have enough resources",success:false });
+                    return;
+                }
+                namespace="free-user-ns"
+             }
+             if(subscription?.tier==="BASE"){
+                const postgresDBCount=await prismaClient.postgresDB.count({
+                    where:{
+                        projectId:parsedData.data.projectId
+                    }
+                })
+                if(postgresDBCount>=subscription?.tierRule.Max_Databases){
+                    res.status(403).json({ message: "You don't have enough databases",success:false });
+                    return;
+                }
+                if(parseMemory(parsedData.data.initialMemory)>parseMemory(subscription?.tierRule.initialMemory) || parseMemory(parsedData.data.maxMemory)>parseMemory(subscription?.tierRule.maxMemory) || parseMemory(parsedData.data.initialStorage)>parseMemory(subscription?.tierRule.initialStorage) || parseMemory(parsedData.data.maxStorage)>parseMemory(subscription?.tierRule.maxStorage) || parseMemory(parsedData.data.initialVCpu)>parseMemory(subscription?.tierRule.initialVCpu) || parseMemory(parsedData.data.maxVCpu)>parseMemory(subscription?.tierRule.maxVCpu)){
+                    res.status(403).json({ message: "You don't have enough resources",success:false });
+                    return;
+                }
+                namespace="base-user-ns"
+             }
+             if(subscription?.tier==="PRO"){
+                const postgresDBCount=await prismaClient.postgresDB.count({
+                    where:{
+                        projectId:parsedData.data.projectId
+                    }
+                })
+                if(postgresDBCount>=subscription?.tierRule.Max_Databases){
+                    res.status(403).json({ message: "You don't have enough databases",success:false });
+                    return;
+                }
+                if(parseMemory(parsedData.data.initialMemory)>parseMemory(subscription?.tierRule.initialMemory) || parseMemory(parsedData.data.maxMemory)>parseMemory(subscription?.tierRule.maxMemory) || parseMemory(parsedData.data.initialStorage)>parseMemory(subscription?.tierRule.initialStorage) || parseMemory(parsedData.data.maxStorage)>parseMemory(subscription?.tierRule.maxStorage) || parseMemory(parsedData.data.initialVCpu)>parseMemory(subscription?.tierRule.initialVCpu) || parseMemory(parsedData.data.maxVCpu)>parseMemory(subscription?.tierRule.maxVCpu)){
+                    res.status(403).json({ message: "You don't have enough resources",success:false });
+                    return;
+                }
+                namespace="pro-user-ns"+generateCuid()
+             }
+              const db_id=generateCuid();
+
+        const success=await pushInfraConfigToQueueToCreate("postgres_create_queue",{...parsedData.data,resource_id:db_id,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -89,6 +150,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 
         const postgresDB=await prismaClient.postgresDB.create({
             data:{
+                id:db_id,
                 projectId:parsedData.data.projectId,
                 database_name:parsedData.data.name,
                 username:generateUsername(),
@@ -180,3 +242,12 @@ export const updatePostgres=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to update postgresDB status", error });
     }
 }
+
+function parseMemory(str:string) {
+    if (!str) return 0;
+    const num = parseInt(str, 10);
+    if (str.endsWith("Mi")) return num * 1024 * 1024;
+    if (str.endsWith("Gi")) return num * 1024 * 1024 * 1024;
+    return num;
+  }
+  

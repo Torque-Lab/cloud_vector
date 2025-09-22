@@ -56,7 +56,7 @@ app.post("/mcp", async (req, res) => {
   await server.connect(transport);
 
   // transport expects body to be parsed JSON of the RPC request
-  await transport.handleRequest(req, res, req.body);
+  await transport.handleRequest(req, res, req.body)
 });
 
 const port = 4000;

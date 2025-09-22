@@ -22,22 +22,25 @@ model UserBaseAdmin {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   role                 Role @default(ADMIN)
+  is_active            Boolean @default(true)
   last_login           DateTime?
   last_logout          DateTime?
   last_active          DateTime?
   login_count          Int @default(0)
-  permissions          Permission[] 
   subscription         Subscription[]
   projects             Project[]
   resource_usages      Resource_Usage[]
   payments             Payment[]
   invoices             Invoice[]
+  user                 User[]
 }
+
 
 model User {
   id                   String    @id @default(cuid())
   email                String    @unique
   password             String
+  userBaseAdminId      String
   first_name           String?
   last_name            String?
   createdAt            DateTime  @default(now())
@@ -47,8 +50,10 @@ model User {
   last_active          DateTime?
   login_count          Int @default(0)
   role                 Role @default(DEVELOPER)
+  is_active            Boolean @default(true)
   permissions          Permission[] 
   projects             Project[]
+  userBaseAdmin        UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
 
 }
 
@@ -59,27 +64,25 @@ enum Role {
 
 
 model Permission {
-  id                        String    @id @default(cuid())
-  userId                    String
-  projectId                 String
-  virtualMachineId          String?
-  postgresDBId              String?
-  rabbitmqId                String?
-  redisId                   String?
-  vectorDBId                String?
-  userBaseAdminId           String
-  permission_given_by       String?
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
-  user                      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  projects                  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  virtualMachine            VirtualMachine? @relation(fields: [virtualMachineId], references: [id], onDelete: Cascade)
-  postgresDB                PostgresDB? @relation(fields: [postgresDBId], references: [id], onDelete: Cascade)
-  rabbitmq                  RabbitMQ? @relation(fields: [rabbitmqId], references: [id], onDelete: Cascade)
-  redis                     Redis? @relation(fields: [redisId], references: [id], onDelete: Cascade)
-  vectorDB                  VectorDB? @relation(fields: [vectorDBId], references: [id], onDelete: Cascade)
-  userBaseAdmin             UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
-  permissionItems           PermissionItem[]  
+  id                                      String    @id @default(cuid())
+  userId                                  String
+  projectId                               String
+  virtualMachineId                        String?
+  postgresDBId                            String?
+  rabbitmqId                              String?
+  redisId                                 String?
+  vectorDBId                              String?
+  permission_given_by_base_admin_id       String?
+  createdAt                               DateTime  @default(now())
+  updatedAt                               DateTime  @updatedAt
+  user                                    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects                                Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  virtualMachine                          VirtualMachine? @relation(fields: [virtualMachineId], references: [id], onDelete: Cascade)
+  postgresDB                              PostgresDB? @relation(fields: [postgresDBId], references: [id], onDelete: Cascade)
+  rabbitmq                                RabbitMQ? @relation(fields: [rabbitmqId], references: [id], onDelete: Cascade)
+  redis                                   Redis? @relation(fields: [redisId], references: [id], onDelete: Cascade)
+  vectorDB                                VectorDB? @relation(fields: [vectorDBId], references: [id], onDelete: Cascade)
+  permissionItems                         PermissionItem[]  
   @@index([userId]) 
   @@index([projectId])
 }
@@ -253,30 +256,41 @@ enum Tier_Subscription {
   FREE
   BASE
   PRO
+
 }
 
 model TierRule {
   id                   String @id @default(cuid())
   tier                 Tier_Subscription @unique
-  Max_Projects         Int
-  Max_Databases        Int
+  Max_Projects         Int @default(5)
+  Max_Databases        Int @default(5)
+  initialMemory        String @default("200Mi")
+  maxMemory            String @default("500Mi")
+  initialStorage       String @default("1Gi")
+  maxStorage           String @default("5Gi")
+  initialVCpu          String @default("1")
+  maxVCpu              String @default("2")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  subscriptions Subscription[]
 }
 
 model Subscription {
   id                     String   @id @default(cuid())
-  userBaseAdminId        String
+  userBaseAdminId        String @unique
   stripeCustomerId       String? 
   stripeSubscriptionId   String?   
   stripePriceId          String?   
   stripeProductId        String?   
-  status                 SubscriptionStatus @default(INACTIVE)
+  status                 SubscriptionStatus @default(ACTIVE)
   currentPeriodStart     DateTime?   
   cancelAtPeriodEnd      Boolean @default(false)
   canceledAt             DateTime?
-  tier                   Tier_Subscription
+  tier                   Tier_Subscription @default(FREE)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
-
+  tierId                 String @unique
+  tierRule TierRule @relation(fields: [tierId], references: [id], onDelete: Cascade)
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }
