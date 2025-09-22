@@ -1,17 +1,17 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
+import { rabbitmqSchema, projectSchema} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 
-export const createPostgresInstance=async(req:Request,res:Response)=>{
+export const createRabbitInstance=async(req:Request,res:Response)=>{
 
     try {
-        const parsedData=postgresqlSchema.safeParse(req.body);
+        const parsedData=rabbitmqSchema.safeParse(req.body);
         let namespace=""
         if(!parsedData.success){
             res.status(400).json({ message: "Invalid data",success:false });
@@ -25,20 +25,19 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         if(!user){
             const isHasCreatePermission = await prismaClient.permission.findFirst({
                 where: {
-                  userId: req.userId,
-                  projectId:parsedData.data.projectId
+                  id: req.userId,
                 },
                 include: {
                   permissionItems: {
                     where: {
-                      permission: PermissionList.CREATE_POSTGRES,
+                      permission: PermissionList.CREATE_RABBITMQ,
                     },
                   },
                 },
               });
               
               if(isHasCreatePermission?.permissionItems.length===0){
-                res.status(403).json({ message: "You don't have permission to create postgres",success:false });
+                res.status(403).json({ message: "You don't have permission to create rabbitmq",success:false });
                 return;
               }
               const subscription=await prismaClient.subscription.findUnique({
@@ -49,6 +48,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                     tierRule:true
                 }
               })
+
               let totalResources = 0;
               let projects = await prismaClient.project.findMany({
                 where: { userBaseAdminId: req.userId },
@@ -124,24 +124,23 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 }
                 namespace="pro-user-ns"+generateCuid()
              }
-              const postgresId=generateCuid();
+              const rabbitmqId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate("postgres_create_queue",{...parsedData.data,resource_id:postgresId,namespace})
+        const success=await pushInfraConfigToQueueToCreate("rabbitmq_create_queue",{...parsedData.data,resource_id:rabbitmqId,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
         }
 
-        await prismaClient.postgresDB.create({
+        await prismaClient.rabbitMQ.create({
             data:{
-                id:postgresId,
+                id: rabbitmqId,
                 projectId:parsedData.data.projectId,
-                database_name:parsedData.data.name,
+                queue_name:parsedData.data.name,
                 username:generateUsername(),
                 password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
                 port:"5672",
                 
-
                 
             }
         })
@@ -151,10 +150,10 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-export const deletePostgres = async (req: Request, res: Response) => {
+export const deleteRabbitMQ = async (req: Request, res: Response) => {
     try {
-      const { postgresId } = req.body as { postgresId: string };
-      const response = await pushInfraConfigToQueueToDelete("postgres_delete_queue",postgresId)
+      const { rabbitmqId } = req.body as { rabbitmqId: string };
+      const response = await pushInfraConfigToQueueToDelete("rabbitmq_delete_queue",rabbitmqId)
   
       if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
@@ -167,36 +166,36 @@ export const deletePostgres = async (req: Request, res: Response) => {
       res.status(500).json({ message: "Failed to add task to queue", error });
     }
   };
-export const getPostgresStatus=async(req:Request,res:Response)=>{
+export const getRabbitMQStatus=async(req:Request,res:Response)=>{
     try {
-        const {postgresId}=req.body as {postgresId:string};
-        const postgresStatus=await prismaClient.postgresDB.findUnique({
+        const {rabbitmqId}=req.body as {rabbitmqId:string};
+        const rabbitmqStatus=await prismaClient.rabbitMQ.findUnique({
             where:{
-                id:postgresId
+                id:rabbitmqId
             }
         })
-        res.status(200).json({ postgresDB:postgresStatus?.provisioning_flow_status,success:true });
+        res.status(200).json({ rabbitmqStatus:rabbitmqStatus?.provisioning_flow_status,success:true });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Failed to get postgresDB status", error });
+        res.status(500).json({ message: "Failed to get rabbitmq status", error });
     }
 }
-export const updatePostgres=async(req:Request,res:Response)=>{
+export const updateRabbitMQ=async(req:Request,res:Response)=>{
     try {
-        const {postgresId}=req.body as {postgresId:string};
-        const response=await prismaClient.postgresDB.update({
+        const {rabbitmqId}=req.body as {rabbitmqId:string};
+        const response=await prismaClient.rabbitMQ.update({
             data:{
                 username:generateUsername(),
                 password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
             },
             where:{
-                id:postgresId
+                id:rabbitmqId
             }
         })
-        res.status(200).json({ postgresDB:response,success:true });
+        res.status(200).json({ rabbitmq:response,success:true });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Failed to update postgresDB status", error });
+        res.status(500).json({ message: "Failed to update rabbitmq status", error });
     }
 }
 

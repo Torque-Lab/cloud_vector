@@ -166,7 +166,7 @@ model VectorDB {
   username            String
   password            String    
   host                String
-  port                Int
+  port                String
   database_name       String
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -222,11 +222,11 @@ model RabbitMQ {
   is_provisioned      Boolean @default(false)
   provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
   api_key             String? @unique
-  username            String
-  password            String    
-  host                String
-  port                Int
-  queue_name          String
+  username            String @default("")
+  password            String @default("")    
+  host                String @default("")
+  port                String @default("")
+  queue_name          String @default("")
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   permissions         Permission[]
@@ -240,11 +240,11 @@ model Redis {
   is_provisioned        Boolean @default(false)
   provisioning_flow_status ProvisioningFlowStatus @default(PUSHED_TO_ARGOCD)
   api_key               String? @unique 
-  username              String
-  password              String    
-  host                  String
-  port                  Int
-  redis_name            String
+  username              String @default("")
+  password              String @default("")    
+  host                  String @default("")
+  port                  String @default("")
+  redis_name            String @default("")
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   permissions           Permission[]
@@ -263,7 +263,7 @@ model TierRule {
   id                   String @id @default(cuid())
   tier                 Tier_Subscription @unique
   Max_Projects         Int @default(5)
-  Max_Databases        Int @default(5)
+  Max_Resources        Int @default(5)
   initialMemory        String @default("200Mi")
   maxMemory            String @default("500Mi")
   initialStorage       String @default("1Gi")
