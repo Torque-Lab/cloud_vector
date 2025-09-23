@@ -27,7 +27,7 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased overflow-y-scroll overflow-x-hidden">
+      <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider>
           {children}
           <Toaster />

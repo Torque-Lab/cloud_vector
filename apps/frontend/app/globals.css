@@ -134,9 +134,9 @@
   }
 }
 
-/* to remove scrollbar gutter when dropdown is open */
+/* to remove scrollbar gutter when dropdown is open*/
 html {
   @apply overflow-x-hidden;
   overflow-y: auto;
   scrollbar-gutter: stable both-edges;
-}
+} 

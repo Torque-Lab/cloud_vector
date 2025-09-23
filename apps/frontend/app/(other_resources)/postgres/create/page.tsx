@@ -255,7 +255,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                   <CardTitle>Basic Information</CardTitle>
                   <CardDescription>Enter your database details</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 overflow-visible">
                   <div className="space-y-2">
                     <Label htmlFor="name">Database Name</Label>
                     <Input
@@ -308,16 +308,16 @@ function parseCpuToCores(value: string | undefined | null): number | null {
               </Card>
 
               {/* Configuration */}
-              <Card>
+             <Card>
                 <CardHeader>
                   <CardTitle>Configuration</CardTitle>
                   <CardDescription>Configure your database settings</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="space-y-4 overflow-visible">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
                   <div className="space-y-2">
                       <Label htmlFor="initialMemory">Initial Memory</Label>
-                      <Select
+                      <Select 
                         name="initialMemory"
                         value={formData.initialMemory}
                         onValueChange={(value) => 
@@ -327,7 +327,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                         <SelectTrigger>
                           <SelectValue placeholder="Select initial memory" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" className="z-60">
                           <SelectItem value="200Mi">200MB</SelectItem>
                           <SelectItem value="500Mi">500MB</SelectItem>
                           <SelectItem value="1Gi">1GB</SelectItem>
