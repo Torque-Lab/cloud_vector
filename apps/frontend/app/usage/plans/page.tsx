@@ -8,16 +8,19 @@ import Link from "next/link"
 const PlansPage = () => {
   const plans = [
     {
-      name: "Starter",
-      price: "$29",
+      name: "Base",
+      price: "$20",
       period: "month",
       description: "Perfect for small projects and experimentation",
       features: [
-        "Up to 3 databases",
-        "100K vectors per database",
-        "10K API calls/month",
-        "5GB storage",
-        "Email support",
+        "Up to 40 Projects",
+        "Up to 1000 Instances",
+        "Managed Postgres",
+        "Managed Redis",
+        "Managed RabbitMQ",
+        "Launch Virtual Machine",
+        "Agent support",
+        "Shard Namespaces",
         "Basic analytics",
       ],
       current: false,
@@ -25,17 +28,19 @@ const PlansPage = () => {
     },
     {
       name: "Pro",
-      price: "$99",
+      price: "$40",
       period: "month",
       description: "Ideal for growing businesses and production workloads",
       features: [
-        "Up to 10 databases",
-        "1M vectors per database",
-        "100K API calls/month",
-        "50GB storage",
-        "Priority support",
+        "Up to 100 Projects",
+        "Up to 2000 Instances",
+        "Managed Postgres",
+        "Managed Redis",
+        "Managed RabbitMQ",
+        "Launch Virtual Machine",
+        "Agent support",
+        "Dedicated Namespace",
         "Advanced analytics",
-        "Custom integrations",
         "99.9% SLA",
       ],
       current: true,
@@ -47,15 +52,17 @@ const PlansPage = () => {
       period: "",
       description: "For large-scale applications with custom requirements",
       features: [
-        "Unlimited databases",
-        "Unlimited vectors",
-        "Unlimited API calls",
-        "1TB+ storage",
+        "Unlimited Projects",
+        "Unlimited Instances",
+        "Dedicated Namespace",
+        "Dedicated VPC",
+        "Managed Postgres",
+        "Managed Redis",
+        "Managed RabbitMQ",
+        "Launch Virtual Machine",
         "24/7 dedicated support",
-        "Custom integrations",
         "SLA guarantee",
-        "On-premise deployment",
-        "Custom security",
+        
       ],
       current: false,
       popular: false,
@@ -76,7 +83,7 @@ const PlansPage = () => {
               </Link>
               <h1 className="text-3xl font-bold tracking-tight">Choose Your Plan</h1>
               <p className="text-muted-foreground">
-                Scale your vector database infrastructure with flexible pricing that grows with your needs
+                Scale infrastructure with flexible pricing that grows with your needs
               </p>
             </div>
           </div>
@@ -138,7 +145,7 @@ const PlansPage = () => {
                 </ul>
 
                 <Button
-                  className={`w-full py-2.5 font-medium transition-all duration-200 ${
+                  className={`w-full py-2.5 font-medium transition-all duration-200 cursor-pointer ${
                     plan.current
                       ? "bg-muted text-muted-foreground cursor-not-allowed hover:bg-muted"
                       : plan.popular

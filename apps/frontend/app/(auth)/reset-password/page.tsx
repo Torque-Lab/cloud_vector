@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">V</span>
               </div>
-              <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+              <span className="text-xl font-bold text-foreground">Vector Cloud</span>
             </Link>
           </div>
 
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">V</span>
               </div>
-              <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+              <span className="text-xl font-bold text-foreground">Vector Cloud</span>
             </Link>
           </div>
 
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
             <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">V</span>
             </div>
-            <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+            <span className="text-xl font-bold text-foreground">Vector Cloud</span>
           </Link>
           <h1 className="text-2xl font-bold text-foreground mb-2">Reset your password</h1>
           <p className="text-muted-foreground">Enter your new password below</p>

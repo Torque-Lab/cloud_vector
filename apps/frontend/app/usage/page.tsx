@@ -1,27 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Select } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import Link from "next/link"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Link from "next/link";
+import { SearchBox } from "@/components/search-box";
 
 const UsagePage = () => {
-  const [selectedProject, setSelectedProject] = useState("all")
-  const [invoiceFilter, setInvoiceFilter] = useState("all")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [dateFilter, setDateFilter] = useState("all")
+  const [selectedProject, setSelectedProject] = useState("all");
+  const [invoiceFilter, setInvoiceFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const projects = [
     { id: "all", name: "All Projects" },
     { id: "1", name: "E-commerce AI" },
-    { id: "2", name: "Content Search" },
     { id: "3", name: "Recommendation Engine" },
-  ]
+  ];
 
   const allInvoices = [
     {
@@ -41,7 +61,7 @@ const UsagePage = () => {
       amount: "$99.00",
       status: "Paid",
       period: "Nov 15 - Dec 14",
-      project: "Content Search",
+      project: "Recommendation Engine",
       downloadUrl: "#",
     },
     {
@@ -65,16 +85,6 @@ const UsagePage = () => {
       downloadUrl: "#",
     },
     {
-      id: "INV-2024-08",
-      date: "2024-08-15",
-      displayDate: "Aug 15, 2024",
-      amount: "$89.00",
-      status: "Paid",
-      period: "Aug 15 - Sep 14",
-      project: "Content Search",
-      downloadUrl: "#",
-    },
-    {
       id: "INV-2024-07",
       date: "2024-07-15",
       displayDate: "Jul 15, 2024",
@@ -84,99 +94,120 @@ const UsagePage = () => {
       project: "E-commerce AI",
       downloadUrl: "#",
     },
-  ]
+  ];
 
   const filteredInvoices = allInvoices.filter((invoice) => {
-    const matchesFilter = invoiceFilter === "all" || invoice.status.toLowerCase() === invoiceFilter
+    const matchesFilter =
+      invoiceFilter === "all" || invoice.status.toLowerCase() === invoiceFilter;
     const matchesSearch =
       invoice.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       invoice.displayDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.project.toLowerCase().includes(searchTerm.toLowerCase())
+      invoice.project.toLowerCase().includes(searchTerm.toLowerCase());
 
-    let matchesDate = true
+    let matchesDate = true;
     if (dateFilter !== "all") {
-      const invoiceDate = new Date(invoice.date)
-      const now = new Date()
-      const monthsAgo = new Date(now.getFullYear(), now.getMonth() - Number.parseInt(dateFilter), now.getDate())
-      matchesDate = invoiceDate >= monthsAgo
+      const invoiceDate = new Date(invoice.date);
+      const now = new Date();
+      const monthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - Number.parseInt(dateFilter),
+        now.getDate()
+      );
+      matchesDate = invoiceDate >= monthsAgo;
     }
 
-    return matchesFilter && matchesSearch && matchesDate
-  })
+    return matchesFilter && matchesSearch && matchesDate;
+  });
 
   const handleDownloadInvoice = (invoice: any) => {
-    const element = document.createElement("a")
-    element.href = `data:text/plain;charset=utf-8,Invoice ${invoice.id}\nDate: ${invoice.displayDate}\nAmount: ${invoice.amount}\nStatus: ${invoice.status}\nPeriod: ${invoice.period}\nProject: ${invoice.project}`
-    element.download = `${invoice.id}.txt`
-    document.body.appendChild(element)
-    element.click()
-    document.body.removeChild(element)
-  }
-
+    const element = document.createElement("a");
+    element.href = `data:text/plain;charset=utf-8,Invoice ${invoice.id}\nDate: ${invoice.displayDate}\nAmount: ${invoice.amount}\nStatus: ${invoice.status}\nPeriod: ${invoice.period}\nProject: ${invoice.project}`;
+    element.download = `${invoice.id}.pdf`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
   const getUsageStats = () => {
     return {
       apiCalls: "47.8K",
       storage: "23.4 GB",
       vectorOps: "156K",
       monthlyCost: "$87.50",
-    }
-  }
+    };
+  };
 
-  const stats = getUsageStats()
+  const stats = getUsageStats();
 
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Usage & Billing</h2>
-            <p className="text-muted-foreground">Monitor your usage and manage billing across projects.</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Input
-              placeholder="Search invoices..."
-              className="w-64"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Link href="/usage/plans">
-              <Button>Change Plan</Button>
-            </Link>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Usage & Billing
+            </h2>
+            <p className="text-muted-foreground">
+              Monitor your usage and manage billing across projects.
+            </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Project:</span>
-            <Select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
             </Select>
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Status:</span>
-            <Select value={invoiceFilter} onChange={(e) => setInvoiceFilter(e.target.value)}>
-              <option value="all">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-              <option value="pending">Pending</option>
+            <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectGroup>
+              </SelectContent>
             </Select>
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Period:</span>
-            <Select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
-              <option value="all">All Time</option>
-              <option value="3">Last 3 Months</option>
-              <option value="6">Last 6 Months</option>
-              <option value="12">Last 12 Months</option>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="3">Last 3 Months</SelectItem>
+                  <SelectItem value="6">Last 6 Months</SelectItem>
+                  <SelectItem value="12">Last 12 Months</SelectItem>
+                </SelectGroup>
+              </SelectContent>
             </Select>
           </div>
-          {(selectedProject !== "all" || invoiceFilter !== "all" || dateFilter !== "all") && (
+          {(selectedProject !== "all" ||
+            invoiceFilter !== "all" ||
+            dateFilter !== "all") && (
             <Badge variant="outline">
-              {selectedProject !== "all" && projects.find((p) => p.id === selectedProject)?.name}
+              {selectedProject !== "all" &&
+                projects.find((p) => p.id === selectedProject)?.name}
               {invoiceFilter !== "all" && ` • ${invoiceFilter}`}
               {dateFilter !== "all" && ` • Last ${dateFilter} months`}
             </Badge>
@@ -190,34 +221,48 @@ const UsagePage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.apiCalls}</div>
-              <p className="text-xs text-muted-foreground">48% of monthly limit</p>
+              <p className="text-xs text-muted-foreground">
+                48% of monthly limit
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Storage Used
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.storage}</div>
-              <p className="text-xs text-muted-foreground">47% of allocated storage</p>
+              <p className="text-xs text-muted-foreground">
+                47% of allocated storage
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Vector Operations</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Vector Operations
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.vectorOps}</div>
-              <p className="text-xs text-muted-foreground">+24% from last month</p>
+              <p className="text-xs text-muted-foreground">
+                +24% from last month
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Month Cost</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Current Month Cost
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.monthlyCost}</div>
-              <p className="text-xs text-muted-foreground">$11.50 credit applied</p>
+              <p className="text-xs text-muted-foreground">
+                $11.50 credit applied
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -227,14 +272,16 @@ const UsagePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl">Current Plan</CardTitle>
-                <CardDescription>Your active subscription and usage limits</CardDescription>
+                <CardDescription>
+                  Your active subscription and usage limits
+                </CardDescription>
               </div>
               <div className="flex items-center space-x-2">
                 <Link href="/usage/plans">
-                  <Button>Change Plan</Button>
+                  <Button className="cursor-pointer">Change Plan</Button>
                 </Link>
                 <Link href="/usage/plan-details">
-                  <Button variant="outline">View Details</Button>
+                  <Button variant="outline" className="cursor-pointer">View Details</Button>
                 </Link>
               </div>
             </div>
@@ -247,9 +294,14 @@ const UsagePage = () => {
                   <Badge>Current</Badge>
                 </div>
                 <p className="text-3xl font-bold text-primary">
-                  $99<span className="text-lg font-normal text-muted-foreground">/month</span>
+                  $99
+                  <span className="text-lg font-normal text-muted-foreground">
+                    /month
+                  </span>
                 </p>
-                <p className="text-muted-foreground mt-1">Next billing: January 15, 2025</p>
+                <p className="text-muted-foreground mt-1">
+                  Next billing: January 15, 2025
+                </p>
               </div>
             </div>
 
@@ -313,7 +365,7 @@ const UsagePage = () => {
                   <TableHead>Period</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -326,26 +378,33 @@ const UsagePage = () => {
                         <Badge variant="outline">{invoice.project}</Badge>
                       </TableCell>
                     )}
-                    <TableCell className="text-muted-foreground">{invoice.period}</TableCell>
-                    <TableCell className="font-semibold">{invoice.amount}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {invoice.period}
+                    </TableCell>
+                    <TableCell className="font-semibold">
+                      {invoice.amount}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant={invoice.status === "Paid" ? "success" : "destructive"}>{invoice.status}</Badge>
+                      <Badge
+                        variant={
+                          invoice.status === "Paid" ? "success" : "destructive"
+                        }
+                        className="text-foreground "
+                      >
+                        {invoice.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleDownloadInvoice(invoice)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="cursor-pointer"
+                          onClick={() => handleDownloadInvoice(invoice)}
+                        >
                           Download
                         </Button>
-                        <Button variant="ghost" size="sm">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                            />
-                          </svg>
-                        </Button>
+                     
                       </div>
                     </TableCell>
                   </TableRow>
@@ -355,14 +414,16 @@ const UsagePage = () => {
 
             {filteredInvoices.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No invoices found matching your criteria.</p>
+                <p className="text-muted-foreground">
+                  No invoices found matching your criteria.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default UsagePage
+export default UsagePage;

@@ -14,9 +14,7 @@ export default function LandingPage() {
       <main className="min-h-[calc(100vh-160px)]">
       
 {/* Hero */}
-<section className="relative flex flex-col items-center justify-center text-center min-h-[calc(100vh-160px)] px-6 py-28 overflow-hidden">
-  {/* Background */}
-  <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/40 to-background" />
+<section className="relative flex flex-col items-center justify-center text-center min-h-[calc(100vh-160px)] px-2 py-8 overflow-hidden">
   <HeroSection/>
   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
     <Link href="/signup">

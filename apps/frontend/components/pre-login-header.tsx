@@ -16,7 +16,7 @@ export default function PreLoginHeader() {
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">V</span>
           </div>
-          <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+          <span className="text-xl font-bold text-foreground">Vector Cloud</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -28,7 +28,7 @@ export default function PreLoginHeader() {
           <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
             Pricing
           </Link>
-          <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#docs" className="text-muted-foreground hover:text-foreground transition-colors">
             Docs
           </Link>
           <Link href="/signin" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -75,7 +75,7 @@ export default function PreLoginHeader() {
               Pricing
             </Link>
             <Link
-              href="/docs"
+              href="/#docs"
               className="block text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >

@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
             <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">V</span>
             </div>
-            <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+            <span className="text-xl font-bold text-foreground">Vector Cloud</span>
           </Link>
           <p className="text-muted-foreground">Enter your OTP to verify your account</p>
         

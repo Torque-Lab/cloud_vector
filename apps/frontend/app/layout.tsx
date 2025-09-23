@@ -3,11 +3,12 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
+import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: "VectorDB Cloud - Managed Vector Database Service",
-  description: "Seamless, Scalable, and Reliable Vector Database Solutions for Modern Applications",
+  title: "Vector Cloud - Managed Cloud Service",
+  description: "Seamless, Scalable, and Reliable Cloud Solutions for Modern Applications",
   generator: "v0.app",
 }
 
@@ -17,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="overflow-y-scroll">
       <head>
         <style>{`
           html {
@@ -27,8 +28,12 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider>
+      <body className={cn(
+        "min-h-screen w-full overflow-x-hidden",
+        "bg-background font-sans antialiased",
+        "scrollbar-gutter-stable"
+      )} style={{ scrollbarGutter: 'stable' }}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster />
         </ThemeProvider>

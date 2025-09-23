@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Button } from "./ui/button"
 
 const sidebarItems = [
   {
@@ -128,18 +129,18 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   return (
     <div
       className={cn(
-        "bg-card border-r h-full transition-all duration-300 ease-in-out flex flex-col fixed",
-        isOpen ? "w-64" : "w-16",
+        "bg-card border-r h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out flex flex-col fixed left-0 top-16 z-10",
+        isOpen ? "w-56" : "w-14"
       )}
     >
-      <nav className="flex-1 overflow-y-auto space-y-1 p-4">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden space-y-1 p-2">
         {sidebarItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              isOpen ? "space-x-3" : "justify-center",
+              "flex items-center rounded-lg p-2 text-sm font-medium transition-colors w-full justify-center md:justify-start",
+              isOpen && "md:space-x-3",
               pathname === item.href
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -151,23 +152,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </Link>
         ))}
       </nav>
-
-      <div className="border-t p-4 flex-shrink-0">
-        <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-medium">U</span>
-          </div>
-          {isOpen && (
-            <div>
-              <p className="text-sm font-medium">User</p>
-              <p className="text-xs text-muted-foreground">user@example.com</p>
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="p-4 border-t">
-        <button
+        <Button
           onClick={onToggle}
           className={cn(
             "p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors",
@@ -183,7 +169,21 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             )}
           </svg>
           {isOpen && <span className="text-sm">Collapse</span>}
-        </button>
+        </Button>
+      </div>
+
+      <div className="border-t p-4 flex-shrink-0">
+        <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-sm font-medium">U</span>
+          </div>
+          {isOpen && (
+            <div>
+              <p className="text-sm font-medium">User</p>
+              <p className="text-xs text-muted-foreground">user@example.com</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

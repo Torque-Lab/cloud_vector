@@ -23,7 +23,7 @@ export function Header({ onCreateProject }: HeaderProps) {
               <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">V</span>
               </div>
-              <h1 className="text-lg font-semibold hidden sm:block">VectorDB Cloud</h1>
+              <h1 className="text-lg font-semibold hidden sm:block">Vector Cloud</h1>
             </div>
           </div>
 
@@ -55,15 +55,15 @@ export function Header({ onCreateProject }: HeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-3 text-sm font-medium bg-transparent"
+              className="h-8 px-3 text-sm font-medium bg-transparent cursor-pointer"
               onClick={() => setIsProjectModalOpen(true)}
             >
               New Project
             </Button>
 
-            <div className="relative group">
+            <div className="relative group ">
               <Link href="/settings">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -85,9 +85,9 @@ export function Header({ onCreateProject }: HeaderProps) {
               </div>
             </div>
 
-            <div className="relative group">
+            <div className="relative group cursor-pointer">
               <Link href="/usage">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"

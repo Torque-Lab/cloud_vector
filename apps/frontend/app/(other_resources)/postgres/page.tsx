@@ -22,23 +22,7 @@ async function DatabaseList({ searchParams={} }: { searchParams?: { projectId?: 
       />
     )
   } catch (error) {
-    console.error("Failed to load databases:", error)
-    return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4">
-        <h3 className="text-sm font-medium text-red-800">Failed to load databases</h3>
-        <p className="mt-2 text-sm text-red-700">
-          {error instanceof Error ? error.message : 'An unknown error occurred'}
-        </p>
-        <div className="mt-4">
-          {/* <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center rounded-md bg-red-100 px-3 py-2 text-sm font-medium text-red-800 hover:bg-red-200"
-          >
-            Retry
-          </button> */}
-        </div>
-      </div>
-    )
+   
   }
 }
 
@@ -69,9 +53,9 @@ export default function DatabasesPage({
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Vector Databases</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Postgres Databases</h1>
             <p className="text-muted-foreground">
-              Manage your vector databases and their configurations
+              Manage your Postgres databases and their configurations
             </p>
           </div>
         </div>

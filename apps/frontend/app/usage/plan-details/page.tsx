@@ -20,7 +20,7 @@ const PlanDetailsPage = () => {
               <h1 className="text-3xl font-bold">Plan Details</h1>
               <p className="text-muted-foreground">Complete information about your current plan</p>
             </div>
-            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-lg px-4 py-2">
+            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-lg px-4 py-2 hover:not-enabled:cursor-not-allowed">
               Pro Plan
             </Badge>
           </div>
@@ -52,7 +52,7 @@ const PlanDetailsPage = () => {
             </div>
             <div className="flex items-center justify-center">
               <Link href="/usage/plans">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer">
                   Change Plan
                 </Button>
               </Link>

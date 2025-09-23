@@ -10,11 +10,9 @@ export default function PreLoginFooter() {
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">V</span>
               </div>
-              <span className="text-xl font-bold text-foreground">VectorDB Cloud</span>
+              <span className="text-xl font-bold text-foreground">Vector Cloud</span>
             </Link>
-            <p className="text-muted-foreground text-sm">
-              The fastest way to build AI applications with vector search.
-            </p>
+    
           </div>
           <div>
             <h4 className="font-semibold text-foreground mb-4">Product</h4>
@@ -93,7 +91,7 @@ export default function PreLoginFooter() {
           </div>
         </div>
         <div className="border-t border-border/40 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-          <p>&copy; 2024 VectorDB Cloud. All rights reserved.</p>
+          <p>&copy; 2024 Vector Cloud Inc. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="/privacy" className="hover:text-foreground transition-colors">
               Privacy Policy

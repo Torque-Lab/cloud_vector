@@ -16,14 +16,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header onCreateProject={() => {}} />
-
       <div className="flex flex-1 pt-16">
         <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
-
-        <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-0" : "ml-0"}`}>
-          <div className="max-w-7xl mx-auto px-4 py-4">{children}</div>
+        <main 
+          className={`flex-1 transition-all duration-300 ease-in-out ${
+            sidebarOpen ? "md:pl-56" : "md:pl-14"
+          }`}
+          style={{ minHeight: 'calc(100vh - 4rem)' }}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-4 w-full">{children}</div>
         </main>
       </div>
     </div>
