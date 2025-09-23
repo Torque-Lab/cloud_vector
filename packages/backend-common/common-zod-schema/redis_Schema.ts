@@ -1,5 +1,6 @@
-import {z} from "zod";
-export const rabbitmqSchema=z.object({
+
+import { z } from "zod";
+export const redisSchema=z.object({
     name: z.string().min(3).max(96),
    projectId: z.string().min(3).max(96),
    region: z.string().min(3).max(96),
@@ -12,4 +13,3 @@ export const rabbitmqSchema=z.object({
    autoScale: z.boolean(),
    backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
 })
-
