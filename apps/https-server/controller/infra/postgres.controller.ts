@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
 import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
-import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
+import { encrypt, generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";

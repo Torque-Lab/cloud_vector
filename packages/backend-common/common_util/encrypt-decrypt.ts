@@ -39,13 +39,13 @@ export async function encrypt(text: string, secret: string): Promise<string> {
   const combined = new Uint8Array(iv.byteLength + encrypted.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(encrypted), iv.byteLength);
-  return btoa(String.fromCharCode(...combined));
+  return Buffer.from(combined).toString('base64');
 }
 
 
 export async function decrypt(encryptedBase64: string, secret: string): Promise<string> {
   const key = await getKey(secret);
-  const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+  const combined = new Uint8Array(Buffer.from(encryptedBase64, 'base64'));
   const iv = combined.slice(0, 12); 
   const data = combined.slice(12); 
 
