@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { authConnection } from "../controllers/auth_connection";
+import { getPostgresInstance } from "../controllers/pg_connection";
 
 const router = Router();
 
-router.post("/auth_connection", authConnection);
+router.post("/postgres", getPostgresInstance);
 
 export default router;

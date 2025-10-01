@@ -3,10 +3,21 @@ import type { Request, Response } from "express";
 import crypto from "crypto";
 import { decrypt } from "@cloud/backend-common";
 
+const  addressTable = new Map<string, string>();
 export const getPostgresInstance = async (req: Request, res: Response) => {
     try {
         const key = req.query.key as string
         const keyArray = key.split(":");
+        const token = req.query.token as string
+        if(token !== process.env.AUTH_TOKEN_POSTGRES_PROXY!){
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        if (addressTable.has(key)) {
+            res.status(200).json({
+                backend_url:addressTable.get(key)!
+            })
+            return
+        }
        const postgresInstance = await  prismaClient.postgresDB.findFirst({
         where:{
             username:keyArray[0],
@@ -17,12 +28,16 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
       //postgresql://<pgbouncer-service-name>.<namespace>.svc.cluster.local:5432/<database>
 
        if(!postgresInstance){
-        return res.status(404).json({ error: "Postgres instance not found" });
+         res.status(404).json({ error: "Postgres instance not found" });
+         return
        }
        const decodedPassword= await decrypt(postgresInstance.password,process.env.ENCRYPT_SECRET!)
+       const url=`postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
+       addressTable.set(key,url)
+       const authCredential = generateScramCredential(decodedPassword)
        res.status(200).json({
-        backend_url:`postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`,
-        auth_credential:generateScramCredential(decodedPassword)
+        backend_url:url,
+        auth_credential:authCredential
        })
     } catch (error) {
         console.error(error);
