@@ -7,7 +7,13 @@ import { encrypt, generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+import axios from "axios";
 
+enum postgresQueue{
+    CREATE="postgres_create_queue",
+    DELETE="postgres_delete_queue"
+}
+const controlPlaneUrl=process.env.CONTROL_PLANE_URL || "http://localhost:3000"
 export const createPostgresInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -126,7 +132,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
              }
               const postgresId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate("postgres_create_queue",{...parsedData.data,resource_id:postgresId,namespace})
+        const success=await pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{...parsedData.data,resource_id:postgresId,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -155,7 +161,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 export const deletePostgres = async (req: Request, res: Response) => {
     try {
       const { postgresId } = req.body as { postgresId: string };
-      const response = await pushInfraConfigToQueueToDelete("postgres_delete_queue",postgresId)
+      const response = await pushInfraConfigToQueueToDelete(postgresQueue.DELETE,postgresId)
   
       if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
@@ -193,6 +199,12 @@ export const updatePostgres=async(req:Request,res:Response)=>{
             where:{
                 id:postgresId
             }
+        })
+        const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/postgres/routetable",{
+            resource_id:postgresId,
+            username:response?.username,
+            password:response?.password,
+            
         })
         res.status(200).json({ postgresDB:response,success:true });
     } catch (error) {

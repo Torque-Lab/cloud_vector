@@ -11,7 +11,7 @@ export const InfraConfigSchema = z.object({
     initialVCpu: z.string(),
     maxVCpu: z.string(),
     autoScale: z.boolean(),
-    backFrequency: z.enum(["daily", "weekly", "monthly"]),
+    backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
     resource_id: z.string(),
     namespace: z.string(),
 });
