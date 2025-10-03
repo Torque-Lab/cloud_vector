@@ -1,6 +1,6 @@
 import amqp from "amqplib";
 import type { Channel, ChannelModel } from "amqplib";
-
+import type { InfraConfig } from "@cloud/shared_types";
 
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
@@ -34,23 +34,6 @@ async function getRabbitMQChannel() {
         connection = null;
         throw e;
     }
-}
-
-export type InfraConfig = {
-       name: string,
-       projectId: string,
-       region: string,
-       initialMemory: string,
-       maxMemory: string,
-       initialStorage: string,
-       maxStorage: string,
-       initialVCpu: string,
-       maxVCpu: string,
-       autoScale: boolean,
-       backFrequency?: "daily" | "weekly" | "monthly" 
-       resource_id:string,
-       namespace:string
-    
 }
 
 export async function pushInfraConfigToQueueToCreate(queue_name: string, item: InfraConfig) {

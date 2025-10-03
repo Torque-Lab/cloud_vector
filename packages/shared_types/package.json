@@ -1,0 +1,21 @@
+{
+  "name": "@cloud/shared_types",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./index": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5",
+    "zod": "3.25.76"
+  },
+  "dependencies": {
+    "@cloud/backend-common": "*"
+
+  }
+}

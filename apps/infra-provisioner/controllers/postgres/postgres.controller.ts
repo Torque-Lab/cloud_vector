@@ -4,7 +4,7 @@ import yaml from "js-yaml";
 import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config/config";
 import { runCommand } from "../../git/runCommand";
 import { safeGitCommit, triggerGitPush } from "../../git/git-tools";
-import type { InfraConfig } from "@cloud/backend-common";
+import type { InfraConfig } from "@cloud/shared_types";
 
 export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
   try {
