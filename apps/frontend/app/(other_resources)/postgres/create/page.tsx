@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { databaseApi } from "@/lib/api"
+import { PostgresApi } from "@/lib/api"
 import Link from "next/link"
 import { useEffect } from "react"
+import { ArrowLeftIcon } from "lucide-react"
 
 interface Project {
   id: string
@@ -42,7 +43,7 @@ export default function CreateDatabasePage() {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const projects = await databaseApi.getProjects()
+        const projects = await PostgresApi.getProjects()
         setProjects(projects ?? [])
         if (projects?.length > 0) {
           setFormData(prev => ({
@@ -201,16 +202,16 @@ function parseCpuToCores(value: string | undefined | null): number | null {
     setIsLoading(true)
     
     try {
-      const newDb = await databaseApi.createDatabase({
+      const newDb = await PostgresApi.createDatabase({
         name: formData.name,
         projectId: formData.projectId,
         region: formData.region,
-            initialMemory: parseInt(formData.initialMemory, 10),
-            maxMemory: parseInt(formData.maxMemory, 10),
-            initialStorage: parseInt(formData.initialStorage, 10),
-            maxStorage: parseInt(formData.maxStorage, 10),
-            initialVCpu: parseInt(formData.initialVCpu, 10),
-            maxVCpu: parseInt(formData.maxVCpu, 10),
+            initialMemory: formData.initialMemory,
+            maxMemory: formData.maxMemory,
+            initialStorage: formData.initialStorage,
+            maxStorage: formData.maxStorage,
+            initialVCpu: formData.initialVCpu,
+            maxVCpu: formData.maxVCpu,
             autoScale: formData.autoScale,
             backFrequency: formData.backFrequency as "daily" | "weekly" | "monthly"
       })
@@ -242,7 +243,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
             <p className="text-muted-foreground">Set up a new Postgres instance with your preferred configuration.</p>
           </div>
           <Link href="/postgres">
-            <Button variant="outline">Back to Postgres</Button>
+            <Button variant="outline" className="cursor-pointer"><ArrowLeftIcon className="mr-2 h-4 w-4" />Back to Postgres</Button>
           </Link>
         </div>
 
@@ -605,7 +606,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                   {isLoading ? "Creating..." : "Create Database"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  By creating a database, you agree to our Terms of Service and Privacy Policy.
+                  By creating a database, you agree to our <Link className="font-bold" href="/terms">Terms of Service</Link> and <Link className="font-bold" href="/privacy">Privacy Policy</Link>.
                 </p>
               </div>
             </div>

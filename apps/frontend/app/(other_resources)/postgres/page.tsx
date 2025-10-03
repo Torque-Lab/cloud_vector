@@ -1,24 +1,23 @@
 // app/(other_resources)/postgres/page.tsx
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { DatabaseTable } from "@/components/ui/database-table"
-import { databaseApi } from "@/lib/api"
+import { PostgresApi } from "@/lib/api"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export const dynamic = 'force-dynamic'
 
-async function DatabaseList({ searchParams={} }: { searchParams?: { projectId?: string; search?: string } }) {
+async function DatabaseList() {
   try {
     const [databases, projects] = await Promise.all([
-      databaseApi.getDatabases(searchParams),
-      databaseApi.getProjects()
+      PostgresApi.getDatabases(),
+      PostgresApi.getProjects()
     ])
 
     return ( 
       <DatabaseTable 
         initialDatabases={databases} 
         projects={projects} 
-        initialFilters={searchParams} 
       />
     )
   } catch (error) {
@@ -61,7 +60,7 @@ export default function DatabasesPage({
         </div>
         
         <Suspense fallback={<DatabaseListSkeleton />}>
-          <DatabaseList searchParams={searchParams} />
+          <DatabaseList />
         </Suspense>
       </div>
     </DashboardLayout>

@@ -17,22 +17,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 interface DatabaseTableProps {
   initialDatabases: Database[]
   projects: Project[]
-  initialFilters: {
-    projectId?: string
-    search?: string
-  }
 }
 
 export function DatabaseTable({ 
   initialDatabases, 
   projects,
-  initialFilters 
 }: DatabaseTableProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [search, setSearch] = useState(initialFilters.search || "")
-  const [projectId, setProjectId] = useState(initialFilters.projectId || "all")
+  const [search, setSearch] = useState("")
+  const [projectId, setProjectId] = useState( "all")
 
   const updateSearch = useCallback((value: string) => {
     setSearch(value)

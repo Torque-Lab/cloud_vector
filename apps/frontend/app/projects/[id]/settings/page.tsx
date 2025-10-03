@@ -81,15 +81,11 @@ export default function ProjectSettingsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" onClick={() => router.push(`/projects/${projectId}`)}>
+            <Button size="sm" className="cursor-pointer" onClick={() => router.push(`/projects`)}>
               ← Back to Project
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Project Settings</h1>
-              <p className="text-muted-foreground">{project.name}</p>
-            </div>
           </div>
-          <Badge variant={project.status === "active" ? "default" : "secondary"}>{project.status}</Badge>
+        
         </div>
 
         {/* General Settings */}
@@ -99,6 +95,7 @@ export default function ProjectSettingsPage() {
             <div>
               <label className="block text-sm font-medium mb-2">Project Name</label>
               <Input
+              readOnly
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Enter project name"
@@ -114,18 +111,8 @@ export default function ProjectSettingsPage() {
                 placeholder="Describe your project..."
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Region</label>
-              <select className="w-full px-3 py-2 border border-input bg-background rounded-md">
-                <option value={project.region}>{project.region}</option>
-                <option>us-east-1 (N. Virginia)</option>
-                <option>us-west-2 (Oregon)</option>
-                <option>eu-west-1 (Ireland)</option>
-                <option>ap-southeast-1 (Singapore)</option>
-              </select>
-            </div>
             <div className="flex justify-end">
-              <Button>Save Changes</Button>
+              <Button className="cursor-pointer">Save Changes</Button>
             </div>
           </div>
         </Card>

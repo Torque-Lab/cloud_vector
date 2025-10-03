@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run ./src/index.ts",
+    "devd": "bun run ./src/index.ts",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "build:prod": "bun build ./src/index.ts --outdir dist --external node:* --external db --external ../generated/prisma --external @prisma/client --external prisma --external .prisma",

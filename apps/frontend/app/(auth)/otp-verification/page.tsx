@@ -9,7 +9,7 @@ import axios from "axios"
 import { OtpInput } from "@/components/ui/otpInput"
 import router from "next/router"
 import { toast } from "@/hooks/use-toast"
-
+import { VerifySchema } from "@cloud/shared_types"
 export default function ForgotPasswordPage() {
   const [otp, setOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +30,19 @@ export default function ForgotPasswordPage() {
         })
         return
       }
-      const response = await axios.post<User>("/api/auth/otp-verification", { otp })
+
+      const data: VerifySchema | null = JSON.parse(localStorage.getItem("signupdata") ?? "null");
+      if (!data) {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        })
+        return
+      }
+      localStorage.removeItem("signupdata")
+      data.otp = otp
+      const response = await axios.post<User>("/api/auth/otp-verification", data)
       if(response.data.success){
         toast({
           title: "Success",

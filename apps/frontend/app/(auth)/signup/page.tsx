@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 
 export default function SignUpPage() {
@@ -19,6 +19,7 @@ export default function SignUpPage() {
     password: "",
     confirmPassword: "",
   });
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isPasswordNotMatch, setIsPasswordNotMatch] = useState(false);
@@ -39,6 +40,8 @@ export default function SignUpPage() {
         success: boolean;
         message: string;
       }
+      const {email,password,firstName,lastName} = formData
+      localStorage.setItem("signupdata", JSON.stringify({email,password,firstName,lastName}));
       const response = await axios.post<User>("/api/auth/signup", formData);
       if (response.data.success) {
        toast({

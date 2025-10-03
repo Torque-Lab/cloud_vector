@@ -13,12 +13,12 @@ const mockProjects = [
     name: "Production App",
     description: "Main production environment for customer-facing applications",
     status: "active",
-    databases: 5,
-    apiCalls: "2.4M",
-    storage: "45.2 GB",
+    postgres: 5,
+    redis: 2,
+    rabbitMQ: 1,
+    vm: 1,
     cost: "$234.50",
     created: "2024-01-15",
-    region: "us-east-1",
   },
   {
     id: "2",
@@ -83,61 +83,9 @@ export default function ProjectsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Projects</h1>
-            <p className="text-muted-foreground">Manage your vector database projects</p>
-          </div>
-          <Button onClick={() => setShowCreateForm(true)}>
-            <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Project
-          </Button>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
+            <p className="text-muted-foreground">Manage All projects</p>
           </div>
         </div>
-
-        {showCreateForm && (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Create New Project</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Project Name</label>
-                <Input placeholder="Enter project name" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Region</label>
-                <select className="w-full px-3 py-2 border border-input bg-background rounded-md">
-                  <option>us-east-1 (N. Virginia)</option>
-                  <option>us-west-2 (Oregon)</option>
-                  <option>eu-west-1 (Ireland)</option>
-                  <option>ap-southeast-1 (Singapore)</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Description</label>
-                <textarea
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  rows={3}
-                  placeholder="Describe your project..."
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => setShowCreateForm(false)}>
-                Cancel
-              </Button>
-              <Button>Create Project</Button>
-            </div>
-          </Card>
-        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
@@ -152,24 +100,24 @@ export default function ProjectsPage() {
 
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Databases</span>
-                  <span className="font-medium">{project.databases}</span>
+                  <span className="text-muted-foreground">Postgres</span>
+                  <span className="font-medium">{project.postgres}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">API Calls</span>
-                  <span className="font-medium">{project.apiCalls}</span>
+                  <span className="text-muted-foreground">Redis</span>
+                  <span className="font-medium">{project.redis}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Storage</span>
-                  <span className="font-medium">{project.storage}</span>
+                  <span className="text-muted-foreground">RabbitMQ</span>
+                  <span className="font-medium">{project.rabbitMQ}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">VM</span>
+                  <span className="font-medium">{project.vm}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Monthly Cost</span>
                   <span className="font-medium text-green-600">{project.cost}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Region</span>
-                  <span className="font-medium">{project.region}</span>
                 </div>
               </div>
 
@@ -178,12 +126,10 @@ export default function ProjectsPage() {
                   Created {new Date(project.created).toLocaleDateString()}
                 </span>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => handleProjectSettings(project.id)}>
+                  <Button size="sm" className="cursor-pointer" onClick={() => handleProjectSettings(project.id)}>
                     Settings
                   </Button>
-                  <Button size="sm" onClick={() => handleOpenProject(project.id)}>
-                    Open
-                  </Button>
+          
                 </div>
               </div>
             </Card>
