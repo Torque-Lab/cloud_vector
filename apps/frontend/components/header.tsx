@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { ProjectModal } from "@/components/project-modal"
+import { GeneralModal  } from "@/components/general-modal"
 import Link from "next/link"
 
 interface HeaderProps {
@@ -108,7 +108,7 @@ export function Header({ onCreateProject }: HeaderProps) {
         </div>
       </header>
 
-      <ProjectModal isOpen={isProjectModalOpen} onClose={() => setIsProjectModalOpen(false)} />
+      <GeneralModal isOpen={isProjectModalOpen} onClose={() => setIsProjectModalOpen(false)} />
     </>
   )
 }

@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 async function DatabaseList() {
   try {
-    const [databases, projects] = await Promise.all([
+    let [databases, projects] = await Promise.all([
       PostgresApi.getDatabases(),
       PostgresApi.getProjects()
     ])

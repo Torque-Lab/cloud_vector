@@ -8,12 +8,16 @@ import { Card } from "@/components/ui/card"
 import axios from "axios"
 import { toast } from "@/hooks/use-toast"
 
-interface ProjectModalProps {
+interface ModalProps {
   isOpen: boolean
   onClose: () => void
+  children?: React.ReactNode
+  title?: string
+  inputMode?: boolean
+  onClick?: () => void
 }
 
-export function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
+export function GeneralModal({ isOpen, onClose, children, title, inputMode=true, onClick }: ModalProps) {
   const [projectName, setProjectName] = useState("")
   const [description, setDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -26,6 +30,7 @@ export function ProjectModal({ isOpen, onClose }: ProjectModalProps) {
       projectId:string
       success:boolean
       message:string
+    
     }
 try{
   const response = await axios.post<Project>("/api/projects", { name: projectName, description:description })
@@ -66,15 +71,16 @@ catch(e){
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <Card className="relative w-full max-w-md p-6 mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Create New Project</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <Button variant="ghost" size="sm" onClick={onClose} className="cursor-pointer">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </Button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {children}
+{inputMode && (
+  <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Project Name</label>
             <Input
@@ -95,13 +101,13 @@ catch(e){
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className="cursor-pointer">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>{isLoading ? "Creating..." : "Create Project"}</Button>
+            <Button type="submit" disabled={isLoading} className="cursor-pointer">{isLoading ? "Creating..." : "Create Project"}</Button>
           </div>
         </form>
-      </Card>
+)}      </Card>
     </div>
   )
 }
