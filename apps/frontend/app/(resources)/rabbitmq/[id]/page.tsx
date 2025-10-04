@@ -1,135 +1,21 @@
-"use client"
+import DatabaseDetailPage from "../_ignoreClient/client_page";
+import { RabbitApi } from "@/lib/rabbit_api";
+import ErrorPage from "../_ignoreClient/error_page";
+import getSessionInServer from "@/provider/server-session";
+import { redirect } from "next/navigation";
 
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-
-import { GeneralModal } from "@/components/general-modal"
-import axios from "axios"
-import { ConnectChildSection } from "@/components/connect-child-section"
-import { useState } from "react"
-
-const database = {
-  id: "db-1",
-  name: "product-search-v2",
-  description: "Product similarity search for e-commerce platform",
-  status: "healthy",
-  cpuLimit: "2 vCPU",
-  memoryLimit: "4 GB",
-  size: "234 GB",
-  region: "us-east-1",
-  created: "2024-01-15",
-  lastActivity: "2 minutes ago",
-  autoScaling: true,
+export default async function DatabaseDetailPageServerWrapper({params}: {params: Promise<{id: string}>}) {
+     const token = await getSessionInServer()
+     if (!token || token === null || token === undefined) {
+       redirect("/signin")
+    }
+const id =  (await params).id
+   try{
+    const rabbitmq = await RabbitApi.getRabbitmq(id)
+    return <DatabaseDetailPage rabbitmq={rabbitmq}/>
+   }catch(e){
+    return  <ErrorPage cardTitle="RabbitMQ Not Found" paragraph="  We couldn’t load the requested RabbitMQ details. The RabbitMQ
+    may not exist, or there was a problem fetching its information."/>
+   }
 }
-
-
-export default function DatabaseDetailPage({ params }: { params: { id: string } }) {
-  const [isConnectModelOpen, setIsConnectModelOpen] = useState(false)
-  return (
-    <DashboardLayout>
-      <div className="flex-1 space-y-6 p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center space-x-2">
-             
-              <h2 className="text-3xl font-bold tracking-tight">{database.name}</h2>
-              <Badge variant={database.status === "healthy" ? "success" : "warning"}>{database.status}</Badge>
-            </div>
-            <p className="text-muted-foreground">{database.description}</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button className="cursor-pointer " onClick={() => {setIsConnectModelOpen(true)}}>Connect</Button>
-          </div>
-        </div>
-
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Database Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration</CardTitle>
-              <CardDescription>Current RabbitMQ settings and parameters.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{database.cpuLimit}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Memory Limit:</span>
-                  <span className="text-sm font-medium">{database.memoryLimit}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Region:</span>
-                  <span className="text-sm font-medium">{database.region}</span>
-                </div>
-                <div className="flex justify-between items-start">
-  <div className="flex flex-col">
-    <span className="text-sm text-muted-foreground">Auto-scaling:</span>
-    <small className="text-xs text-muted-foreground mt-1">
-      * scaling in same instance, not add new machine
-    </small>
-  </div>
-  <Badge variant={database.autoScaling ? "success" : "secondary"}>
-    {database.autoScaling ? "Enabled" : "Disabled"}
-  </Badge>
-</div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{database.created}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Performance Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Overview</CardTitle>
-              <CardDescription>Query latency and throughput over time.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] flex items-center justify-center bg-muted/20 rounded-lg">
-                <div className="text-center">
-
-                  <span >coming soon</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common RabbitMQ operations and management tasks.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent cursor-pointer">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                  />
-                </svg>
-                <span className="text-sm">Export Data</span>
-                <span className="text-xs text-muted-foreground">coming soon</span>
-              </Button>
-            
-            </div>
-          </CardContent>
-        </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to RabbitMQ" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/rabbitmq/reset" endpoint="/api/rabbitmq/connection" />} />
-      </div>
-    </DashboardLayout>
-  )
-}
+    

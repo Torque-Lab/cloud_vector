@@ -17,10 +17,13 @@ export interface Project {
   name: string;
 }
 export const PostgresApi = {
-  getDatabases: async (): Promise<Pick<pgData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'projectName' | 'projectId'>[]> => {
-    const response = await axios.get<{databases:Pick<pgData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'projectName' | 'projectId'>[],success:boolean}>(`${API_BASE_URL}/api/all-postgresql`,
+  getDatabases: async (token: string): Promise<Pick<pgData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[]> => {
+    const response = await axios.get<{databases:Pick<pgData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[],success:boolean}>(`${API_BASE_URL}/api/all-postgresql`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.databases;
@@ -35,10 +38,13 @@ export const PostgresApi = {
     return response.data.database;
   },
 
-  getProjects: async (): Promise<Project[]> => {
+  getProjects: async (token: string): Promise<Project[]> => {
     const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.projects;

@@ -23,7 +23,9 @@ interface ConnectChildSectionProps {
       let mounted = true
       setLoading(true)
       axios
-        .get(endpoint)
+        .get(endpoint,{
+          withCredentials: true,
+        })
         .then((res) => {
           if (mounted) {
             setConnectionString(res.data?.connectionString || "")
@@ -48,7 +50,9 @@ interface ConnectChildSectionProps {
     const handleReset = async () => {
       try {
         setResetLoading(true)
-        const reset =  await axios.post<{ connectionString: string ,success: boolean }>(reset_endpoint)
+        const reset =  await axios.post<{ connectionString: string ,success: boolean }>(reset_endpoint,{
+          withCredentials: true,
+        })
     if (reset.data.success) {
       setConnectionString(reset.data.connectionString)
       setResetLoading(false)

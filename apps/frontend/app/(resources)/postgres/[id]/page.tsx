@@ -1,19 +1,21 @@
-import DatabaseDetailPage from "./_ignoreClient/client_page";
+import DatabaseDetailPage from "../_ignoreClient/client_page";
 import { PostgresApi } from "@/lib/pg_api";
-import ErrorPage from "./_ignoreClient/error_page";
+import ErrorPage from "../_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";
+import { redirect } from "next/navigation";
 
 export default async function DatabaseDetailPageServerWrapper({params}: {params: Promise<{id: string}>}) {
-   const token = await getSessionInServer()
-   if(!token){
-    return <ErrorPage/>
-   }
+     const token = await getSessionInServer()
+     if (!token || token === null || token === undefined) {
+       redirect("/signin")
+    }
 const id =  (await params).id
    try{
     const database = await PostgresApi.getDatabase(id)
     return <DatabaseDetailPage database={database}/>
    }catch(e){
-    return <ErrorPage/>
+    return  <ErrorPage cardTitle="Database Not Found" paragraph="  We couldn’t load the requested database details. The database
+    may not exist, or there was a problem fetching its information."/>
    }
 }
     

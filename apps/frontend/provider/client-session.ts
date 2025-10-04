@@ -18,7 +18,7 @@ interface Session {
 
 let isRefreshing = false;
 
-export function useSession(): Session {
+export function useClientSession(): Session {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
