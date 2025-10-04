@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { PostgresApi } from "@/lib/api"
+import { PostgresApi } from "@/lib/pg_api"
 import Link from "next/link"
 import { useEffect } from "react"
 import { ArrowLeftIcon } from "lucide-react"
@@ -222,7 +222,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
       })
       
       // Redirect to the new database
-      router.push(`/postgres/${newDb.id}`)
+      router.push(`/rabbitmq/${newDb.id}`)
     } catch (error) {
       toast({
         title: "Error",
@@ -239,11 +239,11 @@ function parseCpuToCores(value: string | undefined | null): number | null {
       <div className="flex-1 space-y-6 p-6 h-full ">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Create Postgres instance</h2>
-            <p className="text-muted-foreground">Set up a new Postgres instance with your preferred configuration.</p>
+            <h2 className="text-3xl font-bold tracking-tight">Create RabbitMQ instance</h2>
+            <p className="text-muted-foreground">Set up a new RabbitMQ instance with your preferred configuration.</p>
           </div>
-          <Link href="/postgres">
-            <Button variant="outline" className="cursor-pointer"><ArrowLeftIcon className="mr-2 h-4 w-4" />Back to Postgres</Button>
+          <Link href="/rabbitmq">
+            <Button variant="outline" className="cursor-pointer"><ArrowLeftIcon className="mr-2 h-4 w-4" />Back to RabbitMQ</Button>
           </Link>
         </div>
 
@@ -254,21 +254,21 @@ function parseCpuToCores(value: string | undefined | null): number | null {
               <Card>
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
-                  <CardDescription>Enter your database details</CardDescription>
+                  <CardDescription>Enter your RabbitMQ details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 overflow-visible">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Database Name</Label>
+                    <Label htmlFor="name">RabbitMQ Name</Label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="my-postgres-db"
+                      placeholder="my-rabbitmq"
                       required
                     />
                     <p className="text-sm text-muted-foreground">
-                      A unique name for your database. Only lowercase letters, numbers, and hyphens are allowed.
+                      A unique name for your RabbitMQ. Only lowercase letters, numbers, and hyphens are allowed.
                     </p>
                   </div>
 
@@ -312,7 +312,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
              <Card>
                 <CardHeader>
                   <CardTitle>Configuration</CardTitle>
-                  <CardDescription>Configure your database settings</CardDescription>
+                  <CardDescription>Configure your RabbitMQ settings</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 overflow-visible">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
@@ -603,10 +603,10 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                   className="w-full cursor-pointer"
                   disabled={isLoading }
                 >
-                  {isLoading ? "Creating..." : "Create Database"}
+                  {isLoading ? "Creating..." : "Create RabbitMQ"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  By creating a database, you agree to our <Link className="font-bold" href="/terms">Terms of Service</Link> and <Link className="font-bold" href="/privacy">Privacy Policy</Link>.
+                  By creating a RabbitMQ, you agree to our <Link className="font-bold" href="/terms">Terms of Service</Link> and <Link className="font-bold" href="/privacy">Privacy Policy</Link>.
                 </p>
               </div>
             </div>

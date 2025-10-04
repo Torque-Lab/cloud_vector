@@ -4,13 +4,12 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+
 import { GeneralModal } from "@/components/general-modal"
-import { Eye, EyeOff, RefreshCcw } from "lucide-react"
 import axios from "axios"
-// Mock data for a specific database
+import { ConnectChildSection } from "@/components/connect-child-section"
+import { useState } from "react"
+
 const database = {
   id: "db-1",
   name: "product-search-v2",
@@ -51,7 +50,7 @@ export default function DatabaseDetailPage({ params }: { params: { id: string } 
           <Card>
             <CardHeader>
               <CardTitle>Configuration</CardTitle>
-              <CardDescription>Current database settings and parameters.</CardDescription>
+              <CardDescription>Current RabbitMQ settings and parameters.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
@@ -109,11 +108,11 @@ export default function DatabaseDetailPage({ params }: { params: { id: string } 
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common database operations and management tasks.</CardDescription>
+            <CardDescription>Common RabbitMQ operations and management tasks.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -129,119 +128,8 @@ export default function DatabaseDetailPage({ params }: { params: { id: string } 
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to Redis" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/redis/reset" endpoint="/api/redis/connection" />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to RabbitMQ" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/rabbitmq/reset" endpoint="/api/rabbitmq/connection" />} />
       </div>
     </DashboardLayout>
-  )
-}
-
-interface ConnectChildSectionProps {
-  endpoint: string 
-  reset_endpoint: string
-}
-
-export function ConnectChildSection({
-  endpoint,
-  reset_endpoint,
-}: ConnectChildSectionProps) {
-  const [connectionString, setConnectionString] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
-  const [resetLoading, setResetLoading] = useState<boolean>(false)
-
-  useEffect(() => {
-    let mounted = true
-    setLoading(true)
-    axios
-      .get(endpoint)
-      .then((res) => {
-        if (mounted) {
-          setConnectionString(res.data?.connectionString || "")
-          setError(null)
-        }
-      })
-      .catch((err) => {
-        if (mounted){
-          setError("Something went wrong")
-        }
-    
-      })
-      .finally(() => {
-        if (mounted) setLoading(false)
-      })
-
-    return () => {
-      mounted = false
-    }
-  }, [endpoint])
-
-  const handleReset = async () => {
-    try {
-      setResetLoading(true)
-      const reset =  await axios.post<{ connectionString: string ,success: boolean }>(reset_endpoint)
-  if (reset.data.success) {
-    setConnectionString(reset.data.connectionString)
-    setResetLoading(false)
-  }
-      
-    } catch (error) {
-     setResetLoading(false)
-     setError("Something went wrong")
-    }
-  }
-
-
-  const maskConnectionString = useMemo(() => {
-    if (!connectionString) return ""
-    try {
-      const url = new URL(connectionString)
-      if (url.password) {
-        const hidden = "*".repeat(url.password.length)
-        url.password = showPassword ? url.password : hidden
-      }
-      return url.toString()
-    } catch {
-      return connectionString 
-    }
-  }, [connectionString, showPassword])
-
-  return (
-    <Card className="w-full border-none">
-
-      <CardContent className="flex items-center space-x-2">
-        {loading ? (
-          <div className="text-sm text-muted-foreground">Loading connection string...</div>
-        ) : error ? (
-          <div className="text-sm text-destructive">{error}</div>
-        ) : (
-          <>
-            <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-3 py-2 text-sm">
-              {maskConnectionString}
-            </div>
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              size="icon"
-              onClick={() => setShowPassword((prev) => !prev)}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </>
-        )}
-      </CardContent>
-
-      <CardFooter className="justify-end">
-      <Button
-    variant="secondary"
-    className="cursor-pointer"
-    onClick={handleReset}
-    disabled={resetLoading}
-  >
-    <RefreshCcw className={`mr-2 h-4 w-4 ${resetLoading ? "animate-spin" : ""}`} />
-    {resetLoading ? "Resetting..." : "Reset User & Password"}
-  </Button>
-      </CardFooter>
-    </Card>
   )
 }

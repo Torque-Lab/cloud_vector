@@ -71,12 +71,12 @@ export default function DatabasesPage() {
       <div className="flex-1 space-y-6 p-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">All PostgresSQL</h2>
-            <p className="text-muted-foreground">Manage your PostgresSQL databases and configurations.</p>
+            <h2 className="text-3xl font-bold tracking-tight">All Redis</h2>
+            <p className="text-muted-foreground">Manage your Redis databases and configurations.</p>
           </div>
           <div className="flex items-center space-x-2">
-            <Link href="/postgres/create">
-              <Button className="cursor-pointer">Create Database</Button>
+            <Link href="/redis/create">
+              <Button className="cursor-pointer">Create Redis Cache</Button>
             </Link>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function DatabasesPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {selectedProject === "all" ? "Total Databases" : "Project Databases"}
+                {selectedProject === "all" ? "Total Redis" : "Project Redis"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -130,7 +130,7 @@ export default function DatabasesPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Healthy Databases</CardTitle>
+              <CardTitle className="text-sm font-medium">Healthy Redis</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.healthy}</div>
@@ -146,13 +146,13 @@ export default function DatabasesPage() {
           <CardHeader>
             <CardTitle>
               {selectedProject === "all"
-                ? "All Databases"
-                : `${projects.find((p) => p.id === selectedProject)?.name} Databases`}
+                ? "All Redis"
+                : `${projects.find((p) => p.id === selectedProject)?.name} Redis`}
             </CardTitle>
             <CardDescription>
               {selectedProject === "all"
-                ? "A list of all your databases across all projects."
-                : `Databases in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
+                ? "A list of all your Redis across all projects."
+                : `Redis in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
