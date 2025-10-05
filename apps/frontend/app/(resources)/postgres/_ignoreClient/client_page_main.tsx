@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { pgData } from "@/lib/pg_api"
 
-export default function AllDatabasesPage({databases,projects}: {databases: Pick<pgData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[],projects: {id: string; name: string}[]}) {
+export default function AllDatabasesPage({databases,projects}: {databases: pgData[],projects: {id: string; name: string}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
 
   const filteredDatabases = databases.filter((db) => {
@@ -20,8 +20,8 @@ export default function AllDatabasesPage({databases,projects}: {databases: Pick<
   const getProjectStats = () => {
     const projectDbs =
       selectedProject === "all" ? databases : databases.filter((db) => db.projectId === selectedProject)
-    const totalSize = projectDbs.reduce((sum, db) => sum + Number.parseFloat(db.size.replace(" GB", "")), 0)
-    const healthyCount = projectDbs.filter((db) => db.status === "healthy").length
+    const totalSize = projectDbs.reduce((sum, db) => sum + Number.parseFloat(db.initialStorage.replace(" GB", "")), 0)
+    const healthyCount = projectDbs.filter((db) => db.is_provisioned=== true).length
 
     return {
       total: projectDbs.length,
@@ -139,9 +139,9 @@ export default function AllDatabasesPage({databases,projects}: {databases: Pick<
                     <TableCell>
                       <div>
                         <Link href={`/postgres/${db.id}`} className="font-medium hover:underline">
-                          {db.name}
+                          {db.database_name}
                         </Link>
-                        <p className="text-sm text-muted-foreground">{db.description}</p>
+        
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
@@ -150,9 +150,9 @@ export default function AllDatabasesPage({databases,projects}: {databases: Pick<
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={db.status === "healthy" ? "success" : "warning"}>{db.status}</Badge>
+                      <Badge variant={db.is_provisioned === true ? "success" : "warning"}>{db.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
                     </TableCell>
-                    <TableCell>{db.size}</TableCell>
+                    <TableCell>{db.initialStorage}</TableCell>
                     <TableCell>{db.region}</TableCell>
                    
                   </TableRow>

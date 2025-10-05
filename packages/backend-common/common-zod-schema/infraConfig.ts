@@ -10,7 +10,7 @@ export const InfraConfigSchema = z.object({
     maxStorage: z.string(),
     initialVCpu: z.string(),
     maxVCpu: z.string(),
-    autoScale: z.boolean(),
+    autoScale: z.string().min(1).max(5),
     backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
     resource_id: z.string(),
     namespace: z.string(),

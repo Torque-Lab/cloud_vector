@@ -27,7 +27,7 @@ export default function SignInPage() {
         email,
         password,
       });
-      console.log(response.data);
+  
       if (response.data.success) {
         setIsLoading(false);
         toast({
@@ -46,7 +46,6 @@ export default function SignInPage() {
       }
     } catch (e) {
       setIsLoading(false);
-      console.log(e);
       toast({
         title: "Error",
         description: "Something went wrong",

@@ -13,7 +13,7 @@ import { RefreshCcw } from "lucide-react"
 import { pgData, PostgresApi } from "@/lib/pg_api"
 
 
-export default function DatabaseDetailPage({database}: {database: Pick<pgData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>}) {
+export default function DatabaseDetailPage({database}: {database: pgData }) {
   const [isConnectModelOpen, setIsConnectModelOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -58,10 +58,9 @@ export default function DatabaseDetailPage({database}: {database: Pick<pgData, '
           <div>
             <div className="flex items-center space-x-2">
              
-              <h2 className="text-3xl font-bold tracking-tight">{database.name}</h2>
-              <Badge variant={database.status === "healthy" ? "success" : "warning"}>{database.status}</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">{database.database_name}</h2>
+              <Badge variant={database.is_provisioned === true ? "success" : "warning"}>{database.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
             </div>
-            <p className="text-muted-foreground">{database.description}</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button className="cursor-pointer " onClick={() => {setIsConnectModelOpen(true)}}>Connect</Button>
@@ -105,6 +104,10 @@ export default function DatabaseDetailPage({database}: {database: Pick<pgData, '
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Created:</span>
                   <span className="text-sm font-medium">{database.createdAt}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Updated:</span>
+                  <span className="text-sm font-medium">{database.updatedAt}</span>
                 </div>
               </div>
             </CardContent>

@@ -1,5 +1,5 @@
 
-import { getOTP, isOTPValid, sendOTPEmail, SignUpSchema, storeOTP, VerifySchema } from "@cloud/backend-common";
+import { isOTPValid, sendOTPEmail, SignUpSchema, storeOTP, VerifySchema } from "@cloud/backend-common";
 import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";   
 import { SignInSchema } from "@cloud/backend-common";
@@ -58,7 +58,6 @@ export function generateTimeId(): string{
     return timeId;
 }
 
-
 export function generateOTP(length: number = 6): string {
     return Math.floor(100000 + Math.random() * 900000).toString().substring(0, length);
 }
@@ -67,7 +66,7 @@ export const signUp = async (req: Request, res: Response) => {
     const parsedData = SignUpSchema.safeParse(req.body);
 
     if (!parsedData.success) {
-      return res.status(400).json({ error: "Invalid data", success: false });
+      return res.status(400).json({ message: "Invalid data", success: false });
     }
 
     const { email } = parsedData.data;
@@ -75,20 +74,20 @@ export const signUp = async (req: Request, res: Response) => {
     const otpStored = await storeOTP(email, otp, 15);
 
     if (!otpStored) {
-      res.status(500).json({ error: "Failed to store OTP", success: false });
+      res.status(500).json({ message: "Failed to store OTP", success: false });
       return;
     }
 
     const emailSent = await sendOTPEmail(email, otp, "Your OTP For Account Verification");
     if (!emailSent) {
-      res.status(500).json({ error: "Failed to send OTP email", success: false });
+      res.status(500).json({ message: "Failed to send OTP email", success: false });
       return;
     }
 
     res.status(201).json({ message: "OTP sent successfully", success: true });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to send OTP", success: false });
+    res.status(500).json({ message: "Failed to send OTP", success: false });
   }
 };
 
@@ -96,13 +95,13 @@ export const verifyOTP = async (req: Request, res: Response) => {
     try {
         const parsedData = VerifySchema.safeParse(req.body);
         if (!parsedData.success) {
-            res.status(400).json({ error: "Invalid data", success: false });
+            res.status(400).json({ message: "Invalid data", success: false });
             return;
         }
         const { email, otp, password, first_name, last_name } = parsedData.data;
         const isValid = await isOTPValid(email, otp);
         if (!isValid) {
-            res.status(401).json({ error: "Invalid OTP", success: false });
+            res.status(401).json({ message: "Invalid OTP", success: false });
             return;
         }
         const hashedPassword = await hashPassword(password)
@@ -119,31 +118,31 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Failed to create user", success: false });
+      res.status(500).json({ message: "Failed to create user", success: false });
     }
   };
   
 export const signIn = async (req: Request, res: Response) => {
     try {
-      console.log(req.body)
         const parsedData = SignInSchema.safeParse(req.body);
         if(!parsedData.success) {
-            res.status(400).json({ error: "Invalid data" });
+            res.status(400).json({ message: "Invalid data",success:false });
             return;
         }
         const {email, password,  } = parsedData.data;
         const failedAttempts = await GetKeyValue(email);
         if (failedAttempts?.value != null && failedAttempts.value >= 6) {
-           res.status(403).json({ message: "Too many failed login attempts. Try again in 24 hours  or reset your password" });
+           res.status(403).json({ message: "Too many failed login attempts. Try again in 24 hours  or reset your password",success:false });
            return;
         }
         
         const user = await prismaClient.userBaseAdmin.findUnique({ where: { email } });
         
         const isValid = user && await verifyPassword(password, user.password);
+        console.log(isValid,"isValid",req.body)
         if (!isValid) {
             await IncreaseValueOfKey(email,1);
-            res.status(401).json({ error: "Invalid username or password" });
+            res.status(401).json({ message: "Invalid username or password",success:false });
             return;
         }
 
@@ -171,7 +170,7 @@ export const signIn = async (req: Request, res: Response) => {
         res.status(200).json({ message: "User signed in successfully",success:true});
     } catch (error) {
   
-       res.status(500).json({ error: "Failed to sign in",success:false });
+       res.status(500).json({ message: "Failed to sign in",success:false });
     }
 };
 
@@ -182,7 +181,7 @@ export const csurf = async (req: Request, res: Response) => {
         res.status(200).json({ token });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to generate token" });
+        res.status(500).json({ message: "Failed to generate token" });
     }
 };
 
@@ -191,9 +190,9 @@ export const logout = async (req: Request, res: Response) => {
     try {
       clearAuthCookie(res, "access_token");
       clearAuthCookie(res, "refresh_token");
-        res.status(200).json({ message: "User signed out successfully" });
+        res.status(200).json({ message: "User signed out successfully" ,success:true});
     } catch (error) {
-        res.status(500).json({ error: "Failed to sign out" });
+        res.status(500).json({ message: "Failed to sign out",success:false });
     }
 };
 
@@ -201,12 +200,12 @@ export const refresh = async (req: Request, res: Response) => {
     try {
         const refresh_token = req.cookies.refresh_token;
         if (!refresh_token) {
-            res.status(401).json({ error: "Invalid token" });
+            res.status(401).json({ message: "Invalid token",success:false });
             return;
         }
         const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET_REFRESH || '78yh76tvt7ividtgd75tbftewg') as { userId: string ,timeId: string ,tokenId: string ,issuedAt: number};
         if (!decoded.userId) {
-            res.status(401).json({ error: "Invalid token" });
+            res.status(401).json({ message: "Invalid token",success:false });
             return;
         }
         const payload1= {
@@ -216,13 +215,14 @@ export const refresh = async (req: Request, res: Response) => {
             issuedAt: Date.now(), 
             nonce: generateRandomString()
         }
+
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
      
         setAuthCookie(res, access_token, "access_token",60 * 60 * 1000);
-        res.status(200).json({ access_token });
+        res.status(200).json({ message: "Token refreshed successfully",success:true });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to refresh token" });
+        res.status(500).json({ message: "Failed to refresh token",success:false });
     }
 };
 export const forgotPassword = async (req: Request, res: Response) => {
@@ -267,7 +267,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: "Internal server error", success: false });
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
@@ -308,7 +308,7 @@ export const resetPassword = async (req: Request, res: Response) => {
          res.status(200).json({ message: "Password reset successfully",success:true });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Internal server error",success:false });
+        res.status(500).json({ message: "Internal server error",success:false });
     }
 };  
 
@@ -322,6 +322,7 @@ const user = await prismaClient.userBaseAdmin.findUnique({
     select: {
         id: true,
         email: true,
+        role: true,
         first_name: true,
         last_name: true,
         createdAt: true,
@@ -329,7 +330,7 @@ const user = await prismaClient.userBaseAdmin.findUnique({
 });
 
 if (!user) {
-    res.status(401).json({ error: "User not found",success:false });
+    res.status(401).json({ message: "User not found",success:false });
     return;
 }
 

@@ -1,7 +1,7 @@
 
 import type { Request, Response } from "express";
-import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { postgresqlSchema, projectSchema} from "@cloud/backend-common";
+import { PermissionList, prismaClient,  } from "@cloud/db";
+import { postgresqlSchema } from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
@@ -13,7 +13,7 @@ enum postgresQueue{
     CREATE="postgres_create_queue",
     DELETE="postgres_delete_queue"
 }
-const controlPlaneUrl=process.env.CONTROL_PLANE_URL || "http://localhost:3000"
+const controlPlaneUrl=process.env.CONTROL_PLANE_URL
 export const createPostgresInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -147,6 +147,14 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
                 port:"5672",
                 namespace:namespace,
+                initialMemory:parsedData.data.initialMemory,
+                maxMemory:parsedData.data.maxMemory,
+                initialStorage:parsedData.data.initialStorage,
+                maxStorage:parsedData.data.maxStorage,
+                initialVCpu:parsedData.data.initialVCpu,
+                maxVCpu:parsedData.data.maxVCpu,
+                autoScale: parsedData.data.autoScale === "true" ? true : false,
+                backUpFrequency:parsedData.data.backUpFrequency,
                 
 
                 
@@ -158,9 +166,9 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-export const deletePostgres = async (req: Request, res: Response) => {
+export const deletePostgresInstance = async (req: Request, res: Response) => {
     try {
-      const { postgresId } = req.body as { postgresId: string };
+      const  postgresId  = req.query.postgresId as string;
       const response = await pushInfraConfigToQueueToDelete(postgresQueue.DELETE,postgresId)
   
       if (!response) {
@@ -176,7 +184,7 @@ export const deletePostgres = async (req: Request, res: Response) => {
   };
 export const getPostgresStatus=async(req:Request,res:Response)=>{
     try {
-        const {postgresId}=req.body as {postgresId:string};
+        const postgresId=req.query.postgresId as string;
         const postgresStatus=await prismaClient.postgresDB.findUnique({
             where:{
                 id:postgresId
@@ -188,7 +196,7 @@ export const getPostgresStatus=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to get postgresDB status", error });
     }
 }
-export const updatePostgres=async(req:Request,res:Response)=>{
+export const updatePostgresInstance=async(req:Request,res:Response)=>{
     try {
         const {postgresId}=req.body as {postgresId:string};
         const response=await prismaClient.postgresDB.update({
@@ -206,11 +214,89 @@ export const updatePostgres=async(req:Request,res:Response)=>{
             password:response?.password,
             
         })
-        res.status(200).json({ postgresDB:response,success:true });
+        res.status(200).json({ message:"PostgresDB updated successfully",success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to update postgresDB status", error });
     }
 }
+export const getAllPostgresInstance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const allProjects = await prismaClient.project.findMany({
+      where: { userBaseAdminId: userId },
+      select: { id: true, name: true }
+    });
 
-  
+    const projectIds = allProjects.map((p) => p.id);
+
+    if (projectIds.length === 0) {
+      return res.status(200).json({ postgresDB: [], success: true });
+    }
+
+    const allPostgres = await prismaClient.postgresDB.findMany({
+      where: { projectId: { in: projectIds } },
+      select: {
+        projectId: true,
+        id: true,
+        database_name: true,
+        is_provisioned: true,
+        initialMemory: true,
+        region: true,
+        createdAt: true,
+        updatedAt: true,
+        autoScale: true,
+        initialStorage: true,
+        maxStorage: true,
+        initialVCpu: true,
+        maxVCpu: true,
+        backUpFrequency: true,
+        maxMemory: true,
+      }
+    });
+
+  const projectMap = new Map(allProjects.map(p => [p.id, p.name]));
+const finalPostgres = allPostgres.map(db => ({
+  ...db,
+  projectName: projectMap.get(db.projectId)
+}));
+
+    res.status(200).json({ databases: finalPostgres, success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to get postgresDB status", error });
+  }
+};
+export const getOnePostgresInstance = async (req: Request, res: Response) => {
+    try {
+        const postgresId=req.query.postgresId as string;
+        const postgres=await prismaClient.postgresDB.findUnique({
+            where:{
+                id:postgresId
+            },
+         select:{
+            projectId:true,
+            id:true,
+            database_name:true,
+            is_provisioned:true,
+            initialMemory:true,
+            region:true,
+            createdAt:true,
+            updatedAt:true,
+            autoScale:true,
+            initialStorage:true,
+            maxStorage:true,
+            initialVCpu:true,
+            maxVCpu:true,
+            backUpFrequency:true,
+            maxMemory:true,
+         }
+            
+        })
+    
+        res.status(200).json({ database:postgres,success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to get postgresDB status", error });
+    }
+}

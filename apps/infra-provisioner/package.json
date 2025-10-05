@@ -16,6 +16,9 @@
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*"
   },
+  "peerDependencies": {
+    "axios": "^1.12.2"
+  },
   "dependencies": {
     "@types/express": "^5.0.3",
     "@types/js-yaml": "^4.0.9",

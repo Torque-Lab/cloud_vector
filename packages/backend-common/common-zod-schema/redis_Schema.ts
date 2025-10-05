@@ -11,5 +11,5 @@ export const redisSchema=z.object({
    initialVCpu: z.string().min(1).max(8),
    maxVCpu: z.string().min(1).max(8),
    autoScale: z.boolean(),
-   backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
+   backUpFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
 })

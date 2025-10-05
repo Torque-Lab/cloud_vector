@@ -4,21 +4,20 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export interface pgData extends postgresqlSchema {
   id: string;
-  createdAt: string;
-  updatedAt: string;
-  description: string;
-  status: string;
-  size: string;
   region: string;
   projectName: string;
+  is_provisioned: boolean,
+  database_name: string,
+  createdAt: string,
+  updatedAt: string,
 }
 export interface Project {
   id: string;
   name: string;
 }
 export const PostgresApi = {
-  getDatabases: async (token: string): Promise<Pick<pgData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[]> => {
-    const response = await axios.get<{databases:Pick<pgData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[],success:boolean}>(`${API_BASE_URL}/api/all-postgresql`,
+  getDatabases: async (token: string): Promise<pgData[]> => {
+    const response = await axios.get<{databases:pgData[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/all-postgresql`,
       {
         withCredentials: true,
         headers: {
@@ -29,17 +28,20 @@ export const PostgresApi = {
     return response.data.databases;
   },
 
-  getDatabase: async (id: string): Promise<Pick<pgData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency"| 'maxMemory'|'maxVCpu'>> => {
-    const response = await axios.get<{database:Pick<pgData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>,success:boolean}>(`${API_BASE_URL}/api/postgresql-get/${id}`,
+  getDatabase: async (id: string,token?:string): Promise<pgData> => {
+    const response = await axios.get<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-get/?postgresId=${id}`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.database;
   },
 
   getProjects: async (token: string): Promise<Project[]> => {
-    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/projects`,
       {
         withCredentials: true,
         headers: {
@@ -50,28 +52,37 @@ export const PostgresApi = {
     return response.data.projects;
   },
 
-  createDatabase: async (data: postgresqlSchema ): Promise<pgData> => {
-    const response = await axios.post<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/postgresql-create`, data,
+  createDatabase: async (data: postgresqlSchema,token?:string ): Promise<pgData> => {
+    const response = await axios.post<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-create`, data,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.database;
   },
 
-  updateDatabase: async (id: string, data: Partial<pgData>): Promise<pgData> => {
-    const response = await axios.patch<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/postgresql-update/${id}`, data,
+  updateDatabase: async (id: string, data: Partial<pgData>,token?:string): Promise<pgData> => {
+    const response = await axios.patch<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-update/?postgresId=${id}`, data,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.database;
   },
 
-  deleteDatabase: async (id: string): Promise<{message:string,success:boolean}> => {
-    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/postgresql-delete/${id}`,
+  deleteDatabase: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {
+    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-delete/?postgresId=${id}`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data

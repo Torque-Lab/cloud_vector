@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import authRouter from "../routes/auth/auth.route";
 import passport from "passport";
+import postgresRouter from "../routes/infra/postgres.route";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -10,11 +11,10 @@ if(!isDev){
   app.set("trust proxy", 1);
 }
 app.use(passport.initialize());
-app.use("/api/auth", authRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/infra",postgresRouter);
 
-
-
-app.get("/api/health", (req, res) => {
+app.get("/api/v1/health", (req, res) => {
     const token=req.query.token;
     if(!token){
         return res.status(401).json({ message: "Unauthorized" });

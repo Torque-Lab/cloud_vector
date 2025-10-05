@@ -10,5 +10,5 @@ export const postgresqlSchema=z.object({
    initialVCpu: z.string().min(1).max(8),
    maxVCpu: z.string().min(1).max(8),
    autoScale: z.string().min(1).max(5),
-   backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
+   backUpFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
 })
