@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { prismaClient } from 'db';
+import { prismaClient } from '@cloud/db';
 
 
 declare global {
@@ -13,7 +13,7 @@ declare global {
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tokenFromHeader = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : undefined;
+    const tokenFromHeader = req.headers.authorization?.startsWith('Bearer') ? req.headers.authorization.split(' ')[1] : undefined;
     const access_token = req.cookies.access_token || tokenFromHeader;
     if (!access_token) {
        res.status(401).json({ error: 'Invalid token' });

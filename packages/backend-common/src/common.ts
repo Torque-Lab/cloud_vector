@@ -11,5 +11,4 @@ export * from "../common-zod-schema/rabbitmqSchema";
 export * from "../common-zod-schema/redis_Schema";
 export * from "../common_util/encrypt-decrypt"
 export * from "../common-zod-schema/infraConfig"
-
-
+export * from "../common-zod-schema/vmSchema"
