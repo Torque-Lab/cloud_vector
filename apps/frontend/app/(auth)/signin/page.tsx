@@ -23,7 +23,7 @@ export default function SignInPage() {
       message: string;
     }
     try {
-      const response = await axios.post<User>("/api/auth/signin", {
+      const response = await axios.post<User>("/api/v1/auth/signin", {
         email,
         password,
       });
@@ -63,7 +63,7 @@ export default function SignInPage() {
     const top = window.innerHeight / 2 - height / 2;
 
     window.open(
-      `/api/auth/${provider}`,
+      `/api/v1/auth/${provider}`,
       "SocialLogin",
       `width=${width},height=${height},top=${top},left=${left}`
     );

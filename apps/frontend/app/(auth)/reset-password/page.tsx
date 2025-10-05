@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
         success: boolean;
         message: string;
       }
-      const response = await axios.post<User>("/api/auth/reset-password", { oneTimeToken, formData })
+      const response = await axios.post<User>("/api/v1/auth/reset-password", { oneTimeToken, formData })
       console.log(response.data.success)
       setIsSuccess(true)
     } catch (e) {

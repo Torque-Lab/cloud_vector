@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "../routes/auth/auth.route";
 import passport from "passport";
 import postgresRouter from "../routes/infra/postgres.route";
+import projectRouter from "../routes/infra/project.route";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -13,6 +14,7 @@ if(!isDev){
 app.use(passport.initialize());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/infra",postgresRouter);
+app.use("/api/v1/infra",projectRouter);
 
 app.get("/api/v1/health", (req, res) => {
     const token=req.query.token;
@@ -28,4 +30,8 @@ app.get("/api/v1/health", (req, res) => {
 
 app.listen(3005, () => {
     console.log("Server started on port 3005");
+});
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    process.exit(1);
 });

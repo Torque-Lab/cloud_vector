@@ -11,9 +11,9 @@ export default async function DatabaseDetailPageServerWrapper({params}: {params:
     }
 const id =  (await params).id
    try{
-    const database = await PostgresApi.getDatabase(id)
+    const database = await PostgresApi.getDatabase(id,token)
     return <DatabaseDetailPage database={database}/>
-   }catch(e){
+   }catch(_){
     return  <ErrorPage cardTitle="Database Not Found" paragraph="  We couldn’t load the requested database details. The database
     may not exist, or there was a problem fetching its information."/>
    }

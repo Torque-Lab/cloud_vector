@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
         success: boolean;
         message: string;
       }
-      const response = await axios.post<User>("/api/auth/forgot-password", { email })
+      const response = await axios.post<User>("/api/v1/auth/forgot-password", { email })
       if(response.data.success){
         toast({
           title: "Success",

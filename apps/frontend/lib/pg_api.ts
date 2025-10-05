@@ -41,7 +41,7 @@ export const PostgresApi = {
   },
 
   getProjects: async (token: string): Promise<Project[]> => {
-    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/projects`,
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/projects`,
       {
         withCredentials: true,
         headers: {
@@ -63,9 +63,8 @@ export const PostgresApi = {
     );
     return response.data.database;
   },
-
-  updateDatabase: async (id: string, data: Partial<pgData>,token?:string): Promise<pgData> => {
-    const response = await axios.patch<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-update/?postgresId=${id}`, data,
+  getConnection:async(id:string,token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
+    const response = await axios.get<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-connection/?postgresId=${id}`,
       {
         withCredentials: true,
         headers: {
@@ -73,7 +72,19 @@ export const PostgresApi = {
         },
       }
     );
-    return response.data.database;
+    return response.data
+  },
+
+  resetConnection: async (id: string,token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
+    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-reset/?postgresId=${id}`,
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data
   },
 
   deleteDatabase: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {

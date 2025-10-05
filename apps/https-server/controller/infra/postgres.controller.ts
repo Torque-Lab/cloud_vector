@@ -1,19 +1,22 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient,  } from "@cloud/db";
-import { postgresqlSchema } from "@cloud/backend-common";
+import { decrypt, postgresqlSchema } from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
-import { encrypt, generateUsername } from "@cloud/backend-common"
+import { encrypt,generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
-import axios from "axios";
 
 enum postgresQueue{
     CREATE="postgres_create_queue",
     DELETE="postgres_delete_queue"
 }
 const controlPlaneUrl=process.env.CONTROL_PLANE_URL
+const customerPostgresHost=process.env.CUSTOMER_POSTGRES_HOST
+const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
+const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
+
 export const createPostgresInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -144,7 +147,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 projectId:parsedData.data.projectId,
                 database_name:parsedData.data.name,
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password:encrypt(generateRandomString(),PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!),
                 port:"5672",
                 namespace:namespace,
                 initialMemory:parsedData.data.initialMemory,
@@ -196,25 +199,28 @@ export const getPostgresStatus=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to get postgresDB status", error });
     }
 }
-export const updatePostgresInstance=async(req:Request,res:Response)=>{
+export const resetPostgresInstance=async(req:Request,res:Response)=>{
     try {
-        const {postgresId}=req.body as {postgresId:string};
+        const postgresId=req.query.postgresId as string;
+        const password=generateRandomString()
+        const encryptedPassword=encrypt(password,PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!);
         const response=await prismaClient.postgresDB.update({
             data:{
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password:encryptedPassword,
             },
             where:{
                 id:postgresId
             }
         })
-        const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/postgres/routetable",{
-            resource_id:postgresId,
-            username:response?.username,
-            password:response?.password,
+        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/postgres/routetable",{
+        //     resource_id:postgresId,
+        //     username:response?.username,
+        //     password:response?.password,
             
-        })
-        res.status(200).json({ message:"PostgresDB updated successfully",success:true });
+        // })
+        const connectionString=`postgresql://${response?.username}:${password}@${customerPostgresHost}:${response?.port}/${response?.database_name}?pgbouncer=true`
+        res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to update postgresDB status", error });
@@ -295,6 +301,32 @@ export const getOnePostgresInstance = async (req: Request, res: Response) => {
         })
     
         res.status(200).json({ database:postgres,success:true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to get postgresDB status", error });
+    }
+}
+export const getPostgresConnectionString = async (req: Request, res: Response) => {
+
+    try { 
+        const postgresId=req.query.postgresId as string;
+        const postgres=await prismaClient.postgresDB.findUnique({
+            where:{
+                id:postgresId
+            },
+         select:{
+            id:true,
+            username:true,
+            password:true,
+            port:true,
+            database_name:true,
+         
+         }
+            
+        })
+        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${customerPostgresHost}:${postgres!.port}/${postgres!.database_name}?pgbouncer=true`
+console.log(connectionString,"connectionString")
+        res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to get postgresDB status", error });

@@ -46,7 +46,7 @@ export const createProject=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to create project", error });
     }
 }
-export const getProject=async (req:Request,res:Response)=>{
+export const getProjects=async (req:Request,res:Response)=>{
     try {
         const data=await prismaClient.project.findMany({
             where:{

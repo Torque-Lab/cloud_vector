@@ -15,6 +15,7 @@ import { encrypt } from "@cloud/backend-common";
 
 async function main() {
   const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
+  const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
   console.log(" Seeding Pro user with all resources...");
   const proTierRule = await prismaClient.tierRule.upsert({
     where: { tier: Tier_Subscription.PRO },
@@ -79,7 +80,7 @@ async function main() {
         projectId: project.id,
         api_key: "pg_key_123",
         username: "pguser",
-        password: await encrypt("pgpass",PG_ENCRYPT_SECRET),
+      password: await encrypt("pgpass",PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT),
         host: "pg.dev.local",
         port: "5432",
         database_name: "prodb",

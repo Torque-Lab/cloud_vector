@@ -11,6 +11,7 @@ import { ConnectChildSection } from "@/components/connect-child-section"
 import { toast } from "@/hooks/use-toast"
 import { RefreshCcw } from "lucide-react"
 import { pgData, PostgresApi } from "@/lib/pg_api"
+import { parseDateWithLocale } from "@/lib/utils"
 
 
 export default function DatabaseDetailPage({database}: {database: pgData }) {
@@ -103,11 +104,11 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
 
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{database.createdAt}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(database.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Updated:</span>
-                  <span className="text-sm font-medium">{database.updatedAt}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(database.updatedAt)}</span>
                 </div>
               </div>
             </CardContent>
@@ -155,7 +156,7 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to PostgresSQL" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/postgres/reset" endpoint="/api/postgres/connection" />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to PostgresSQL" inputMode={false} onClick={() => {}} children={<ConnectChildSection postgresId={params.id as string}  />} />
 
 
 

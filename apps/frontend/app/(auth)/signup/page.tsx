@@ -42,7 +42,7 @@ export default function SignUpPage() {
       }
       const {email,password,firstName,lastName} = formData
       localStorage.setItem("signupdata", JSON.stringify({email,password,firstName,lastName}));
-      const response = await axios.post<User>("/api/auth/signup", formData);
+      const response = await axios.post<User>("/api/v1/auth/signup", formData);
       if (response.data.success) {
        toast({
         title: "Success",
@@ -87,7 +87,7 @@ export default function SignUpPage() {
     const top = window.innerHeight / 2 - height / 2;
 
     window.open(
-      `/api/auth/${provider}`,
+      `/api/v1/auth/${provider}`,
       "SocialLogin",
       `width=${width},height=${height},top=${top},left=${left}`
     );

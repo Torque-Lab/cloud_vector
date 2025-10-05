@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
       }
       localStorage.removeItem("signupdata")
       data.otp = otp
-      const response = await axios.post<User>("/api/auth/otp-verification", data)
+      const response = await axios.post<User>("/api/v1/auth/otp-verification", data)
       if(response.data.success){
         toast({
           title: "Success",
