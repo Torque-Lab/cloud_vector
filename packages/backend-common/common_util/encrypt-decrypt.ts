@@ -41,8 +41,8 @@ export function generateUsername(): string {
 
     let username = adj!+ noun! + num!+crypto.randomUUID()
     
-    if (username.length > 12) {
-        username = username.slice(0, 12);
+    if (username.length > 32) {
+        username = username.slice(0, 32);
     }
 
     return username;

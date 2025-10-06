@@ -59,8 +59,8 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
           <div>
             <div className="flex items-center space-x-2">
              
-              <h2 className="text-3xl font-bold tracking-tight">{database.database_name}</h2>
-              <Badge variant={database.is_provisioned === true ? "success" : "warning"}>{database.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">{database?.database_name}</h2>
+              <Badge variant={database?.is_provisioned === true ? "success" : "warning"}>{database?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -80,15 +80,15 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
               <div className="grid gap-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{database.maxVCpu}</span>
+                  <span className="text-sm font-medium">{database?.maxVCpu}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Memory Limit:</span>
-                  <span className="text-sm font-medium">{database.maxMemory}</span>
+                  <span className="text-sm font-medium">{database?.maxMemory}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Region:</span>
-                  <span className="text-sm font-medium">{database.region}</span>
+                  <span className="text-sm font-medium">{database?.region}</span>
                 </div>
                 <div className="flex justify-between items-start">
   <div className="flex flex-col">
@@ -97,18 +97,18 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
       * scaling in same instance, not add new machine
     </small>
   </div>
-  <Badge variant={database.autoScale ? "success" : "secondary"}>
-    {database.autoScale ? "Enabled" : "Disabled"}
+  <Badge variant={database?.autoScale ? "success" : "secondary"}>
+    {database?.autoScale ? "Enabled" : "Disabled"}
   </Badge>
 </div>
 
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{parseDateWithLocale(database.createdAt)}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(database?.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Updated:</span>
-                  <span className="text-sm font-medium">{parseDateWithLocale(database.updatedAt)}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(database?.updatedAt)}</span>
                 </div>
               </div>
             </CardContent>

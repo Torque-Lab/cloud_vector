@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { PostgresApi } from "@/lib/pg_api"
 import Link from "next/link"
 import { useEffect } from "react"
-import { ArrowLeftIcon } from "lucide-react"
+import { ArrowLeftIcon, RefreshCcw } from "lucide-react"
 
 interface Project {
   id: string
@@ -33,7 +33,7 @@ export default function CreateDatabasePage() {
    initialVCpu: "",
    maxVCpu: "",
    autoScale: "",
-   backFrequency: "",
+   backUpFrequency: "",
     
   })
   const [projects, setProjects] = useState<Project[]>([])
@@ -213,16 +213,18 @@ function parseCpuToCores(value: string | undefined | null): number | null {
             initialVCpu: formData.initialVCpu,
             maxVCpu: formData.maxVCpu,
             autoScale: formData.autoScale,
-            backFrequency: formData.backFrequency as "daily" | "weekly" | "monthly"
+            backUpFrequency: formData.backUpFrequency as "daily" | "weekly" | "monthly"
       })
 
       toast({
         title: "Database provisioning added to Task Queue",
-        description: `${formData.name} will be created soon!`,
+        description: `${formData.name} will be created soon!.Redirecting to the database page in 5 seconds`,
       })
       
       // Redirect to the new database
-      router.push(`/postgres/${newDb.id}`)
+      setTimeout(() => {
+        router.push(`/postgres/${newDb.id}`)
+      }, 5000)
     } catch (error) {
       toast({
         title: "Error",
@@ -478,7 +480,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                       <Label htmlFor="backFrequency">Backup Frequency</Label>
                     <Select
                       name="backFrequency"
-                      value={formData.backFrequency}
+                      value={formData.backUpFrequency}
                       onValueChange={(value) => 
                         setFormData(prev => ({ ...prev, backFrequency: value }))
                       }
@@ -603,6 +605,7 @@ function parseCpuToCores(value: string | undefined | null): number | null {
                   className="w-full cursor-pointer"
                   disabled={isLoading }
                 >
+                  {<RefreshCcw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />}
                   {isLoading ? "Creating..." : "Create Database"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">

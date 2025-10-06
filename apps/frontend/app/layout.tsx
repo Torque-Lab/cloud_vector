@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/toaster"
+import TokenRefresher from "@/provider/token-refreshor"
 
 export const metadata: Metadata = {
   title: "Vector Cloud - Managed Cloud Service",
@@ -36,6 +37,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster />
+          <TokenRefresher />
         </ThemeProvider>
       </body>
     </html>

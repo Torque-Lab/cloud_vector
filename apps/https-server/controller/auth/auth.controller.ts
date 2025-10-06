@@ -42,8 +42,23 @@ export function setAuthCookie(res: Response, token: string, token_name: string,m
 
     
   }
+  function shuffleArray<T>(array: T[]): T[] {
+    return array
+      .map(value => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value)
+  }
   export  function generateRandomString(){
-    return Bun.randomUUIDv7("hex")+generateTimeId()
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    const numbers = "0123456789"
+    const symbols = "#$*!?&<>"
+    const doubledSymbols = symbols.repeat(2)
+    const option = shuffleArray([...letters, ...numbers, ...doubledSymbols])
+    let randomString="";
+    for(let i=0;i<24;i++){
+        randomString+=option[Math.floor(Math.random() * option.length)];
+    }
+    return randomString;
     
   }
   
@@ -164,7 +179,7 @@ export const signIn = async (req: Request, res: Response) => {
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS! ,);
         const refresh_token = jwt.sign({ payload2}, process.env.JWT_SECRET_REFRESH!,);
         
-        setAuthCookie(res, access_token, "access_token",60 * 60 * 1000);
+        setAuthCookie(res, access_token, "access_token",60 * 300* 1000);
         setAuthCookie(res, refresh_token, "refresh_token",60 * 60 * 1000*24*7);
         
         res.status(200).json({ message: "User signed in successfully",success:true});

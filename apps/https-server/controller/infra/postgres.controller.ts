@@ -163,7 +163,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 
             }
         })
-        res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
+        res.status(200).json({ message: "Task added to Queue to provisioned",database:{id:postgresId},success:true });
     } }catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to add task to queue", error });
@@ -222,7 +222,6 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
         const connectionString=`postgresql://${response?.username}:${password}@${customerPostgresHost}:${response?.port}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: "Failed to update postgresDB status", error });
     }
 }

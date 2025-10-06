@@ -40,7 +40,7 @@ export const PostgresApi = {
     return response.data.database;
   },
 
-  getProjects: async (token: string): Promise<Project[]> => {
+  getProjects: async (token?: string): Promise<Project[]> => {
     const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/projects`,
       {
         withCredentials: true,
