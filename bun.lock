@@ -219,6 +219,7 @@
       "name": "@cloud/shared_types",
       "dependencies": {
         "@cloud/backend-common": "*",
+        "@cloud/db": "*",
       },
       "devDependencies": {
         "@types/bun": "latest",

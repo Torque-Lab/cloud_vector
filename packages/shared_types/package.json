@@ -15,7 +15,8 @@
     "zod": "3.25.76"
   },
   "dependencies": {
-    "@cloud/backend-common": "*"
+    "@cloud/backend-common": "*",
+    "@cloud/db": "*"
 
   }
 }

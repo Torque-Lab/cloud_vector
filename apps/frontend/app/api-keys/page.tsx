@@ -1,122 +1,101 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
-// Mock data for API keys
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+import { PermissionList } from "@cloud/shared_types"
+import { PostgresApi, Project } from "@/lib/pg_api"
+import { toast } from "@/hooks/use-toast"
 const apiKeys = [
   {
     id: "key-1",
     name: "Production API Key",
     description: "Main production key for product search",
     key: "vdb_prod_1234567890abcdef",
-    permissions: ["read", "write"],
-    databases: ["product-search-v2", "user-embeddings"],
+    permissions: ["READ_PROJECT", "WRITE_PROJECT"],
+    resources: ["product-search-v2", "user-embeddings"],
     created: "2024-01-15",
     lastUsed: "2 minutes ago",
-    requests: "1.2M",
     status: "active",
     expires: "2024-12-31",
-  },
-  {
-    id: "key-2",
-    name: "Development Key",
-    description: "Development and testing purposes",
-    key: "vdb_dev_abcdef1234567890",
-    permissions: ["read"],
-    databases: ["content-similarity"],
-    created: "2024-01-10",
-    lastUsed: "1 hour ago",
-    requests: "45K",
-    status: "active",
-    expires: "2024-06-30",
-  },
-  {
-    id: "key-3",
-    name: "Analytics Key",
-    description: "Read-only access for analytics dashboard",
-    key: "vdb_analytics_fedcba0987654321",
-    permissions: ["read"],
-    databases: ["all"],
-    created: "2024-01-08",
-    lastUsed: "1 day ago",
-    requests: "234K",
-    status: "active",
-    expires: "Never",
-  },
-  {
-    id: "key-4",
-    name: "Legacy Key",
-    description: "Old key for migration purposes",
-    key: "vdb_legacy_0987654321fedcba",
-    permissions: ["read", "write"],
-    databases: ["recommendation-engine"],
-    created: "2023-12-01",
-    lastUsed: "30 days ago",
-    requests: "2.8M",
-    status: "inactive",
-    expires: "2024-03-01",
   },
 ]
 
 export default function ApiKeysPage() {
+  const [formData, setFormData] = useState({
+    keyName: "",
+    description: "",
+    permissions: [] as string[],
+    expiration: "",
+    projectId: "",
+  })
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isProjectsLoading, setIsProjectsLoading] = useState(true);
+    useEffect(() => {
+      const loadProjects = async () => {
+        try {
+          const projects = await PostgresApi.getProjects();
+          setProjects(projects ?? []);
+          if (projects?.length > 0) {
+            setFormData((prev) => ({
+              ...prev,
+              projectId: projects[0]?.id || "",
+            }));
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description:
+              error instanceof Error ? error.message : "Failed to load projects",
+            variant: "destructive",
+          });
+        } finally {
+          setIsProjectsLoading(false);
+        }
+      };
+  
+      loadProjects();
+    }, [toast]);
+
+  const handleChange = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+  const togglePermission = (perm: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      permissions: prev.permissions.includes(perm)
+        ? prev.permissions.filter((p) => p !== perm)
+        : [...prev.permissions, perm],
+    }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("Submitting:", formData)
+   
+  }
+
+  const allPermissions = Object.values(PermissionList)
+
   return (
     <DashboardLayout>
-      <div className="flex-1 space-y-6 p-8">
+      <div className="flex-1 space-y-8 p-8">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">API Keys</h2>
             <p className="text-muted-foreground">Manage your API keys and access permissions.</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Input placeholder="Search API keys..." className="w-64" />
-            <Button>Create API Key</Button>
-          </div>
         </div>
 
-        {/* API Key Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Keys</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4</div>
-              <p className="text-xs text-muted-foreground">3 active, 1 inactive</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4.3M</div>
-              <p className="text-xs text-muted-foreground">This month</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rate Limit</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1000</div>
-              <p className="text-xs text-muted-foreground">Requests per minute</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground">Within 30 days</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* API Keys Table */}
+        {/* Existing API Keys */}
         <Card>
           <CardHeader>
             <CardTitle>Your API Keys</CardTitle>
@@ -129,77 +108,41 @@ export default function ApiKeysPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Key</TableHead>
                   <TableHead>Permissions</TableHead>
-                  <TableHead>Databases</TableHead>
-                  <TableHead>Requests</TableHead>
+                  <TableHead>Resources</TableHead>
                   <TableHead>Last Used</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Expires</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {apiKeys.map((key) => (
                   <TableRow key={key.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{key.name}</div>
-                        <p className="text-sm text-muted-foreground">{key.description}</p>
-                      </div>
+                      <div className="font-medium">{key.name}</div>
+                      <p className="text-sm text-muted-foreground">{key.description}</p>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <code className="text-sm bg-muted px-2 py-1 rounded">{key.key.substring(0, 20)}...</code>
-                        <Button variant="ghost" size="sm">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </Button>
-                      </div>
+                      <code className="text-sm bg-muted px-2 py-1 rounded">
+                        {key.key.substring(0, 16)}...
+                      </code>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-1">
-                        {key.permissions.map((permission) => (
-                          <Badge key={permission} variant="outline" className="text-xs">
-                            {permission}
+                      <div className="flex flex-wrap gap-1">
+                        {key.permissions.map((p) => (
+                          <Badge key={p} variant="outline" className="text-xs">
+                            {p}
                           </Badge>
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {key.databases.length === 1 && key.databases[0] === "all"
-                          ? "All databases"
-                          : `${key.databases.length} database${key.databases.length > 1 ? "s" : ""}`}
-                      </div>
-                    </TableCell>
-                    <TableCell>{key.requests}</TableCell>
+                    <TableCell>{key.resources.join(", ")}</TableCell>
                     <TableCell className="text-muted-foreground">{key.lastUsed}</TableCell>
                     <TableCell>
-                      <Badge variant={key.status === "active" ? "success" : "secondary"}>{key.status}</Badge>
+                      <Badge variant={key.status === "active" ? "success" : "secondary"}>
+                        {key.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>{key.expires}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button variant="ghost" size="sm">
-                          Edit
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                            />
-                          </svg>
-                        </Button>
-                      </div>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -208,70 +151,129 @@ export default function ApiKeysPage() {
         </Card>
 
         {/* Create API Key Form */}
-        <Card>
+        <Card className="w-full mx-auto relative overflow-visible">
           <CardHeader>
             <CardTitle>Create New API Key</CardTitle>
-            <CardDescription>Generate a new API key with specific permissions and access controls.</CardDescription>
+            <CardDescription>
+              Generate a new API key with specific permissions and access controls.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Key Name</label>
-                <Input placeholder="My API Key" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <Input placeholder="Brief description of the key's purpose" />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Permissions</label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" className="rounded" />
-                    <span className="text-sm">Read</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" className="rounded" />
-                    <span className="text-sm">Write</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" className="rounded" />
-                    <span className="text-sm">Admin</span>
-                  </label>
+
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Key Name & Description */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="keyName">Key Name</Label>
+                  <Input
+                    id="keyName"
+                    placeholder="My API Key"
+                    value={formData.keyName}
+                    onChange={(e) => handleChange("keyName", e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="Brief description of the key's purpose"
+                    value={formData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
+                  />
                 </div>
               </div>
+
+              {/* Permissions */}
+              <div className="space-y-4">
+                <Label>Permissions</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {allPermissions.map((perm) => (
+                    <div key={perm} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={perm}
+                        className="h-5 w-5 cursor-pointer"
+                        checked={formData.permissions.includes(perm)}
+                        onCheckedChange={() => togglePermission(perm)}
+                      />
+                      <Label
+                        htmlFor={perm}
+                        className="text-sm font-medium leading-none cursor-pointer"
+                      >
+                        {perm.replace(/_/g, " ")}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+
               <div className="space-y-2">
-                <label className="text-sm font-medium">Expiration</label>
-                <Input type="date" />
+                    <Label htmlFor="projectId">Project</Label>
+                    {isProjectsLoading ? (
+                      <div className="h-10 w-full rounded-md border bg-muted animate-pulse" />
+                    ) : (
+                      <Select
+                        name="projectId"
+                        value={formData.projectId}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, projectId: value }))
+                        }
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects?.length > 0 ? (
+                            projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem key="no-projects" value="1">
+                              No projects found
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+
+
+              {/* Expiration */}
+              <div className="space-y-2">
+                <Label>Expiration</Label>
+                <Select
+                  value={formData.expiration}
+                  onValueChange={(value) => handleChange("expiration", value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select expiration" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[60]">
+                    <SelectItem value="1 hour">1 hour</SelectItem>
+                    <SelectItem value="6 hours">6 hours</SelectItem>
+                    <SelectItem value="12 hours">12 hours</SelectItem>
+                    <SelectItem value="24 hours">24 hours</SelectItem>
+                    <SelectItem value="7 days">7 days</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Database Access</label>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">product-search-v2</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">user-embeddings</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">content-similarity</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">recommendation-engine</span>
-                </label>
+
+              {/* Buttons */}
+              <div className="flex justify-end space-x-4 pt-6">
+                <Button type="submit" className="cursor-pointer">
+                  Generate API Key
+                </Button>
+                <Button type="button" variant="outline" className="cursor-pointer">
+                  Cancel
+                </Button>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button>Generate API Key</Button>
-              <Button variant="outline">Cancel</Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </div>

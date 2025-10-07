@@ -281,7 +281,7 @@ export default function DashboardPage() {
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="text-sm">Launch Postgres</span>
+                <span className="text-sm">Launch PostgreSQL</span>
               </Button>
             
               <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
