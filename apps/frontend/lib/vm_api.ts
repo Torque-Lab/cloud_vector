@@ -10,6 +10,7 @@ export interface vmData extends vmSchema {
   status: string;
   region: string;
   projectName: string;
+  projectId: string;
   ipAdress: string;
 }
 export interface Project {
@@ -17,55 +18,73 @@ export interface Project {
   name: string;
 }
 export const vmApi = {
-  getAllVm: async (): Promise<Pick<vmData, 'id' | 'name' | 'description' | 'status' | 'region' | 'createdAt' | 'projectName' | 'projectId' | 'ipAdress'>[]> => {
-    const response = await axios.get<{vm:Pick<vmData, 'id' | 'name' | 'description' | 'status' | 'region' | 'createdAt' | 'projectName' | 'projectId' | 'ipAdress'>[],success:boolean}>(`${API_BASE_URL}/api/all-vm`,
+  getAllVm: async (token?:string): Promise<vmData[]> => {
+    const response = await axios.get<{vm:vmData[],success:boolean}>(`${API_BASE_URL}/api/all-vm`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.vm;
   },
 
-  getVm: async (id: string): Promise<Pick<vmData, 'id' | 'name' | 'description' | 'status' | 'region' | 'createdAt' | 'projectName' | 'projectId' | 'ipAdress'>> => {
-    const response = await axios.get<{vm:Pick<vmData, 'id' | 'name' | 'description' | 'status' | 'region' | 'createdAt' | 'projectName' | 'projectId' | 'ipAdress'>,success:boolean}>(`${API_BASE_URL}/api/vm-get/${id}`,
+  getVm: async (id: string,token?:string): Promise<vmData> => {
+    const response = await axios.get<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-get/${id}`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.vm;
   },
 
-  getProjects: async (): Promise<Project[]> => {
+  getProjects: async (token?:string): Promise<Project[]> => {
     const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.projects;
   },
 
-  createVm: async (data: vmSchema ): Promise<vmData> => {
+  createVm: async (data: vmSchema ,token?:string): Promise<vmData> => {
     const response = await axios.post<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-create`, data,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.vm;
   },
 
-  updateVm: async (id: string, data: Partial<vmData>): Promise<vmData> => {
-    const response = await axios.patch<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-update/${id}`, data,
+  updateVm: async (id: string, token?:string): Promise<vmData> => {
+    const response = await axios.patch<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-update/${id}`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data.vm;
   },
 
-  deleteVm: async (id: string): Promise<{message:string,success:boolean}> => {
+  deleteVm: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {
     const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/vm-delete/${id}`,
       {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data

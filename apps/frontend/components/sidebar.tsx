@@ -14,6 +14,14 @@ const sidebarItems = [
     ),
   },
   {
+    title:"Virtual Machine",
+    href:"/vm",
+    icon:(
+      <Columns3 />
+    )
+
+  },
+  {
     title:"Postgres",
     href:"/postgres",
     icon:(
