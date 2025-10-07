@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function IAMPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -56,6 +57,7 @@ export default function IAMPage() {
   })
 
   return (
+    <DashboardLayout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -263,5 +265,6 @@ export default function IAMPage() {
         </div>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }

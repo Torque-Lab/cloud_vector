@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function IAMSettingsPage() {
   const [settings, setSettings] = useState({
@@ -44,6 +45,9 @@ export default function IAMSettingsPage() {
   }
 
   return (
+    <DashboardLayout>
+
+
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -338,5 +342,6 @@ export default function IAMSettingsPage() {
         </div>
       </form>
     </div>
+    </DashboardLayout>
   )
 }

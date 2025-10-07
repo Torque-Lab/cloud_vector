@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function AccessControlPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -83,6 +84,8 @@ export default function AccessControlPage() {
   }
 
   return (
+    <DashboardLayout>
+
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -309,5 +312,6 @@ export default function AccessControlPage() {
         ))}
       </div>
     </div>
+    </DashboardLayout>
   )
 }

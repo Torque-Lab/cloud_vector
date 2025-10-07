@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function CompliancePage() {
   const [reportPeriod, setReportPeriod] = useState("30")
@@ -91,6 +92,9 @@ export default function CompliancePage() {
   }
 
   return (
+    <DashboardLayout>
+
+  
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -233,5 +237,6 @@ export default function CompliancePage() {
         </div>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }

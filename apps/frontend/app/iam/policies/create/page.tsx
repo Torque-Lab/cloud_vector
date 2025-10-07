@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function CreatePolicyPage() {
   const [formData, setFormData] = useState({
@@ -69,6 +70,9 @@ export default function CreatePolicyPage() {
   }
 
   return (
+    <DashboardLayout>
+
+  
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
@@ -264,5 +268,6 @@ export default function CreatePolicyPage() {
         </div>
       </form>
     </div>
+    </DashboardLayout>
   )
 }

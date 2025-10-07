@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function AuditLogPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -143,6 +144,9 @@ export default function AuditLogPage() {
   }
 
   return (
+    <DashboardLayout>
+
+  
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -339,5 +343,6 @@ export default function AuditLogPage() {
         </div>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }

@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { DashboardLayout } from "@/components/dashboard-layout"
 
 export default function InviteUserPage() {
   const [formData, setFormData] = useState({
@@ -30,6 +31,7 @@ export default function InviteUserPage() {
   }
 
   return (
+    <DashboardLayout>
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
@@ -137,5 +139,6 @@ export default function InviteUserPage() {
         </form>
       </Card>
     </div>
+    </DashboardLayout>
   )
 }
