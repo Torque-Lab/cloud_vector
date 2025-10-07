@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Gem } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const projectData = {
   all: {
@@ -73,6 +75,7 @@ const projects = [
 export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState("all")
   const currentData = projectData[selectedProject as keyof typeof projectData]
+  const router=useRouter()
 
   return (
     <DashboardLayout>
@@ -266,43 +269,49 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-                <span className="text-sm">Create Project</span>
+            <Button 
+             onClick={()=>router.push("/iam")}
+            variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
+              <Gem/>
+                <span className="text-sm">IAM</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("postgres/create")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span className="text-sm">Launch PostgreSQL</span>
               </Button>
             
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("/vm/launch")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span className="text-sm">Launch VM</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("/redis/create")}
+              
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span className="text-sm">Launch Redis</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("rabbitmq/create")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span className="text-sm">Launch RabbitMQ</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("/api-keys")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -313,13 +322,17 @@ export default function DashboardPage() {
                 </svg>
                 <span className="text-sm">Generate API Key</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("/iam/users/invite")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span className="text-sm">Add Team</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <Button 
+              onClick={()=>router.push("/usage")}
+              variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
