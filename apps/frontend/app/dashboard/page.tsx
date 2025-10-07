@@ -4,15 +4,16 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Select } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const projectData = {
   all: {
     metrics: [
-      { title: "Total Databases", value: "12", change: "+2 this month", trend: "up" },
-      { title: "API Requests", value: "4.1M", change: "+15% from last month", trend: "up" },
-      { title: "Storage Used", value: "1.2 TB", change: "+8.3% from last month", trend: "up" },
-      { title: "Avg Query Time", value: "21ms", change: "-12% from last month", trend: "down" },
+      { title: "Total Resources", value: "12", change: "+2 this month", trend: "up" },
+      { title: "Total Virtual Machine", value: "4", change: "+15% from last month", trend: "up" },
+      { title: "Total Postgresql", value: "1", change: "+8.3% from last month", trend: "up" },
+      { title: "Total Redis", value: "21", change: "-12% from last month", trend: "down" },
+      { title: "Total RabbitMQ", value: "21", change: "-12% from last month", trend: "down" },
     ],
     recentActivity: [
       {
@@ -60,135 +61,10 @@ const projectData = {
       { project: "Development", storage: "330 GB", percentage: 27.5 },
     ],
   },
-  "1": {
-    metrics: [
-      { title: "Project Databases", value: "5", change: "+1 this month", trend: "up" },
-      { title: "API Requests", value: "2.4M", change: "+12% from last month", trend: "up" },
-      { title: "Storage Used", value: "390 GB", change: "+5.2% from last month", trend: "up" },
-      { title: "Avg Query Time", value: "18ms", change: "-8% from last month", trend: "down" },
-    ],
-    recentActivity: [
-      {
-        id: 1,
-        action: "Database created",
-        database: "product-search-v2",
-        project: "Production App",
-        timestamp: "2 minutes ago",
-        status: "success",
-      },
-      {
-        id: 2,
-        action: "Index rebuilt",
-        database: "user-embeddings",
-        project: "Production App",
-        timestamp: "15 minutes ago",
-        status: "success",
-      },
-      {
-        id: 3,
-        action: "Scale up completed",
-        database: "product-search-v2",
-        project: "Production App",
-        timestamp: "2 hours ago",
-        status: "success",
-      },
-      {
-        id: 4,
-        action: "Backup completed",
-        database: "user-embeddings",
-        project: "Production App",
-        timestamp: "4 hours ago",
-        status: "success",
-      },
-    ],
-    topDatabases: [
-      { name: "product-search-v2", project: "Production App", queries: "1.2M", size: "234 GB", status: "healthy" },
-      { name: "user-embeddings", project: "Production App", queries: "890K", size: "156 GB", status: "healthy" },
-    ],
-    storageBreakdown: [{ project: "Production App", storage: "390 GB", percentage: 100 }],
-  },
-  "2": {
-    metrics: [
-      { title: "Project Databases", value: "3", change: "+1 this month", trend: "up" },
-      { title: "API Requests", value: "246K", change: "+8% from last month", trend: "up" },
-      { title: "Storage Used", value: "79 GB", change: "+15% from last month", trend: "up" },
-      { title: "Avg Query Time", value: "25ms", change: "-5% from last month", trend: "down" },
-    ],
-    recentActivity: [
-      {
-        id: 1,
-        action: "Database created",
-        database: "test-vectors",
-        project: "Development",
-        timestamp: "1 hour ago",
-        status: "success",
-      },
-      {
-        id: 2,
-        action: "Index optimization",
-        database: "recommendation-engine",
-        project: "Development",
-        timestamp: "3 hours ago",
-        status: "success",
-      },
-      {
-        id: 3,
-        action: "Backup completed",
-        database: "test-vectors",
-        project: "Development",
-        timestamp: "6 hours ago",
-        status: "success",
-      },
-    ],
-    topDatabases: [
-      { name: "recommendation-engine", project: "Development", queries: "234K", size: "67 GB", status: "healthy" },
-      { name: "test-vectors", project: "Development", queries: "12K", size: "12 GB", status: "healthy" },
-    ],
-    storageBreakdown: [{ project: "Development", storage: "79 GB", percentage: 100 }],
-  },
-  "3": {
-    metrics: [
-      { title: "Project Databases", value: "2", change: "No change", trend: "neutral" },
-      { title: "API Requests", value: "567K", change: "+18% from last month", trend: "up" },
-      { title: "Storage Used", value: "480 GB", change: "+12% from last month", trend: "up" },
-      { title: "Avg Query Time", value: "28ms", change: "+3% from last month", trend: "up" },
-    ],
-    recentActivity: [
-      {
-        id: 1,
-        action: "Query optimization",
-        database: "content-similarity",
-        project: "Analytics Platform",
-        timestamp: "1 hour ago",
-        status: "warning",
-      },
-      {
-        id: 2,
-        action: "Data ingestion",
-        database: "ml-features",
-        project: "Analytics Platform",
-        timestamp: "4 hours ago",
-        status: "success",
-      },
-      {
-        id: 3,
-        action: "Index rebuilt",
-        database: "content-similarity",
-        project: "Analytics Platform",
-        timestamp: "8 hours ago",
-        status: "success",
-      },
-    ],
-    topDatabases: [
-      { name: "content-similarity", project: "Analytics Platform", queries: "567K", size: "89 GB", status: "warning" },
-      { name: "ml-features", project: "Analytics Platform", queries: "123K", size: "391 GB", status: "healthy" },
-    ],
-    storageBreakdown: [{ project: "Analytics Platform", storage: "480 GB", percentage: 100 }],
-  },
+  
 }
 
 const projects = [
-  { id: "all", name: "All Projects" },
   { id: "1", name: "Production App" },
   { id: "2", name: "Development" },
   { id: "3", name: "Analytics Platform" },
@@ -206,20 +82,28 @@ export default function DashboardPage() {
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
             <p className="text-muted-foreground">
               {selectedProject === "all"
-                ? "Overview of all your projects and vector databases."
+                ? "Overview of all your projects and Resources."
                 : `${projects.find((p) => p.id === selectedProject)?.name} project overview.`}
             </p>
           </div>
+          <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Project:</span>
             <Select value={selectedProject} onValueChange={setSelectedProject}>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-            <Button>Create Database</Button>
           </div>
+        </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 ">
@@ -260,85 +144,6 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-          {/* Query Performance Chart */}
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Query Performance</CardTitle>
-              <CardDescription>
-                {selectedProject === "all"
-                  ? "Average response time across all projects over the last 7 days"
-                  : `${projects.find((p) => p.id === selectedProject)?.name} response time over the last 7 days`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] flex items-center justify-center bg-muted/20 rounded-lg">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
-                    {currentData.metrics.find((m) => m.title.includes("Query Time"))?.value}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Average Query Time</p>
-                  <div className="mt-4 flex justify-center space-x-4 text-xs">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      <span>This Week</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
-                      <span>Last Week</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>
-                {selectedProject === "all"
-                  ? "Latest updates from all projects"
-                  : `Latest updates from ${projects.find((p) => p.id === selectedProject)?.name}`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {currentData.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          activity.status === "success"
-                            ? "bg-green-500"
-                            : activity.status === "warning"
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{activity.action}</p>
-                      <div className="text-sm text-muted-foreground">
-                        {activity.database}
-                        {selectedProject === "all" && (
-                          <span className="ml-2">
-                            <Badge variant="outline" className="text-xs">
-                              {activity.project}
-                            </Badge>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">{activity.timestamp}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -461,13 +266,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span className="text-sm">Create Database</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+            <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -480,6 +279,31 @@ export default function DashboardPage() {
               </Button>
               <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm">Launch Postgres</span>
+              </Button>
+            
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm">Launch VM</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm">Launch Redis</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm">Launch RabbitMQ</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -488,6 +312,12 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <span className="text-sm">Generate API Key</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm">Add Team</span>
               </Button>
               <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

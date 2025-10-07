@@ -11,7 +11,7 @@ export default function LandingPage() {
   return (
     <>
       <PreLoginHeader />
-      <main className="min-h-[calc(100vh-160px)]">
+      <main className="min-h-[calc(100vh-160px)] pt-16">
       
 {/* Hero */}
 <section className="relative flex flex-col items-center justify-center text-center min-h-[calc(100vh-160px)] px-2 py-8 overflow-hidden">
