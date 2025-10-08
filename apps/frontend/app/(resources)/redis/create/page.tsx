@@ -20,17 +20,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PostgresApi } from "@/lib/pg_api";
 import Link from "next/link";
 import { useEffect } from "react";
 import { ArrowLeftIcon, RefreshCcw } from "lucide-react";
+import { RedisApi } from "@/lib/redis_api";
 
 interface Project {
   id: string;
   name: string;
 }
 
-export default function CreateDatabasePage() {
+export default function CreateRedisPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +54,7 @@ export default function CreateDatabasePage() {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const projects = await PostgresApi.getProjects();
+        const projects = await RedisApi.getProjects();
         setProjects(projects ?? []);
         if (projects?.length > 0) {
           setFormData((prev) => ({
@@ -147,7 +147,7 @@ export default function CreateDatabasePage() {
     e.preventDefault();
 
     const validations = [
-      { field: "name", message: "Database name is required" },
+      { field: "name", message: "Redis name is required" },
       { field: "projectId", message: "Please select a project" },
       { field: "region", message: "Please select a region" },
       { field: "initialMemory", message: "Initial memory is required" },
@@ -225,7 +225,7 @@ export default function CreateDatabasePage() {
     setIsLoading(true);
 
     try {
-      const newDb = await PostgresApi.createDatabase({
+      const newDb = await RedisApi.createRedis({
         name: formData.name,
         projectId: formData.projectId,
         region: formData.region,
@@ -243,19 +243,19 @@ export default function CreateDatabasePage() {
       });
 
       toast({
-        title: "Database provisioning added to Task Queue",
-        description: `${formData.name} will be created soon!.Redirecting to the database page in 5 seconds`,
+        title: "Redis provisioning added to Task Queue",
+        description: `${formData.name} will be created soon!.Redirecting to the Redis instance page in 5 seconds`,
       });
 
-      // Redirect to the new database
+      
       setTimeout(() => {
-        router.push(`/postgres/${newDb.id}`);
+        router.push(`/redis/${newDb.id}`);
       }, 5000);
     } catch (error) {
       toast({
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to create database",
+          error instanceof Error ? error.message : "Failed to create Redis",
         variant: "destructive",
       });
     } finally {
@@ -269,16 +269,16 @@ export default function CreateDatabasePage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
-              Create Postgres instance
+              Create Redis instance
             </h2>
             <p className="text-muted-foreground">
-              Set up a new Postgres instance with your preferred configuration.
+              Set up a new Redis instance with your preferred configuration.
             </p>
           </div>
-          <Link href="/postgres">
+          <Link href="/redis">
             <Button className="cursor-pointer ">
               <ArrowLeftIcon className="mr-2 h-4 w-4" />
-              Back to Postgres
+              Back to Redis
             </Button>
           </Link>
         </div>
@@ -290,21 +290,21 @@ export default function CreateDatabasePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
-                  <CardDescription>Enter your database details</CardDescription>
+                  <CardDescription>Enter your Redis details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 overflow-visible">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Database Name</Label>
+                    <Label htmlFor="name">Redis Name</Label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="my-postgres-db"
+                      placeholder="my-redis-db"
                       required
                     />
                     <p className="text-sm text-muted-foreground">
-                      A unique name for your database. Only lowercase letters,
+                      A unique name for your Redis. Only lowercase letters,
                       numbers, and hyphens are allowed.
                     </p>
                   </div>
@@ -349,7 +349,7 @@ export default function CreateDatabasePage() {
                 <CardHeader>
                   <CardTitle>Configuration</CardTitle>
                   <CardDescription>
-                    Configure your database settings
+                    Configure your Redis settings
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 overflow-visible">
@@ -379,7 +379,31 @@ export default function CreateDatabasePage() {
                         </SelectContent>
                       </Select>
                     </div>
-
+                    <div className="space-y-2">
+                      <Label htmlFor="maxMemory">Max Memory</Label>
+                      <Select
+                        name="maxMemory"
+                        value={formData.maxMemory}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxMemory: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select max memory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1Gi">1GB</SelectItem>
+                          <SelectItem value="2Gi">2GB</SelectItem>
+                          <SelectItem value="4Gi">4GB</SelectItem>
+                          <SelectItem value="8Gi">8GB</SelectItem>
+                          <SelectItem value="16Gi">16GB</SelectItem>
+                          <SelectItem value="32Gi">32GB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   
                     <div className="space-y-2">
                       <Label htmlFor="initialStorage">Initial Storage</Label>

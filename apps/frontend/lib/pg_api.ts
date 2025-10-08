@@ -29,7 +29,7 @@ export const PostgresApi = {
   },
 
   getDatabase: async (id: string,token?:string): Promise<pgData> => {
-    const response = await axios.get<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-get/?postgresId=${id}`,
+    const response = await axios.get<{database:pgData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-get/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -64,7 +64,7 @@ export const PostgresApi = {
     return response.data.database;
   },
   getConnection:async(id:string,token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
-    const response = await axios.get<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-connection/?postgresId=${id}`,
+    const response = await axios.get<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-connection/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -76,7 +76,7 @@ export const PostgresApi = {
   },
 
   resetConnection: async (id: string,token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
-    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-reset/?postgresId=${id}`,
+    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/postgresql-reset/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -88,7 +88,7 @@ export const PostgresApi = {
   },
 
   deleteDatabase: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {
-    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-delete/?postgresId=${id}`,
+    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/postgresql-delete/${id}`,
       {
         withCredentials: true,
         headers: {

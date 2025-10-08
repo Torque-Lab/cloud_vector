@@ -406,6 +406,35 @@ export default function CreateDatabasePage() {
                         </SelectContent>
                       </Select>
                     </div>
+                         <div className="space-y-2">
+                                          <Label htmlFor="maxMemory">Max Memory</Label>
+                                          <Select
+                                            name="maxMemory"
+                                            value={formData.maxMemory}
+                                            onValueChange={(value) =>
+                                              setFormData((prev) => ({
+                                                ...prev,
+                                                maxMemory: value,
+                                              }))
+                                            }
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select max memory" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper" className="z-60">
+                                              <SelectItem value="200Mi">200MB</SelectItem>
+                                              <SelectItem value="500Mi">500MB</SelectItem>
+                                              <SelectItem value="1Gi">1GB</SelectItem>
+                                              <SelectItem value="2Gi">2GB</SelectItem>
+                                              <SelectItem value="4Gi">4GB</SelectItem>
+                                              <SelectItem value="8Gi">8GB</SelectItem>
+                                              <SelectItem value="16Gi">16GB</SelectItem>
+                                              <SelectItem value="32Gi">32GB</SelectItem>
+                                              <SelectItem value="64Gi">64GB</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                    
                     <div className="space-y-2">
                       <Label htmlFor="maxStorage">Max Storage</Label>
                       <Select
@@ -418,6 +447,7 @@ export default function CreateDatabasePage() {
                           }))
                         }
                       >
+
                         <SelectTrigger>
                           <SelectValue placeholder="Select max storage" />
                         </SelectTrigger>

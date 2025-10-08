@@ -12,8 +12,8 @@ export default async function AllRabbitmqDetailPageServerWrapper() {
    try{
     const [rabbitmq,projects] = await Promise.all([RabbitApi.getAllRabbitmq(token),RabbitApi.getProjects(token)])
     return <AllRabbitmqPage rabbitmq={rabbitmq} projects={projects}/>
-   }catch(_){
-
+   }catch(e){
+console.log(e)
     return  <ErrorPage cardTitle="RabbitMQ Not Found" paragraph="  We couldn’t load the requested RabbitMQ details. The RabbitMQ
     may not exist, or there was a problem fetching its information."/>
    }

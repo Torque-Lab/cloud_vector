@@ -6,9 +6,6 @@ export interface redisData extends redisSchema {
   id: string;
   createdAt: string;
   updatedAt: string;
-  description: string;
-  status: string;
-  size: string;
   region: string;
   projectName: string;
   is_provisioned: boolean;
@@ -75,7 +72,7 @@ export const RedisApi = {
     );
     return response.data;
   },
-  getProjects: async (token:string): Promise<Project[]> => {
+  getProjects: async (token?:string): Promise<Project[]> => {
     const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/infra/projects`,
       {
         withCredentials: true,

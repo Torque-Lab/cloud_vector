@@ -139,7 +139,7 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
                     <TableCell>
                       <div>
                         <Link href={`/rabbitmq/${rb.id}`} className="font-medium hover:underline">
-                          {rb.name}
+                          {rb.queue_name}
                         </Link>
         
                       </div>
