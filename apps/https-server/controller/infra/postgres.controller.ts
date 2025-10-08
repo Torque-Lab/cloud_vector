@@ -171,7 +171,11 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 }
 export const deletePostgresInstance = async (req: Request, res: Response) => {
     try {
-      const  postgresId  = req.query.postgresId as string;
+      const  postgresId  = req.params.id;
+      if(!postgresId){
+        res.status(400).json({ message: "Invalid postgresId", success: false });
+        return;
+      }
       const response = await pushInfraConfigToQueueToDelete(postgresQueue.DELETE,postgresId)
   
       if (!response) {
@@ -187,7 +191,11 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
   };
 export const getPostgresStatus=async(req:Request,res:Response)=>{
     try {
-        const postgresId=req.query.postgresId as string;
+        const postgresId=req.params.id
+        if(!postgresId){
+            res.status(400).json({ message: "Invalid postgresId", success: false });
+            return;
+        }
         const postgresStatus=await prismaClient.postgresDB.findUnique({
             where:{
                 id:postgresId
@@ -201,7 +209,11 @@ export const getPostgresStatus=async(req:Request,res:Response)=>{
 }
 export const resetPostgresInstance=async(req:Request,res:Response)=>{
     try {
-        const postgresId=req.query.postgresId as string;
+        const postgresId=req.params.id;
+        if(!postgresId){
+            res.status(400).json({ message: "Invalid postgresId", success: false });
+            return;
+        }
         const password=generateRandomString()
         const encryptedPassword=encrypt(password,PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!);
         const response=await prismaClient.postgresDB.update({
@@ -274,7 +286,11 @@ const finalPostgres = allPostgres.map(db => ({
 };
 export const getOnePostgresInstance = async (req: Request, res: Response) => {
     try {
-        const postgresId=req.query.postgresId as string;
+        const postgresId=req.params.id
+        if(!postgresId){
+            res.status(400).json({ message: "Invalid postgresId", success: false });
+            return;
+        }
         const postgres=await prismaClient.postgresDB.findUnique({
             where:{
                 id:postgresId
@@ -308,7 +324,11 @@ export const getOnePostgresInstance = async (req: Request, res: Response) => {
 export const getPostgresConnectionString = async (req: Request, res: Response) => {
 
     try { 
-        const postgresId=req.query.postgresId as string;
+        const postgresId=req.params.id
+        if(!postgresId){
+            res.status(400).json({ message: "Invalid postgresId", success: false });
+            return;
+        }
         const postgres=await prismaClient.postgresDB.findUnique({
             where:{
                 id:postgresId

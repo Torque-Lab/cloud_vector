@@ -4,6 +4,8 @@ import authRouter from "../routes/auth/auth.route";
 import passport from "passport";
 import postgresRouter from "../routes/infra/postgres.route";
 import projectRouter from "../routes/infra/project.route";
+import rabbitmqRouter from "../routes/infra/rabbitmq.route";
+ import redisRouter from "../routes/infra/redis.route";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -15,7 +17,8 @@ app.use(passport.initialize());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/infra",postgresRouter);
 app.use("/api/v1/infra",projectRouter);
-
+app.use("/api/v1/infra",rabbitmqRouter);
+app.use("/api/v1/infra",redisRouter);
 app.get("/api/v1/health", (req, res) => {
     const token=req.query.token;
     if(!token){
@@ -31,7 +34,12 @@ app.get("/api/v1/health", (req, res) => {
 app.listen(3005, () => {
     console.log("Server started on port 3005");
 });
+
 process.on("uncaughtException", (err) => {
-    console.error("Uncaught Exception:", err);
+    console.log("Uncaught Exception:", err);
     process.exit(1);
+});
+process.on("SIGTERM", (s) => {
+    console.log("SIGTERM received",s);
+    process.exit(0);
 });

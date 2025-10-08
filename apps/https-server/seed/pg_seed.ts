@@ -16,6 +16,13 @@ import { encrypt } from "@cloud/backend-common";
 async function main() {
   const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
   const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
+  const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
+  const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
+  const VECTORDB_ENCRYPT_SALT=process.env.VECTORDB_ENCRYPT_SALT!
+  const VECTORDB_ENCRYPT_SECRET=process.env.VECTORDB_ENCRYPT_SECRET!
+  const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
+  const REDIS_ENCRYPT_SECRET=process.env.REDIS_ENCRYPT_SECRET!
+
   console.log(" Seeding Pro user with all resources...");
   const proTierRule = await prismaClient.tierRule.upsert({
     where: { tier: Tier_Subscription.PRO },
@@ -80,7 +87,7 @@ async function main() {
         projectId: project.id,
         api_key: "pg_key_123",
         username: "pguser",
-      password: await encrypt("pgpass",PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT),
+        password:  encrypt("pgpass",PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT),
         host: "pg.dev.local",
         port: "5432",
         database_name: "prodb",
@@ -101,7 +108,7 @@ async function main() {
         projectId: project.id,
         api_key: "redis_key_123",
         username: "redisuser",
-        password: "redispass",
+        password:encrypt("redispass",REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT),
         host: "redis.dev.local",
         port: "6379",
         redis_name: "pro-redis",
@@ -122,7 +129,7 @@ async function main() {
         projectId: project.id,
         api_key: "rabbit_key_123",
         username: "rabbituser",
-        password: "rabbitpass",
+        password: encrypt("rabbitpass",RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT),
         host: "rabbit.dev.local",
         port: "5672",
         queue_name: "pro-queue",
@@ -143,7 +150,7 @@ async function main() {
         projectId: project.id,
         api_key: "vector_key_123",
         username: "vectoruser",
-        password: "vectorpass",
+        password: encrypt("vectorpass",VECTORDB_ENCRYPT_SECRET,VECTORDB_ENCRYPT_SALT),
         host: "vector.dev.local",
         port: "6333",
         database_name: "provector",

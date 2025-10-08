@@ -1,13 +1,20 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { rabbitmqSchema, projectSchema} from "@cloud/backend-common";
+import { rabbitmqSchema, projectSchema, decrypt} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
-import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
+import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
+const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
 
+enum RabbitQueue{
+  CREATE="rabbitmq_create_queue",
+  DELETE="rabbitmq_delete_queue"
+}
+const customerRabbitHost="cloud-rabbitmq.suvidhaportal.com"
 export const createRabbitInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -126,7 +133,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
              }
               const rabbitmqId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate("rabbitmq_create_queue",{...parsedData.data,resource_id:rabbitmqId,namespace})
+        const success=await pushInfraConfigToQueueToCreate(RabbitQueue.CREATE,{...parsedData.data,resource_id:rabbitmqId,namespace,autoScale:parsedData.data.autoScale.toString()})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -138,9 +145,16 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
                 projectId:parsedData.data.projectId,
                 queue_name:parsedData.data.name,
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password: encrypt(generateRandomString(),RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT),
                 port:"5672",
                 namespace:namespace,
+                initialMemory:parsedData.data.initialMemory,
+                maxMemory:parsedData.data.maxMemory,
+                initialStorage:parsedData.data.initialStorage,
+                maxStorage:parsedData.data.maxStorage,
+                initialVCpu:parsedData.data.initialVCpu,
+                maxVCpu:parsedData.data.maxVCpu,
+                autoScale:parsedData.data.autoScale === "true",
                 
                 
             }
@@ -151,9 +165,14 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-export const deleteRabbitMQ = async (req: Request, res: Response) => {
+
+export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
     try {
-      const { rabbitmqId } = req.body as { rabbitmqId: string };
+      const  rabbitmqId  = req.params.id;
+      if(!rabbitmqId){
+        res.status(400).json({ message: "Invalid rabbitmqId", success: false });
+        return;
+      }
       const response = await pushInfraConfigToQueueToDelete("rabbitmq_delete_queue",rabbitmqId)
   
       if (!response) {
@@ -169,7 +188,11 @@ export const deleteRabbitMQ = async (req: Request, res: Response) => {
   };
 export const getRabbitMQStatus=async(req:Request,res:Response)=>{
     try {
-        const {rabbitmqId}=req.body as {rabbitmqId:string};
+        const rabbitmqId=req.params.id ;
+        if(!rabbitmqId){
+            res.status(400).json({ message: "Invalid rabbitmqId", success: false });
+            return;
+        }
         const rabbitmqStatus=await prismaClient.rabbitMQ.findUnique({
             where:{
                 id:rabbitmqId
@@ -181,22 +204,153 @@ export const getRabbitMQStatus=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to get rabbitmq status", error });
     }
 }
-export const updateRabbitMQ=async(req:Request,res:Response)=>{
+export const resetRabbitInstance=async(req:Request,res:Response)=>{
     try {
-        const {rabbitmqId}=req.body as {rabbitmqId:string};
+        const rabbitmqId=req.params.id;
+        if(!rabbitmqId){
+            res.status(400).json({ message: "Invalid rabbitmqId", success: false });
+            return;
+        }
+        const password=generateRandomString()
+        const encryptedPassword=encrypt(password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT);
         const response=await prismaClient.rabbitMQ.update({
             data:{
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password:encryptedPassword,
             },
             where:{
                 id:rabbitmqId
             }
         })
-        res.status(200).json({ rabbitmq:response,success:true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to update rabbitmq status", error });
+        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/rabbitmq/routetable",{
+        //     resource_id:postgresId,
+        //     username:response?.username,
+        //     password:response?.password,
+            
+        // })
+        const connectionString=`amqp://${response?.username}:${password}@${customerRabbitHost}:${response?.port}/`
+        res.status(200).json({ message:"RabbitMQ updated successfully",success:true ,connectionString:connectionString});
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({ message: "Failed to update rabbitmq status",success:false });
+    }
+}
+export const getAllRabbitMQInstance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const allProjects = await prismaClient.project.findMany({
+      where: { userBaseAdminId: userId },
+      select: { id: true, name: true }
+    });
+
+    const projectIds = allProjects.map((p) => p.id);
+
+    if (projectIds.length === 0) {
+      return res.status(200).json({ rabbitmqDB: [], success: true });
+    }
+
+    const allRabbitMQ = await prismaClient.rabbitMQ.findMany({
+      where: { projectId: { in: projectIds } },
+      select: {
+        projectId: true,
+        id: true,
+        queue_name: true,
+        is_provisioned: true,
+        initialMemory: true,
+        region: true,
+        createdAt: true,
+        updatedAt: true,
+        autoScale: true,
+        initialStorage: true,
+        maxStorage: true,
+        initialVCpu: true,
+        maxVCpu: true,
+        backUpFrequency: true,
+        maxMemory: true,
+      }
+    });
+
+  const projectMap = new Map(allProjects.map(p => [p.id, p.name]));
+const finalRabbitMQ = allRabbitMQ.map(q => ({
+  ...q,
+  name:q.queue_name,
+  projectName: projectMap.get(q.projectId)
+}));
+
+    res.status(200).json({ rabbitmq: finalRabbitMQ,message:"RabbitMQ list", success: true });
+  } catch (_) {
+    res.status(500).json({ rabbitmq:[],message: "Failed to get rabbitmq status", success: false });
+  }
+};
+export const getOneRabbitMQInstance = async (req: Request, res: Response) => {
+    try {
+        const rabbitmqId=req.params.id;
+        if(!rabbitmqId){
+            res.status(400).json({ message: "Invalid rabbitmqId", success: false });
+            return;
+        }
+        const rabbitmq=await prismaClient.rabbitMQ.findUnique({
+            where:{
+                id:rabbitmqId
+            },
+         select:{
+            projectId:true,
+            id:true,
+            queue_name:true,
+            is_provisioned:true,
+            initialMemory:true,
+            region:true,
+            createdAt:true,
+            updatedAt:true,
+            autoScale:true,
+            initialStorage:true,
+            maxStorage:true,
+            initialVCpu:true,
+            maxVCpu:true,
+            backUpFrequency:true,
+            maxMemory:true,
+         }
+            
+        })
+        if(!rabbitmq){
+            res.status(404).json({rabbitmq:{}, message: "RabbitMQ not found", success: false });
+            return;
+        }    
+        res.status(200).json({ rabbitmq:rabbitmq,success:true });
+    } catch (_) {
+        res.status(500).json({ message: "Failed to get rabbitmq status" });
+    }
+}
+export const getRabbitMQConnectionString = async (req: Request, res: Response) => {
+
+    try { 
+        const rabbitmqId=req.params.id;
+        if(!rabbitmqId){
+            res.status(400).json({ message: "Invalid rabbitmqId", success: false });
+            return;
+        }
+        const rabbit=await prismaClient.rabbitMQ.findUnique({
+            where:{
+                id:rabbitmqId
+            },
+         select:{
+            id:true,
+            username:true,
+            password:true,
+            port:true,
+         
+         }
+            
+        })
+        if(!rabbit){
+            res.status(404).json({ message: "RabbitMQ not found",connectionString:"",success:false });
+            return;
+        }
+        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${customerRabbitHost}:${rabbit.port}`
+        res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
+    } catch (e) {
+      console.log(e)
+        res.status(500).json({ message: "Failed to get rabbitmq status" });
     }
 }
 

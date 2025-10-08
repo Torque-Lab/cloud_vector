@@ -1,12 +1,21 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { redisSchema, projectSchema} from "@cloud/backend-common";
+import { redisSchema, projectSchema, decrypt} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
-import { encrypt, generateUsername } from "../../utils/encrypt-decrypt";
+import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+
+
+const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
+const REDIS_ENCRYPT_SECRET=process.env.REDIS_ENCRYPT_SECRET!
+enum RedisQueue{
+  CREATE="redis_create_queue",
+  DELETE="redis_delete_queue"
+}
+const customerRedisHost="cloud-redis.suvidhaportal.com"
 
 export const createRedisInstance=async(req:Request,res:Response)=>{
 
@@ -126,7 +135,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
              }
               const redisId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate("redis_create_queue",{...parsedData.data,resource_id:redisId,namespace})
+        const success=await pushInfraConfigToQueueToCreate(RedisQueue.CREATE,{...parsedData.data,resource_id:redisId,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -138,9 +147,16 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
                 projectId:parsedData.data.projectId,
                 redis_name:parsedData.data.name,
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password:await encrypt(generateRandomString(),REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT),
                 port:"6379",
                 namespace:namespace,
+                initialMemory:parsedData.data.initialMemory,
+                maxMemory:parsedData.data.maxMemory,
+                initialVCpu:parsedData.data.initialVCpu,
+                maxVCpu:parsedData.data.maxVCpu,
+                initialStorage:parsedData.data.initialStorage,
+                maxStorage:parsedData.data.maxStorage,
+                autoScale:parsedData.data.autoScale==="true",
                 
                 
             }
@@ -151,10 +167,14 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
         res.status(500).json({ message: "Failed to add task to queue", error });
     }
 }
-export const deleteRedis = async (req: Request, res: Response) => {
+export const deleteRedisInstance= async (req: Request, res: Response) => {
     try {
-      const { redisId } = req.body as { redisId: string };
-      const response = await pushInfraConfigToQueueToDelete("redis_delete_queue",redisId)
+      const  redisId  = req.params.id;
+      if(!redisId){
+        res.status(400).json({ message: "Invalid redisId", success: false });
+        return;
+      }
+      const response = await pushInfraConfigToQueueToDelete(RedisQueue.DELETE,redisId)
   
       if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
@@ -169,34 +189,169 @@ export const deleteRedis = async (req: Request, res: Response) => {
   };
 export const getRedisStatus=async(req:Request,res:Response)=>{
     try {
-        const {redisId}=req.body as {redisId:string};
+        const redisId=req.params.id ;
+        if(!redisId){
+            res.status(400).json({ message: "Invalid redisId", success: false });
+            return;
+        }
         const redisStatus=await prismaClient.redis.findUnique({
             where:{
                 id:redisId
             }
         })
         res.status(200).json({ redisStatus:redisStatus?.provisioning_flow_status,success:true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to get redis status", error });
+    } catch (e) {
+      
+        res.status(500).json({ message: "Failed to get redis status", success:false });
     }
 }
-export const updateRedis=async(req:Request,res:Response)=>{
+export const resetRedisInstance=async(req:Request,res:Response)=>{
     try {
-        const {redisId}=req.body as {redisId:string};
-        const response=await prismaClient.redis.update({
+        const redisId=req.params.id;
+        if(!redisId){
+            res.status(400).json({ message: "Invalid redisId", success: false });
+            return;
+        }
+        const password=generateRandomString()
+        const encryptedPassword=encrypt(password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT);
+        const response=await prismaClient.rabbitMQ.update({
             data:{
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),process.env.ENCRYPT_SECRET || "BHggjvTfPlIYmIOjbbut"),
+                password:encryptedPassword,
             },
             where:{
                 id:redisId
             }
         })
-        res.status(200).json({ redis:response,success:true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to update redis status", error });
+        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/rabbitmq/routetable",{
+        //     resource_id:postgresId,
+        //     username:response?.username,
+        //     password:response?.password,
+            
+        // })
+        const connectionString=`amqp://${response?.username}:${password}@${customerRedisHost}:${response?.port}/`
+        res.status(200).json({ message:"Redis updated successfully",success:true ,connectionString:connectionString});
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({ message: "Failed to update redis status",success:false });
+    }
+}
+export const getAllRedisInstance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const allProjects = await prismaClient.project.findMany({
+      where: { userBaseAdminId: userId },
+      select: { id: true, name: true }
+    });
+
+    const projectIds = allProjects.map((p) => p.id);
+
+    if (projectIds.length === 0) {
+      return res.status(200).json({ redis: [], success: true });
+    }
+
+    const allRedis = await prismaClient.redis.findMany({
+      where: { projectId: { in: projectIds } },
+      select: {
+        projectId: true,
+        id: true,
+        redis_name: true,
+        is_provisioned: true,
+        initialMemory: true,
+        region: true,
+        createdAt: true,
+        updatedAt: true,
+        autoScale: true,
+        initialStorage: true,
+        maxStorage: true,
+        initialVCpu: true,
+        maxVCpu: true,
+        backUpFrequency: true,
+        maxMemory: true,
+      }
+    });
+
+  const projectMap = new Map(allProjects.map(p => [p.id, p.name]));
+const finalRedis = allRedis.map(q => ({
+  ...q,
+  name:q.redis_name,
+  projectName: projectMap.get(q.projectId)
+}));
+
+    res.status(200).json({ redis: finalRedis,message:"Redis list", success: true });
+  } catch (_) {
+    res.status(500).json({ redis:[],message: "Failed to get redis status", success: false });
+  }
+};
+export const getOneRedisInstance = async (req: Request, res: Response) => {
+    try {
+        const redisId=req.params.id;
+        if(!redisId){
+            res.status(400).json({ message: "Invalid redisId", success: false });
+            return;
+        }
+        const redis=await prismaClient.redis.findUnique({
+            where:{
+                id:redisId
+            },
+         select:{
+            projectId:true,
+            id:true,
+            redis_name:true,
+            is_provisioned:true,
+            initialMemory:true,
+            region:true,
+            createdAt:true,
+            updatedAt:true,
+            autoScale:true,
+            initialStorage:true,
+            maxStorage:true,
+            initialVCpu:true,
+            maxVCpu:true,
+            backUpFrequency:true,
+            maxMemory:true,
+         }
+            
+        })
+        if(!redis){
+            res.status(404).json({redis:{}, message: "Redis not found", success: false });
+            return;
+        }    
+        res.status(200).json({ redis:redis,success:true });
+    } catch (_) {
+        res.status(500).json({ message: "Failed to get redis status" ,success:false});
+    }
+}
+export const getRedisConnectionString = async (req: Request, res: Response) => {
+
+    try { 
+        const redisId=req.params.id;
+        if(!redisId){
+            res.status(400).json({ message: "Invalid redisId", success: false });
+            return;
+        }
+        const redis=await prismaClient.redis.findUnique({
+            where:{
+                id:redisId
+            },
+         select:{
+            id:true,
+            username:true,
+            password:true,
+            port:true,
+         
+         }
+            
+        })
+        if(!redis){
+            res.status(404).json({ message: "Redis not found",connectionString:"",success:false });
+            return;
+        }
+        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${customerRedisHost}:${redis.port}`
+        res.status(200).json({message:"Redis connection string", connectionString:connectionString,success:true });
+    } catch (e) {
+      console.log(e)
+        res.status(500).json({ message: "Failed to get rabbitmq status" });
     }
 }
 
