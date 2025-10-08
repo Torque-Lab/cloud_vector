@@ -11,14 +11,15 @@ export interface rabbitData extends rabbitmqSchema {
   size: string;
   region: string;
   projectName: string;
+  is_provisioned: boolean;
 }
 export interface Project {
   id: string;
   name: string;
 }
 export const RabbitApi = {
-  getAllRabbitmq: async (token:string): Promise<Pick<rabbitData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">[]> => {
-    const response = await axios.get<{rabbitmqS:Pick<rabbitData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">[],success:boolean}>(`${API_BASE_URL}/api/all-rabbitmq`,
+  getAllRabbitmq: async (token?:string): Promise<rabbitData[]> => {
+    const response = await axios.get<{rabbitmqS:rabbitData[],success:boolean}>(`${API_BASE_URL}/api/infra/all-rabbitmq`,
       {
         withCredentials: true,
         headers: {
@@ -29,8 +30,8 @@ export const RabbitApi = {
     return response.data.rabbitmqS;
   },
 
-  getRabbitmq: async (token:string,id: string): Promise<Pick<rabbitData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency"| 'maxMemory'|'maxVCpu'>> => {
-    const response = await axios.get<{rabbitmq:Pick<rabbitData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>,success:boolean}>(`${API_BASE_URL}/api/rabbitmq-get/${id}`,
+  getRabbitmq: async (id: string,token?:string): Promise<rabbitData> => {
+    const response = await axios.get<{rabbitmq:rabbitData,success:boolean}>(`${API_BASE_URL}/api/infra/rabbitmq-get/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -41,7 +42,7 @@ export const RabbitApi = {
     return response.data.rabbitmq;
   },
 
-  getProjects: async (token:string): Promise<Project[]> => {
+  getProjects: async (token?:string): Promise<Project[]> => {
     const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
       {
         withCredentials: true,
@@ -53,8 +54,8 @@ export const RabbitApi = {
     return response.data.projects;
   },
 
-  createRabbitmq: async (token:string,data: rabbitmqSchema ): Promise<rabbitData> => {
-    const response = await axios.post<{rabbitmq:rabbitData,success:boolean}>(`${API_BASE_URL}/api/rabbitmq-create`, data,
+  createRabbitmq: async (data: rabbitmqSchema ,token?:string): Promise<rabbitData> => {
+    const response = await axios.post<{rabbitmq:rabbitData,success:boolean}>(`${API_BASE_URL}/api/infra/rabbitmq-create`, data,
       {
         withCredentials: true,
         headers: {
@@ -65,8 +66,8 @@ export const RabbitApi = {
     return response.data.rabbitmq;
   },
 
-  updateRabbitmq: async (token:string,id: string, data: Partial<rabbitData>): Promise<rabbitData> => {
-    const response = await axios.patch<{rabbitmq:rabbitData,success:boolean}>(`${API_BASE_URL}/api/rabbitmq-update/${id}`, data,
+  resetConnection: async (id: string, token?:string): Promise<{connectionString:string,message:string,success:boolean}> => {
+    const response = await axios.patch<{connectionString:string,message:string,success:boolean}>(`${API_BASE_URL}/api/infra/rabbitmq-update/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -74,10 +75,22 @@ export const RabbitApi = {
         },
       }
     );
-    return response.data.rabbitmq;
+    return response.data
   },
 
-  deleteRabbitmq: async (token:string,id: string): Promise<{message:string,success:boolean}> => {
+  getConnection: async (id: string, token?:string): Promise<{connectionString:string,message:string,success:boolean}> => {
+    const response = await axios.get<{connectionString:string,message:string,success:boolean}>(`${API_BASE_URL}/api/rabbitmq-get/${id}`,
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data
+  },
+
+  deleteRabbitmq: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {
     const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/rabbitmq-delete/${id}`,
       {
         withCredentials: true,

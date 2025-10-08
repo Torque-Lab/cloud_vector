@@ -1,5 +1,5 @@
-import DatabaseDetailLoading from "../_ignoreClient/loader";
+import RedisDetailLoading from "../_ignoreClient/loader";
 
 export default function Loading() {
-    return <DatabaseDetailLoading/>
+    return <RedisDetailLoading/>
 }

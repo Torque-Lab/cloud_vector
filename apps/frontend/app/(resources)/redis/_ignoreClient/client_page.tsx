@@ -10,10 +10,11 @@ import { GeneralModal } from "@/components/general-modal"
 import { ConnectChildSection } from "@/components/connect-child-section"
 import { toast } from "@/hooks/use-toast"
 import { RefreshCcw } from "lucide-react"
-import { redisData, RedisApi } from "@/lib/redis_api"
+import { redisData, RedisApi  } from "@/lib/redis_api"
+import { parseDateWithLocale } from "@/lib/utils"
 
 
-export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>}) {
+export default function RedisDetailPage({redis}: {redis: redisData }) {
   const [isConnectModelOpen, setIsConnectModelOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -58,10 +59,9 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
           <div>
             <div className="flex items-center space-x-2">
              
-              <h2 className="text-3xl font-bold tracking-tight">{redis.name}</h2>
-              <Badge variant={redis.status === "healthy" ? "success" : "warning"}>{redis.status}</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">{redis?.name}</h2>
+              <Badge variant={redis?.is_provisioned === true ? "success" : "warning"}>{redis?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
             </div>
-            <p className="text-muted-foreground">{redis.description}</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button className="cursor-pointer " onClick={() => {setIsConnectModelOpen(true)}}>Connect</Button>
@@ -74,21 +74,21 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
           <Card>
             <CardHeader>
               <CardTitle>Configuration</CardTitle>
-              <CardDescription>Current database settings and parameters.</CardDescription>
+              <CardDescription>Current Redis settings and parameters.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{redis.maxVCpu}</span>
+                  <span className="text-sm font-medium">{redis?.maxVCpu}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Memory Limit:</span>
-                  <span className="text-sm font-medium">{redis.maxMemory}</span>
+                  <span className="text-sm font-medium">{redis?.maxMemory}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Region:</span>
-                  <span className="text-sm font-medium">{ redis.region}</span>
+                  <span className="text-sm font-medium">{redis?.region}</span>
                 </div>
                 <div className="flex justify-between items-start">
   <div className="flex flex-col">
@@ -97,14 +97,18 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
       * scaling in same instance, not add new machine
     </small>
   </div>
-  <Badge variant={redis.autoScale ? "success" : "secondary"}>
-    {redis.autoScale ? "Enabled" : "Disabled"}
+  <Badge variant={  redis?.autoScale ? "success" : "secondary"}>
+    {redis?.autoScale ? "Enabled" : "Disabled"}
   </Badge>
 </div>
 
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{redis.createdAt}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(redis?.createdAt)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Updated:</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(redis?.updatedAt)}</span>
                 </div>
               </div>
             </CardContent>
@@ -132,7 +136,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common database operations and management tasks.</CardDescription>
+            <CardDescription>Common Redis operations and management tasks.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -152,7 +156,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to Redis" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/redis/reset" endpoint="/api/redis/connection" />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to Redis" inputMode={false} onClick={() => {}} children={<ConnectChildSection api={RedisApi} resourceId={params.id as string} label="Redis" />} />
 
 
 
@@ -163,7 +167,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
             
             <div className="flex items-center justify-between p-4 border border-none rounded-lg">
               <div>
-                <p className="font-medium">Delete Redis Instance</p>
+                <p className="font-medium">Delete Redis</p>
                 <p className="text-sm text-muted-foreground">Permanently delete this Redis and all its data</p>
               </div>
               <Button
@@ -171,7 +175,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
                 className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent cursor-pointer"
                 onClick={() => setShowDeleteConfirm(true)}
               >
-                Delete Redis Instance
+                Delete Redis
               </Button>
             </div>
           </div>
@@ -181,7 +185,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Card className="p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Delete Redis Instance</h3>
+              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Delete Redis</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Are you sure you want to delete "{redis.name}"? This action cannot be undone and will permanently
                 delete all associated data.
@@ -196,7 +200,7 @@ export default function RedisDetailPage({redis}: {redis: Pick<redisData, 'id' | 
                   disabled={deleteLoading}
                   className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent cursor-pointer"
                 >
-                  {deleteLoading ? <RefreshCcw className="mr-2 h-4 w-4 animate-spin" /> : "Delete Redis Instance"}
+                  {deleteLoading ? <RefreshCcw className="mr-2 h-4 w-4 animate-spin" /> : "Delete Redis"}
                 </Button>
               </div>
             </Card>

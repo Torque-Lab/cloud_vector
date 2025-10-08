@@ -156,7 +156,7 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to PostgresSQL" inputMode={false} onClick={() => {}} children={<ConnectChildSection postgresId={params.id as string}  />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to PostgresSQL" inputMode={false} onClick={() => {}} children={<ConnectChildSection api={PostgresApi} resourceId={params.id as string} label="PostgresSQL" />} />
 
 
 

@@ -11,14 +11,15 @@ export interface redisData extends redisSchema {
   size: string;
   region: string;
   projectName: string;
+  is_provisioned: boolean;
 }
 export interface Project {
   id: string;
   name: string;
 }
 export const RedisApi = {
-  getAllRedis: async (token:string): Promise<Pick<redisData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">[]> => {
-    const response = await axios.get<{redis:Pick<redisData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">[],success:boolean}>(`${API_BASE_URL}/api/all-redis`,
+  getAllRedis: async (token?:string): Promise<redisData[]> => {
+    const response = await axios.get<{redis:redisData[],success:boolean}>(`${API_BASE_URL}/api/infra/all-redis`,
       {
         withCredentials: true,
         headers: {
@@ -29,8 +30,8 @@ export const RedisApi = {
     return response.data.redis;
   },
 
-  getRedis: async (token:string,id: string): Promise<Pick<redisData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">> => {
-    const response = await axios.get<{redis:Pick<redisData, "projectId" | "projectName" | "id" | "name" | "description" | "status" | "size" | "region" | "createdAt" | "autoScale" | "backFrequency" | "maxMemory" | "maxVCpu">,success:boolean}>(`${API_BASE_URL}/api/redis-get/${id}`,
+  getRedis: async (id: string,token?:string): Promise<redisData> => {
+    const response = await axios.get<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/infra/redis-get/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -40,8 +41,8 @@ export const RedisApi = {
     );
     return response.data.redis;
   },
-  createRedis: async (token:string,data: redisSchema ): Promise<redisData> => {
-    const response = await axios.post<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/redis-create`, data,
+  createRedis: async (data: redisSchema, token?:string  ): Promise<redisData> => {
+    const response = await axios.post<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/infra/redis-create`, data,
       {
         withCredentials: true,
         headers: {
@@ -52,8 +53,8 @@ export const RedisApi = {
     return response.data.redis;
   },
 
-  updateRedis: async (token:string,id: string, data: Partial<redisData>): Promise<redisData> => {
-    const response = await axios.patch<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/redis-update/${id}`, data,
+  resetConnection: async (id: string, token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
+    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/infra/redis-reset/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -61,10 +62,21 @@ export const RedisApi = {
         },
       }
     );
-    return response.data.redis;
+    return response.data
+  },
+  getConnection: async (id: string,token?:string): Promise<{connectionString:string,message:string,success:boolean}> => {
+    const response = await axios.get<{connectionString:string,message:string,success:boolean}>(`${API_BASE_URL}/api/infra/redis-connection/${id}`,
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   },
   getProjects: async (token:string): Promise<Project[]> => {
-    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/infra/projects`,
       {
         withCredentials: true,
         headers: {
@@ -76,7 +88,7 @@ export const RedisApi = {
   },
 
   deleteRedis: async (id: string, token?:string): Promise<{message:string,success:boolean}> => {
-    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/redis-delete/${id}`,
+    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/infra/redis-delete/${id}`,
       {
         withCredentials: true,
         headers: {

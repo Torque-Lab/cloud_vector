@@ -1,5 +1,5 @@
-import DatabaseDetailLoading from "./_ignoreClient/loader";
+import RabbitMQDetailLoading from "./_ignoreClient/loader";
 
 export default function Loading() {
-    return <DatabaseDetailLoading/>
+    return <RabbitMQDetailLoading/>
 }

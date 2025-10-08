@@ -49,7 +49,7 @@ const sidebarItems = [
   },
   {
     title: "VectorDB",
-    href: "/databases",
+    href: "/vectordb",
     icon: (
       <Vibrate />
     ),

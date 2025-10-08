@@ -9,23 +9,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { rabbitData } from "@/lib/rabbit_api"
 
-
-export default function AllRabbitMQPage({rabbitmq,projects}: {rabbitmq: Pick<rabbitData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[],projects: {id: string; name: string}[]}) {
+export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitData[],projects: {id: string; name: string}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
 
-  const filteredRabbitMQ = rabbitmq.filter((rb) => {
+  const filteredRabbitmq = rabbitmq.filter((rb) => {
     const matchesProject = selectedProject === "all" || rb.projectId === selectedProject
     return matchesProject
   })
 
   const getProjectStats = () => {
-    const projectRabbitMQ =
+    const projectDbs =
       selectedProject === "all" ? rabbitmq : rabbitmq.filter((rb) => rb.projectId === selectedProject)
-    const totalSize = projectRabbitMQ.reduce((sum, rb) => sum + Number.parseFloat(rb.size.replace(" GB", "")), 0)
-    const healthyCount = projectRabbitMQ.filter((rb) => rb.status === "healthy").length
+    const totalSize = projectDbs.reduce((sum, rb) => sum + Number.parseFloat(rb.initialStorage.replace(" GB", "")), 0)
+    const healthyCount = projectDbs.filter((rb) => rb.is_provisioned=== true).length
 
     return {
-      total: projectRabbitMQ.length,
+      total: projectDbs.length,
       size: `${Math.round(totalSize)} GB`,
       healthy: healthyCount,
     }
@@ -97,7 +96,7 @@ export default function AllRabbitMQPage({rabbitmq,projects}: {rabbitmq: Pick<rab
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Healthy Databases</CardTitle>
+              <CardTitle className="text-sm font-medium">Healthy RabbitMQ</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.healthy}</div>
@@ -108,7 +107,7 @@ export default function AllRabbitMQPage({rabbitmq,projects}: {rabbitmq: Pick<rab
           </Card>
         </div>
 
-        {/* Databases Table */}
+        {/* RabbitMQ Table */}
         <Card>
           <CardHeader>
             <CardTitle>
@@ -135,25 +134,25 @@ export default function AllRabbitMQPage({rabbitmq,projects}: {rabbitmq: Pick<rab
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRabbitMQ.map((rb) => (
+                {filteredRabbitmq.map((rb) => (
                   <TableRow key={rb.id}>
                     <TableCell>
                       <div>
                         <Link href={`/rabbitmq/${rb.id}`} className="font-medium hover:underline">
                           {rb.name}
                         </Link>
-                        <p className="text-sm text-muted-foreground">{  rb.description}</p>
+        
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
                       <TableCell>
-                        <Badge variant="outline">{rb.projectName}</Badge>
-                      </TableCell>
+                          <Badge variant="outline">{rb.projectName}</Badge>
+                        </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={rb.status === "healthy" ? "success" : "warning"}>{rb.status}</Badge>
+                      <Badge variant={rb.is_provisioned === true ? "success" : "warning"}>{rb.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
                     </TableCell>
-                    <TableCell>{rb.size}</TableCell>
+                    <TableCell>{rb.initialStorage}</TableCell>
                     <TableCell>{rb.region}</TableCell>
                    
                   </TableRow>

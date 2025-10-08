@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default function DatabaseDetailLoading() {
+export default function RedisDetailLoading() {
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8 animate-pulse">

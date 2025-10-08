@@ -10,10 +10,11 @@ import { GeneralModal } from "@/components/general-modal"
 import { ConnectChildSection } from "@/components/connect-child-section"
 import { toast } from "@/hooks/use-toast"
 import { RefreshCcw } from "lucide-react"
-import { rabbitData, RabbitApi } from "@/lib/rabbit_api"
+import { parseDateWithLocale } from "@/lib/utils"
+import { RabbitApi ,rabbitData} from "@/lib/rabbit_api"
 
 
-export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitData, 'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>}) {
+export default function RabbitMQDetailPage({rabbitmq}: {rabbitmq: rabbitData }) {
   const [isConnectModelOpen, setIsConnectModelOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -58,10 +59,9 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
           <div>
             <div className="flex items-center space-x-2">
              
-              <h2 className="text-3xl font-bold tracking-tight">{rabbitmq.name}</h2>
-              <Badge variant={rabbitmq.status === "healthy" ? "success" : "warning"}>{rabbitmq.status}</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">{rabbitmq?.name}</h2>
+              <Badge variant={rabbitmq?.is_provisioned === true ? "success" : "warning"}>{rabbitmq?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
             </div>
-            <p className="text-muted-foreground">{rabbitmq.description}</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button className="cursor-pointer " onClick={() => {setIsConnectModelOpen(true)}}>Connect</Button>
@@ -80,15 +80,15 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
               <div className="grid gap-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{rabbitmq.maxVCpu}</span>
+                  <span className="text-sm font-medium">{rabbitmq?.maxVCpu}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Memory Limit:</span>
-                  <span className="text-sm font-medium">{rabbitmq.maxMemory}</span>
+                  <span className="text-sm font-medium">{rabbitmq?.maxMemory}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Region:</span>
-                  <span className="text-sm font-medium">{rabbitmq.region}</span>
+                  <span className="text-sm font-medium">{rabbitmq?.region}</span>
                 </div>
                 <div className="flex justify-between items-start">
   <div className="flex flex-col">
@@ -97,14 +97,18 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
       * scaling in same instance, not add new machine
     </small>
   </div>
-  <Badge variant={rabbitmq.autoScale ? "success" : "secondary"}>
-    {rabbitmq.autoScale ? "Enabled" : "Disabled"}
+  <Badge variant={rabbitmq?.autoScale ? "success" : "secondary"}>
+    {rabbitmq?.autoScale ? "Enabled" : "Disabled"}
   </Badge>
 </div>
 
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{rabbitmq.createdAt}</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(rabbitmq?.createdAt)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Updated:</span>
+                  <span className="text-sm font-medium">{parseDateWithLocale(rabbitmq?.updatedAt)}</span>
                 </div>
               </div>
             </CardContent>
@@ -132,7 +136,7 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common database operations and management tasks.</CardDescription>
+            <CardDescription>Common RabbitMQ operations and management tasks.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -152,7 +156,7 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to RabbitMQ" inputMode={false} onClick={() => {}} children={<ConnectChildSection reset_endpoint="/api/rabbitmq/reset" endpoint="/api/rabbitmq/connection" />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to RabbitMQ" inputMode={false} onClick={() => {}} children={<ConnectChildSection api={RabbitApi} resourceId={params.id as string} label="RabbitMQ" />} />
 
 
 
@@ -163,8 +167,8 @@ export default function DatabaseDetailPage({rabbitmq}: {rabbitmq: Pick<rabbitDat
             
             <div className="flex items-center justify-between p-4 border border-none rounded-lg">
               <div>
-                <p className="font-medium">Delete RabbitMQ</p>
-                <p className="text-sm text-muted-foreground">Permanently delete this RabbitMQ and all its data</p>
+                <p className="font-medium">Delete PostgresSQL</p>
+                <p className="text-sm text-muted-foreground">Permanently delete this PostgresSQL and all its data</p>
               </div>
               <Button
                 variant="outline"

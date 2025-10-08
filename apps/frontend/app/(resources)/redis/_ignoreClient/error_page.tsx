@@ -21,8 +21,8 @@ export default function ErrorPage( {paragraph,cardTitle}: {paragraph: string,car
               {paragraph}
               </p>
               <div className="flex items-center space-x-2">
-            <Link href="/postgres">
-              <Button className="cursor-pointer"><ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to PostgresSQL</Button>
+            <Link href="/dashboard">
+              <Button className="cursor-pointer"><ArrowLeftIcon className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
             </Link>
           </div>
             </CardContent>

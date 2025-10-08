@@ -249,7 +249,7 @@ export default function DatabasesPage() {
                   <TableRow key={db.id}>
                     <TableCell>
                       <div>
-                        <Link href={`/databases/${db.id}`} className="font-medium hover:underline">
+                        <Link href={`/vectordb/${db.id}`} className="font-medium hover:underline">
                           {db.name}
                         </Link>
                         <p className="text-sm text-muted-foreground">{db.description}</p>
@@ -271,7 +271,7 @@ export default function DatabasesPage() {
                     <TableCell className="text-muted-foreground">{db.lastActivity}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        <Link href={`/databases/${db.id}`}>
+                        <Link href={`/vectordb/${db.id}`}>
                           <Button variant="ghost" size="sm">
                             View
                           </Button>

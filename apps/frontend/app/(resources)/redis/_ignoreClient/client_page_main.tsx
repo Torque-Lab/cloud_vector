@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { redisData } from "@/lib/redis_api"
 
-export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'projectId' |'projectName'|'id' | 'name' | 'description' | 'status' | 'size' | 'region' | 'createdAt' | 'autoScale' | "backFrequency" | 'maxMemory'|'maxVCpu'>[],projects: {id: string; name: string}[]}) {
+export default function AllRedissPage({redis,projects}: {redis: redisData[],projects: {id: string; name: string}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
 
   const filteredRedis = redis.filter((db) => {
@@ -20,8 +20,8 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
   const getProjectStats = () => {
     const projectDbs =
       selectedProject === "all" ? redis : redis.filter((db) => db.projectId === selectedProject)
-    const totalSize = projectDbs.reduce((sum, db) => sum + Number.parseFloat(db.size.replace(" GB", "")), 0)
-    const healthyCount = projectDbs.filter((db) => db.status === "healthy").length
+    const totalSize = projectDbs.reduce((sum, db) => sum + Number.parseFloat(db.initialStorage.replace(" GB", "")), 0)
+    const healthyCount = projectDbs.filter((db) => db.is_provisioned=== true).length
 
     return {
       total: projectDbs.length,
@@ -38,7 +38,7 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">All Redis</h2>
-            <p className="text-muted-foreground">Manage your Redis databases and configurations.</p>
+            <p className="text-muted-foreground">Manage your Redis  and configurations.</p>
           </div>
           <div className="flex items-center space-x-2">
             <Link href="/redis/create">
@@ -73,7 +73,7 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {selectedProject === "all" ? "Total Databases" : "Project Databases"}
+                {selectedProject === "all" ? "Total Redis" : "Project Redis"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -96,7 +96,7 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Healthy Databases</CardTitle>
+              <CardTitle className="text-sm font-medium">Healthy Redis</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.healthy}</div>
@@ -107,18 +107,18 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
           </Card>
         </div>
 
-        {/* Databases Table */}
+       
         <Card>
           <CardHeader>
             <CardTitle>
               {selectedProject === "all"
-                ? "All Databases"
-                : `${projects.find((p) => p.id === selectedProject)?.name} Databases`}
+                ? "All Redis"
+                : `${projects.find((p) => p.id === selectedProject)?.name} Redis`}
             </CardTitle>
             <CardDescription>
               {selectedProject === "all"
-                ? "A list of all your databases across all projects."
-                : `Databases in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
+                ? "A list of all your Redis across all projects."
+                : `Redis in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,7 +141,7 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
                         <Link href={`/redis/${db.id}`} className="font-medium hover:underline">
                           {db.name}
                         </Link>
-                        <p className="text-sm text-muted-foreground">{db.description}</p>
+        
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
@@ -150,9 +150,9 @@ export default function AllRedisPage({redis,projects}: {redis: Pick<redisData,'p
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={db.status === "healthy" ? "success" : "warning"}>{db.status}</Badge>
+                      <Badge variant={db.is_provisioned === true ? "success" : "warning"}>{db.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
                     </TableCell>
-                    <TableCell>{db.size}</TableCell>
+                    <TableCell>{db.initialStorage}</TableCell>
                     <TableCell>{db.region}</TableCell>
                    
                   </TableRow>
