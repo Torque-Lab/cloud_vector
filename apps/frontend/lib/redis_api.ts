@@ -16,7 +16,7 @@ export interface Project {
 }
 export const RedisApi = {
   getAllRedis: async (token?:string): Promise<redisData[]> => {
-    const response = await axios.get<{redis:redisData[],success:boolean}>(`${API_BASE_URL}/api/infra/all-redis`,
+    const response = await axios.get<{redis:redisData[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/all-redis`,
       {
         withCredentials: true,
         headers: {
@@ -28,7 +28,7 @@ export const RedisApi = {
   },
 
   getRedis: async (id: string,token?:string): Promise<redisData> => {
-    const response = await axios.get<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/infra/redis-get/${id}`,
+    const response = await axios.get<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/redis-get/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -39,7 +39,7 @@ export const RedisApi = {
     return response.data.redis;
   },
   createRedis: async (data: redisSchema, token?:string  ): Promise<redisData> => {
-    const response = await axios.post<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/infra/redis-create`, data,
+    const response = await axios.post<{redis:redisData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/redis-create`, data,
       {
         withCredentials: true,
         headers: {
@@ -51,7 +51,7 @@ export const RedisApi = {
   },
 
   resetConnection: async (id: string, token?:string): Promise<{message:string,success:boolean,connectionString:string}> => {
-    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/infra/redis-reset/${id}`,
+    const response = await axios.patch<{message:string,success:boolean,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/redis-reset/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -62,7 +62,7 @@ export const RedisApi = {
     return response.data
   },
   getConnection: async (id: string,token?:string): Promise<{connectionString:string,message:string,success:boolean}> => {
-    const response = await axios.get<{connectionString:string,message:string,success:boolean}>(`${API_BASE_URL}/api/infra/redis-connection/${id}`,
+    const response = await axios.get<{connectionString:string,message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/redis-connection/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -73,7 +73,7 @@ export const RedisApi = {
     return response.data;
   },
   getProjects: async (token?:string): Promise<Project[]> => {
-    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/infra/projects`,
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/projects`,
       {
         withCredentials: true,
         headers: {
@@ -85,7 +85,7 @@ export const RedisApi = {
   },
 
   deleteRedis: async (id: string, token?:string): Promise<{message:string,success:boolean}> => {
-    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/infra/redis-delete/${id}`,
+    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/redis-delete/${id}`,
       {
         withCredentials: true,
         headers: {
