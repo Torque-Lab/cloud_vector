@@ -9,6 +9,7 @@ export default async function AllDatabaseDetailPageServerWrapper() {
    if (!token || token === null || token === undefined) {
      redirect("/signin")
   }
+  
    try{
     const [database,projects] = await Promise.all([PostgresApi.getDatabases(token),PostgresApi.getProjects(token)])
     return <AllDatabasesPage databases={database} projects={projects}/>

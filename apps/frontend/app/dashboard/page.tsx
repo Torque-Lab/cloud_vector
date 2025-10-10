@@ -17,7 +17,6 @@ export default async function DashboardServerPage() {
                 Authorization: `Bearer ${token}`
             }
         })
-        console.log(dashboardData,"dashboardData")
         return <DashboardClientPage data={dashboardData.data.DashboardData} projects={projects}/>
 
     }catch(e){

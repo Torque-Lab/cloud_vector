@@ -50,13 +50,14 @@ const sidebarItems = [
      <Box/>
     )
   },
+  // {
+  //   title: "VectorDB",
+  //   href: "/vectordb",
+  //   icon: (
+  //     <Vibrate />
+  //   ),
+  // }, 
   {
-    title: "VectorDB",
-    href: "/vectordb",
-    icon: (
-      <Vibrate />
-    ),
-  },  {
     title: "Projects",
     href: "/projects",
     icon: (
