@@ -45,3 +45,17 @@ export type Metric = {
     };
   };
   
+
+
+  export type ProjectData = {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    postgres: number;
+    redis: number;
+    rabbitMQ: number;
+    vm: number;
+    cost: string;
+    created: string;
+  };

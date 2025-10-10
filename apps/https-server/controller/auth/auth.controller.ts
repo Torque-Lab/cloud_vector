@@ -329,7 +329,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const getSession = async (req: Request, res: Response) => {
 
 const userId=req.userId;
-console.log(userId,"userId")
+
 try{
   const user = await prismaClient.userBaseAdmin.findUnique({
     where: {

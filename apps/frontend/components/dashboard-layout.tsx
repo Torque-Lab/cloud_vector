@@ -12,8 +12,6 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const {user}=useClientSession() 
-  console.log(user,"user")
-
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
   }
