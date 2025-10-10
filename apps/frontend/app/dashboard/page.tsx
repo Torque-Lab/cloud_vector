@@ -3,8 +3,8 @@ import DashboardClientPage from "./_ignoreClient/page";
 import { redirect } from "next/navigation";
 import { PostgresApi } from "@/lib/pg_api";
 import axios from "axios";
-import { DashboardDataProps } from "./_ignoreClient/page";
-
+import {DashboardDataType} from "@cloud/shared_types"
+import { API_BASE_URL } from "@/lib/pg_api";
 export default async function DashboardServerPage() {
     const token =await getSessionInServer()
     if(!token || token===""){
@@ -12,15 +12,17 @@ export default async function DashboardServerPage() {
     }
     try{
         const projects=await PostgresApi.getProjects(token)
-        const dashboardData=await axios.get<{DashboardData:DashboardDataProps,message:string,success:boolean}>("/api/infra/v1/dashboard",{
+        const dashboardData=await axios.get<{DashboardData:DashboardDataType,message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/dashboard`,{
             headers:{
                 Authorization: `Bearer ${token}`
             }
         })
+        console.log(dashboardData,"dashboardData")
         return <DashboardClientPage data={dashboardData.data.DashboardData} projects={projects}/>
 
     }catch(e){
-        return <DashboardClientPage data={{allData:{metrics:[],recentActivity:[],topDatabases:[],storageBreakdown:[]}}} projects={[]}/>
+        console.log(e,"e")
+        return <DashboardClientPage data={{allData:{all:{metrics:[],recentActivity:[],topDatabases:[],storageBreakdown:[]}}}} projects={[]}/>
     }
     
 }

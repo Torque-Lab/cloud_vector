@@ -7,61 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Gem } from "lucide-react"
 import { useRouter } from "next/navigation"
+import {DashboardDataType} from "@cloud/shared_types"
 
-
-
-type Metric = {
-  title: string;
-  value: string;
-  change: string;
-  trend: "up" | "down";
-};
-
-type RecentActivity = {
-  id: number;
-  action: string;
-  database: string;
-  project: string;
-  timestamp: string;
-  status: "success" | "warning" | "error";
-};
-
-type TopDatabase = {
-  name: string;
-  project: string;
-  queries: string;
-  size: string;
-  status: "healthy" | "warning" | "error";
-};
-
-type StorageBreakdown = {
-  project: string;
-  storage: string;
-  percentage: number;
-};
-
-export type DashboardDataProps = {
-  allData: {
-    metrics: Metric[];
-    recentActivity: RecentActivity[];
-    topDatabases: TopDatabase[];
-    storageBreakdown: StorageBreakdown[];
-  };
-};
-
-export default function DashboardClientPage({data,projects}: {data: DashboardDataProps,projects: {id: string; name: string;}[]}) {
+export default function DashboardClientPage({data,projects}: {data: DashboardDataType,projects: {id: string; name: string;}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
-  const currentData = data[selectedProject as keyof typeof data]
+  const currentData = data.allData[selectedProject]
   const router=useRouter()
-  const computeTotalStorage = (d:typeof data) => {
-    let totalStorage=0
-    d.allData.storageBreakdown.forEach((item) => {
-      totalStorage += Number(item.storage)
-    })
-    return totalStorage
-  }
-    
-
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8 ">
@@ -184,24 +135,20 @@ export default function DashboardClientPage({data,projects}: {data: DashboardDat
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Total Storage</span>
-                      <span className="text-sm text-muted-foreground">{computeTotalStorage(data)}</span>
+                      <span className="text-sm text-muted-foreground">{data.allData.all?.storageBreakdown?.reduce((total, item) => total + Number(item.storage), 0)}</span>
                     </div>
 
                   </>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Used Storage</span>
+                      <span className="text-sm font-medium">Total Storage</span>
                       <span className="text-sm text-muted-foreground">
-                        {currentData.storageBreakdown[0]!.storage} / 500 GB
+                        {currentData?.storageBreakdown?.[0]?.storage}
                       </span>
                     </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${Math.min(currentData.storageBreakdown[0]!.percentage, 100)}%` }}
-                      ></div>
-                    </div>
+                   
+      
                     
       
                   </>

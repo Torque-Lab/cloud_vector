@@ -5,7 +5,8 @@ import passport from "passport";
 import postgresRouter from "../routes/infra/postgres.route";
 import projectRouter from "../routes/infra/project.route";
 import rabbitmqRouter from "../routes/infra/rabbitmq.route";
- import redisRouter from "../routes/infra/redis.route";
+import redisRouter from "../routes/infra/redis.route";
+import dashboardRouter from "../routes/infra/dashboard.route";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -15,6 +16,7 @@ if(!isDev){
 }
 app.use(passport.initialize());
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/infra",dashboardRouter)
 app.use("/api/v1/infra",postgresRouter);
 app.use("/api/v1/infra",projectRouter);
 app.use("/api/v1/infra",rabbitmqRouter);

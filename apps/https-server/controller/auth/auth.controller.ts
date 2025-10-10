@@ -154,7 +154,6 @@ export const signIn = async (req: Request, res: Response) => {
         const user = await prismaClient.userBaseAdmin.findUnique({ where: { email } });
         
         const isValid = user && await verifyPassword(password, user.password);
-        console.log(isValid,"isValid",req.body)
         if (!isValid) {
             await IncreaseValueOfKey(email,1);
             res.status(401).json({ message: "Invalid username or password",success:false });

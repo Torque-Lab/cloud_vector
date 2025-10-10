@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { postgresqlSchema } from '@cloud/shared_types';
-const API_BASE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
 export interface pgData extends postgresqlSchema {
   id: string;

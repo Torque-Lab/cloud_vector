@@ -10,6 +10,6 @@ export const redisSchema=z.object({
    maxStorage: z.string().min(1).max(16),
    initialVCpu: z.string().min(1).max(8),
    maxVCpu: z.string().min(1).max(8),
-   autoScale: z.boolean(),
+   autoScale: z.string().min(1).max(5),
    backUpFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
 })
