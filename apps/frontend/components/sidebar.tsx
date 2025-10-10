@@ -3,7 +3,10 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
-import { Box, Columns3, Gem, Vibrate,LayoutDashboard } from "lucide-react"
+import { Box, Columns3, Gem, Vibrate,LayoutDashboard, LogOut } from "lucide-react"
+import { useClientSession, User } from "@/provider/client-session"
+import axios from "axios"
+import { useRouter } from "next/navigation"
 
 const sidebarItems = [
   {
@@ -93,10 +96,12 @@ const sidebarItems = [
 interface SidebarProps {
   isOpen: boolean
   onToggle: () => void
+  user: User | null
 }
 
-export function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle,user }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
 
   return (
     <div
@@ -124,6 +129,30 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </Link>
         ))}
       </nav>
+      <div className="p-2">
+  <Button
+    variant="ghost"
+    className="
+      w-full justify-start gap-2 rounded-md cursor-pointer
+      text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
+      transition-colors duration-200
+      focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2
+      dark:hover:bg-sidebar-accent/40
+    "
+    onClick={async () => {
+      try {
+        await axios.post(`/api/v1/auth/logout`);
+        router.push("/signin");
+      } catch (_) {
+        router.push("/signin");
+      }
+    }}
+  >
+    <LogOut className="h-4 w-4 text-destructive" />
+    <span className="font-medium">{isOpen && "Logout"}</span>
+  </Button>
+</div>
+
       <div className="p-4 border-t">
         <Button
           onClick={onToggle}
@@ -147,12 +176,12 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <div className="border-t p-4 flex-shrink-0">
         <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-medium">U</span>
+          
           </div>
           {isOpen && (
             <div>
-              <p className="text-sm font-medium">User</p>
-              <p className="text-xs text-muted-foreground">user@example.com</p>
+              <p className="text-sm font-medium">{user?.first_name + " " + user?.last_name}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           )}
         </div>

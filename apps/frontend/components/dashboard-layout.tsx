@@ -3,6 +3,7 @@ import type React from "react"
 import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { Header } from "@/components/header"
+import { useClientSession } from "@/provider/client-session"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -10,6 +11,8 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const {user}=useClientSession() 
+  console.log(user,"user")
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
@@ -19,7 +22,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex flex-col min-h-screen bg-background">
       <Header onCreateProject={() => {}} />
       <div className="flex flex-1 pt-16">
-        <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
+        <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} user={user}/>
         <main 
           className={`flex-1 transition-all duration-300 ease-in-out ${
             sidebarOpen ? "md:pl-56" : "md:pl-14"

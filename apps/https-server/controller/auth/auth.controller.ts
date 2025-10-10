@@ -329,7 +329,9 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const getSession = async (req: Request, res: Response) => {
 
 const userId=req.userId;
-const user = await prismaClient.userBaseAdmin.findUnique({
+console.log(userId,"userId")
+try{
+  const user = await prismaClient.userBaseAdmin.findUnique({
     where: {
         id: userId,
     },
@@ -348,5 +350,9 @@ if (!user) {
     return;
 }
 
-res.status(200).json({user,success:true});
+res.status(200).json({User:user,message:"User session data loaded",success:true});
+}catch(_){
+  res.status(500).json({ message: "Internal server error",success:false });
+}
+
 };

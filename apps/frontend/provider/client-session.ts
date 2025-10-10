@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-interface User {
-  id: string;
-  role: string;
-  email: string; 
-  name: string;
+export interface User {
+  id: string,
+  email: string,
+  role: string,
+  first_name: string,
+  last_name: string,
+  createdAt: string,
 }
 
 interface Session {
@@ -28,24 +30,23 @@ export function useClientSession(): Session {
     isRefreshing = true;
 
     try {
-     const response=await axios.get<User>(`/api/auth/session`);
-
+     const response=await axios.get<{User:User,message:string,success:boolean}>(`/api/v1/auth/session`);
       if (response.status === 401) {
-        await axios.post(`/api/auth/refresh`, {
+        await axios.post(`/api/v1/auth/refresh`, {
         });
-
-        const retry = await axios.get<User>(`/api/auth/session`);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const retry = await axios.get<{User:User,message:string,success:boolean}>(`/api/v1/auth/session`);
 
         if (retry.status === 200) {
           const retryData = retry.data;
-          setUser(retryData);
+          setUser(retryData.User);
         } else {
           setUser(null);
           router.push("/signin");
         }
       }
+      setUser(response.data.User);
     } catch (err) {
-      console.error("Session fetch failed:", err);
       setUser(null);
     } finally {
       setLoading(false);
