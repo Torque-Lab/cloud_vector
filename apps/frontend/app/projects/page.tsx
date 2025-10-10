@@ -14,7 +14,7 @@ export default async function ProjectServerWrapper() {
     }
     await new Promise((resolve) => setTimeout(resolve, 5000));
     try{
-        const projectData = await axios.get<{ProjectData: ProjectData[],message:string,success:boolean}>(`${API_BASE_URL}/infra/project-details`,{
+        const projectData = await axios.get<{ProjectData: ProjectData[],message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/project-details`,{
             headers:{
                 Authorization: `Bearer ${token}`
             }
@@ -22,7 +22,7 @@ export default async function ProjectServerWrapper() {
         return <ProjectsPage projectData={projectData.data.ProjectData} />
     }
     catch(_){
-        return <ProjectsPage projectData={[{id:"",name:"",description:"No Projects Found",status:"",postgres:0,redis:0,rabbitMQ:0,vm:0,cost:"",created:""}]} />
+        return <ProjectsPage projectData={[{id:"",name:"",description:"No Projects Found",status:"",postgres:0,redis:0,rabbitMQ:0,vm:0,cost:"",createdAt:""}]} />
     }
     
 }

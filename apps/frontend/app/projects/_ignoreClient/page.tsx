@@ -8,19 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { ProjectData } from "@cloud/shared_types"
 
 export default function ProjectsPage({projectData}: {projectData: ProjectData[]}) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showCreateForm, setShowCreateForm] = useState(false)
   const router = useRouter()
-
-  const filteredProjects = projectData.filter(
-    (project) =>
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
   const handleProjectSettings = (projectId: string) => {
     router.push(`/projects/${projectId}/settings`)
   }
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -32,7 +23,7 @@ export default function ProjectsPage({projectData}: {projectData: ProjectData[]}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => (
+          {projectData.map((project) => (
             <Card key={project.id} className="p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -67,7 +58,7 @@ export default function ProjectsPage({projectData}: {projectData: ProjectData[]}
 
               <div className="flex justify-between items-center mt-6 pt-4 border-t">
                 <span className="text-xs text-muted-foreground">
-                  Created {new Date(project.created).toLocaleDateString()}
+                {project.createdAt}
                 </span>
                 <div className="flex space-x-2">
                   <Button size="sm" className="cursor-pointer" onClick={() => handleProjectSettings(project.id)}>

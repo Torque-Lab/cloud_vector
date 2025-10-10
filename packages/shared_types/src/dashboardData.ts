@@ -57,5 +57,5 @@ export type Metric = {
     rabbitMQ: number;
     vm: number;
     cost: string;
-    created: string;
+    createdAt: string;
   };

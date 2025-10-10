@@ -19,8 +19,8 @@ export default async function DashboardServerPage() {
         })
         return <DashboardClientPage data={dashboardData.data.DashboardData} projects={projects}/>
 
-    }catch(e){
-        console.log(e,"e")
+    }catch(_){
+        
         return <DashboardClientPage data={{allData:{all:{metrics:[],recentActivity:[],topDatabases:[],storageBreakdown:[]}}}} projects={[]}/>
     }
     
