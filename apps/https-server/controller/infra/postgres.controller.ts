@@ -7,11 +7,8 @@ import { encrypt,generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+import { postgresQueue } from "@cloud/backend-common";
 
-enum postgresQueue{
-    CREATE="postgres_create_queue",
-    DELETE="postgres_delete_queue"
-}
 const controlPlaneUrl=process.env.CONTROL_PLANE_URL
 const customerPostgresHost=process.env.CUSTOMER_POSTGRES_HOST
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;

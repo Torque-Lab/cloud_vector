@@ -6,9 +6,9 @@ import { runCommand } from "../../git/runCommand";
 import { safeGitCommit, triggerGitPush } from "../../git/git-tools";
 import type { InfraConfig } from "@cloud/shared_types";
 
-export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
+export const redisProvisioner = async(infraConfig:InfraConfig) => {
   try {
-   const db_id=infraConfig.resource_id;
+   const redis_id=infraConfig.resource_id;
    const namespace=infraConfig.namespace;
     await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
     await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
@@ -18,14 +18,14 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
       "cloud-infra-ops",
       "apps",
       "baseconfig",
-      "postgres"
+      "redis"
     );
     const newDbPath = path.join(
       repoPath(),
       "cloud-infra-ops",
       "apps",
       "external-charts",
-       db_id
+       redis_id
     );
     const argocdPath = path.join(
       repoPath(),
@@ -54,9 +54,9 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
     const mergedValues = {
       ...valuesYaml,
       ...{
-        postgres: {
-          db_id: db_id,
-          name: "postgres",
+        redis: {
+          redis_id: redis_id,
+          name: "redis",
           resources: {
             requests: {
               cpu: infraConfig.initialVCpu  ,
@@ -70,13 +70,13 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
           autoscaling: {
             enabled: false,
             minReplicas: 1,
-            maxReplicas: 2,
+            maxReplicas: 1,
             targetCPUUtilizationPercentage: 80,
             targetMemoryUtilizationPercentage: 80,
           },
           service: {
-            port: 5432,
-            targetPort: 5432,
+            port: 6379,
+            targetPort: 6379,
             type: "ClusterIP",
           },
           storage: infraConfig.initialStorage,
@@ -93,7 +93,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
       apiVersion: "argoproj.io/v1alpha1",
       kind: "Application",
       metadata: {
-        name: db_id+"-postgres",
+        name: redis_id+"-redis",
         namespace: "argocd",
         annotations: {
       "argocd.argoproj.io/sync-options": "CreateNamespace=true"
@@ -104,7 +104,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
         source: {
           repoURL: repoUrlWithOutPAT,
           targetRevision: branch,
-          path: `gitops/apps/${db_id}`,
+          path: `gitops/apps/${redis_id}`,
         },
         destination: {
           server: "https://kubernetes.default.svc",
@@ -121,20 +121,20 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
     if(!fs.existsSync(argocdPath)){
       fs.mkdirSync(argocdPath, { recursive: true });
     }
-    const filepath = path.join(argocdPath, `${db_id}.yaml`);
+    const filepath = path.join(argocdPath, `${redis_id}.yaml`);
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
-    await safeGitCommit("Added new postgresDB app",db_id);
+    await safeGitCommit("Added new redis app",redis_id);
     triggerGitPush();
     
     return {
       success:true,
-      message: `PostgresDB app ${db_id} created and pushed successfully`,
+      message: `Redis app ${redis_id} created and pushed successfully`,
     };
   } catch (error) {
     return {
       success:false,
-      message: "Failed to provision DB app",
+      message: "Failed to provision Redis app",
     };
   }
 };

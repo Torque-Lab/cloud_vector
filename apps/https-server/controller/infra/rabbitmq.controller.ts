@@ -7,13 +7,12 @@ import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+import { rabbitmqQueue } from "@cloud/backend-common";
+
 const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
 const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
 
-enum RabbitQueue{
-  CREATE="rabbitmq_create_queue",
-  DELETE="rabbitmq_delete_queue"
-}
+
 const customerRabbitHost="cloud-rabbitmq.suvidhaportal.com"
 export const createRabbitInstance=async(req:Request,res:Response)=>{
 
@@ -133,7 +132,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
              }
               const rabbitmqId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate(RabbitQueue.CREATE,{...parsedData.data,resource_id:rabbitmqId,namespace,autoScale:parsedData.data.autoScale.toString()})
+        const success=await pushInfraConfigToQueueToCreate(rabbitmqQueue.CREATE,{...parsedData.data,resource_id:rabbitmqId,namespace,autoScale:parsedData.data.autoScale.toString()})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;

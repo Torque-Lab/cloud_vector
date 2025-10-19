@@ -7,14 +7,12 @@ import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
+import { redisQueue } from "@cloud/backend-common";
 
 
 const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
 const REDIS_ENCRYPT_SECRET=process.env.REDIS_ENCRYPT_SECRET!
-enum RedisQueue{
-  CREATE="redis_create_queue",
-  DELETE="redis_delete_queue"
-}
+
 const customerRedisHost="cloud-redis.suvidhaportal.com"
 
 export const createRedisInstance=async(req:Request,res:Response)=>{
@@ -135,7 +133,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
              }
               const redisId=generateCuid();
 
-        const success=await pushInfraConfigToQueueToCreate(RedisQueue.CREATE,{...parsedData.data,resource_id:redisId,namespace})
+        const success=await pushInfraConfigToQueueToCreate(redisQueue.CREATE,{...parsedData.data,resource_id:redisId,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
@@ -174,7 +172,7 @@ export const deleteRedisInstance= async (req: Request, res: Response) => {
         res.status(400).json({ message: "Invalid redisId", success: false });
         return;
       }
-      const response = await pushInfraConfigToQueueToDelete(RedisQueue.DELETE,redisId)
+      const response = await pushInfraConfigToQueueToDelete(redisQueue.DELETE,redisId)
   
       if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
