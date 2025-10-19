@@ -128,6 +128,14 @@ class Queue {
    
 
     }
+    private extractId(value: string): string {
+  if (!value) return "";
+  const parts = value.split("-");
+  if (parts.length > 5) {
+    return parts.slice(0, -1).join("-");
+  }
+  return value;
+}
 
 private parseApp(app: ArgoCDApplication) {
   const name = app.metadata.name;
@@ -145,7 +153,7 @@ private parseApp(app: ArgoCDApplication) {
     try{
     const response=await prismaClient.postgresDB.update({
         where:{
-            id:name
+            id:this.extractId(name)
         },
         data:{
             provisioning_flow_status:ProvisioningFlowStatus.PUSHED_TO_ARGOCD
@@ -162,7 +170,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.postgresDB.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     provisioning_flow_status: status
@@ -179,7 +187,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.postgresDB.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     is_active:false
@@ -197,7 +205,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.redis.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     provisioning_flow_status:status
@@ -215,7 +223,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.redis.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     provisioning_flow_status: status
@@ -232,7 +240,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.redis.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     is_active:false
@@ -250,7 +258,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.rabbitMQ.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     provisioning_flow_status:status
@@ -268,7 +276,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.rabbitMQ.update({
                 where:{
-                    id:name 
+                    id:this.extractId(name) 
                 },
                 data:{
                     provisioning_flow_status: status
@@ -285,7 +293,7 @@ private parseApp(app: ArgoCDApplication) {
         try{
             const response=await prismaClient.rabbitMQ.update({
                 where:{
-                    id:name
+                    id:this.extractId(name)
                 },
                 data:{
                     is_active:false

@@ -8,13 +8,13 @@ import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { postgresQueue } from "@cloud/backend-common";
+import { CUSTOMER_POSTGRES_HOST,CONTROL_PLANE_URL } from "../config/config";
 
-const controlPlaneUrl=process.env.CONTROL_PLANE_URL
-const customerPostgresHost=process.env.CUSTOMER_POSTGRES_HOST
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
 const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
 
 export const createPostgresInstance=async(req:Request,res:Response)=>{
+  console.log(req.body,"req.body")
 
     try {
         const parsedData=postgresqlSchema.safeParse(req.body);
@@ -28,6 +28,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 id:req.userId
             },
         })
+  
         if(!user){
             const isHasCreatePermission = await prismaClient.permission.findFirst({
                 where: {
@@ -47,6 +48,8 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 res.status(403).json({ message: "You don't have permission to create postgres",success:false });
                 return;
               }
+            }
+
               const subscription=await prismaClient.subscription.findUnique({
                 where:{
                     userBaseAdminId:req.userId
@@ -131,13 +134,13 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 namespace="pro-user-ns"+generateCuid()
              }
               const postgresId=generateCuid();
+           
 
         const success=await pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{...parsedData.data,resource_id:postgresId,namespace})
         if(!success){
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
         }
-
         await prismaClient.postgresDB.create({
             data:{
                 id:postgresId,
@@ -160,10 +163,11 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 
             }
         })
+
         res.status(200).json({ message: "Task added to Queue to provisioned",database:{id:postgresId},success:true });
-    } }catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to add task to queue", error });
+     }catch (error) {
+  
+        res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
 }
 export const deletePostgresInstance = async (req: Request, res: Response) => {
@@ -182,8 +186,8 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
   
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to add task to queue", error });
+
+      res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
   };
 export const getPostgresStatus=async(req:Request,res:Response)=>{
@@ -200,8 +204,8 @@ export const getPostgresStatus=async(req:Request,res:Response)=>{
         })
         res.status(200).json({ postgresDB:postgresStatus?.provisioning_flow_status,success:true });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to get postgresDB status", error });
+ 
+        res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }
 export const resetPostgresInstance=async(req:Request,res:Response)=>{
@@ -228,10 +232,11 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
         //     password:response?.password,
             
         // })
-        const connectionString=`postgresql://${response?.username}:${password}@${customerPostgresHost}:${response?.port}/${response?.database_name}?pgbouncer=true`
+        const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}:${response?.port}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {
-        res.status(500).json({ message: "Failed to update postgresDB status", error });
+ 
+        res.status(500).json({ message: "Failed to update postgresDB status",success:false });
     }
 }
 export const getAllPostgresInstance = async (req: Request, res: Response) => {
@@ -277,8 +282,8 @@ const finalPostgres = allPostgres.map(db => ({
 
     res.status(200).json({ databases: finalPostgres, success: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to get postgresDB status", error });
+ 
+    res.status(500).json({ message: "Failed to get postgresDB status",success:false });
   }
 };
 export const getOnePostgresInstance = async (req: Request, res: Response) => {
@@ -314,8 +319,8 @@ export const getOnePostgresInstance = async (req: Request, res: Response) => {
     
         res.status(200).json({ database:postgres,success:true });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to get postgresDB status", error });
+        
+        res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }
 export const getPostgresConnectionString = async (req: Request, res: Response) => {
@@ -340,11 +345,10 @@ export const getPostgresConnectionString = async (req: Request, res: Response) =
          }
             
         })
-        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${customerPostgresHost}:${postgres!.port}/${postgres!.database_name}?pgbouncer=true`
-console.log(connectionString,"connectionString")
+        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}:${postgres!.port}/${postgres!.database_name}?pgbouncer=true`
         res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to get postgresDB status", error });
+       
+        res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }

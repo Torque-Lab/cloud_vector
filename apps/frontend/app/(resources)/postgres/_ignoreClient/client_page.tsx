@@ -60,7 +60,7 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
             <div className="flex items-center space-x-2">
              
               <h2 className="text-3xl font-bold tracking-tight">{database?.database_name}</h2>
-              <Badge variant={database?.is_provisioned === true ? "success" : "warning"}>{database?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
+
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -78,6 +78,19 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
+
+               <div className="flex justify-between items-center">
+  <span className="text-sm text-muted-foreground">Status:</span>
+
+  <div className="flex items-center gap-2">
+    {!database?.is_provisioned && (
+      <RefreshCcw className="h-4 w-4 animate-spin text-muted-foreground" />
+    )}
+    <span className="text-sm font-medium">
+      {database?.is_provisioned ? "Live" : "Under process"}
+    </span>
+  </div>
+</div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
                   <span className="text-sm font-medium">{database?.maxVCpu}</span>

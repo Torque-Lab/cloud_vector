@@ -26,7 +26,7 @@ app.get("/api/v1/health", (req, res) => {
     if(!token){
         return res.status(401).json({ message: "Unauthorized" });
     }
-   if(token!=process.env.health_check_token){
+   if(token!=process.env.HEALTH_CHECK_TOKEN){
     return res.status(401).json({ message: "Unauthorized" });
    }
     res.status(200).json({ message: "server is running on port 3005" });
@@ -37,9 +37,11 @@ app.listen(3005, () => {
     console.log("Server started on port 3005");
 });
 
-process.on("uncaughtException", (err) => {
-    console.log("Uncaught Exception:", err);
-    process.exit(1);
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
 });
 process.on("SIGTERM", (s) => {
     console.log("SIGTERM received",s);

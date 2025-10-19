@@ -24,6 +24,7 @@ import { PostgresApi } from "@/lib/pg_api";
 import Link from "next/link";
 import { useEffect } from "react";
 import { ArrowLeftIcon, RefreshCcw } from "lucide-react";
+import { postgresqlSchema } from "@cloud/shared_types";
 
 interface Project {
   id: string;
@@ -34,7 +35,7 @@ export default function CreateDatabasePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<postgresqlSchema>({
     name: "",
     projectId: "",
     region: "",
@@ -45,7 +46,7 @@ export default function CreateDatabasePage() {
     initialVCpu: "",
     maxVCpu: "",
     autoScale: "",
-    backUpFrequency: "",
+    backUpFrequency:undefined
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [isProjectsLoading, setIsProjectsLoading] = useState(true);
@@ -157,7 +158,7 @@ export default function CreateDatabasePage() {
       { field: "initialVCpu", message: "Initial vCPU is required" },
       { field: "maxVCpu", message: "Max vCPU is required" },
       { field: "autoScale", message: "Auto scale setting is required" },
-      { field: "backFrequency", message: "Backup frequency is required" },
+      { field: "backUpFrequency", message: "Backup frequency is required" },
     ];
     const numericChecks = [
       {
@@ -236,10 +237,8 @@ export default function CreateDatabasePage() {
         initialVCpu: formData.initialVCpu,
         maxVCpu: formData.maxVCpu,
         autoScale: formData.autoScale,
-        backUpFrequency: formData.backUpFrequency as
-          | "daily"
-          | "weekly"
-          | "monthly",
+        backUpFrequency: formData.backUpFrequency
+        
       });
 
       toast({
@@ -252,6 +251,7 @@ export default function CreateDatabasePage() {
         router.push(`/postgres/${newDb.id}`);
       }, 5000);
     } catch (error) {
+
       toast({
         title: "Error",
         description:
@@ -526,15 +526,18 @@ export default function CreateDatabasePage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="backFrequency">Backup Frequency</Label>
+                      <Label htmlFor="backUpFrequency">Backup Frequency</Label>
                       <Select
-                        name="backFrequency"
+                        name="backUpFrequency"
                         value={formData.backUpFrequency}
                         onValueChange={(value) =>
                           setFormData((prev) => ({
                             ...prev,
-                            backFrequency: value,
-                          }))
+                            backUpFrequency: value as "daily" | "weekly" | "monthly"
+                            
+                          })
+                        )
+                         
                         }
                       >
                         <SelectTrigger>
@@ -675,6 +678,14 @@ export default function CreateDatabasePage() {
                       </span>
                       <span className="text-sm font-medium">
                         {formData.autoScale}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Backup Frequency
+                      </span>
+                      <span className="text-sm font-medium">
+                        {formData.backUpFrequency}
                       </span>
                     </div>
                     <div className="flex justify-between">

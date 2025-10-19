@@ -254,7 +254,7 @@ model VectorDB {
 }
 model PostgresDB {
   id                 String    @id @default(cuid())
-  projectId          String @unique
+  projectId          String 
   is_active          Boolean   @default(true)
   is_provisioned     Boolean @default(false)
   provisioning_flow_status ProvisioningFlowStatus @default(ADDED_TO_QUEUE)
