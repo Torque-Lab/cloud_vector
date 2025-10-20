@@ -219,6 +219,11 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
             return;
         }
         const password=generateRandomString()
+        const oldCred=await prismaClient.rabbitMQ.findUnique({
+            where:{
+                id:rabbitmqId
+            }
+        })
         const encryptedPassword=encrypt(password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT);
         const response=await prismaClient.rabbitMQ.update({
             data:{
@@ -233,8 +238,15 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
             resource_id:rabbitmqId,
             username:response?.username,
             password:response?.password,
-            
+            old_key:oldCred?.username+":"+oldCred?.queue_name,
+            new_key:response?.username+":"+response?.queue_name,
+            namespace:oldCred?.namespace,
         })
+        if(updateProxyPlane.status!=200){
+            res.status(500).json({ message: "Failed to update rabbitmq status",success:false });
+            return;
+        }
+
         const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_RABBIT_HOST}:${response?.port}`
         res.status(200).json({ message:"RabbitMQ updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {

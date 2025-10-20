@@ -247,7 +247,7 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
             password:response?.password,
             old_key:oldcred?.username+":"+oldcred?.database_name,
             new_key:response?.username+":"+response?.database_name,
-            
+            namespace:oldcred?.namespace,
         })
         const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}:${response?.port}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});

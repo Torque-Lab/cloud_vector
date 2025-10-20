@@ -218,11 +218,17 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
             return;
         }
         const password=generateRandomString()
+        const oldcred=await prismaClient.redis.findUnique({
+            where:{
+                id:redisId
+            }
+        })
         const encryptedPassword=encrypt(password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT);
         const response=await prismaClient.redis.update({
             data:{
                 username:generateUsername(),
                 password:encryptedPassword,
+                
             },
             where:{
                 id:redisId
@@ -232,6 +238,10 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
             resource_id:redisId,
             username:response?.username,
             password:response?.password,
+            old_key:oldcred?.username+":"+oldcred?.password+":"+oldcred?.redis_name,
+            new_key:response?.username+":"+response?.password+":"+response?.redis_name,
+            namespace:oldcred?.namespace,
+            
             
         })
         const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_REDIS_HOST}:${response?.port}/`
