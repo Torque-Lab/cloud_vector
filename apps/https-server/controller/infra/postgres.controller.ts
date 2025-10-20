@@ -226,6 +226,11 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
             return;
         }
         const password=generateRandomString()
+        const oldcred=await prismaClient.postgresDB.findUnique({
+            where:{
+                id:postgresId
+            }
+        })
         const encryptedPassword=encrypt(password,PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!);
         const response=await prismaClient.postgresDB.update({
             data:{
@@ -240,6 +245,8 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
             resource_id:postgresId,
             username:response?.username,
             password:response?.password,
+            old_key:oldcred?.username+":"+oldcred?.database_name,
+            new_key:response?.username+":"+response?.database_name,
             
         })
         const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}:${response?.port}/${response?.database_name}?pgbouncer=true`

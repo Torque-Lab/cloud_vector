@@ -4,25 +4,19 @@ import crypto from "crypto";
 import { decrypt } from "@cloud/backend-common";
 import { updateInfraConfigSchema } from "@cloud/backend-common";
 
-const  addressTable = new Map<string, string>();
 export const getPostgresInstance = async (req: Request, res: Response) => {
     try {
         const key = req.query.key as string
         const keyArray = key.split(":");
-        const token = req.query.token as string
+        const token = req.query.auth_token as string
         if(token !== process.env.AUTH_TOKEN_POSTGRES_PROXY!){
             return res.status(401).json({ error: "Unauthorized" });
         }
-        if (addressTable.has(key)) {
-            res.status(200).json({
-                backend_url:addressTable.get(key)!
-            })
-            return
-        }
+
        const postgresInstance = await  prismaClient.postgresDB.findFirst({
         where:{
             username:keyArray[0],
-            database_name:keyArray[1]
+         
         }
        })
  //  name: {{ .Values.postgres.name }}-pgbouncer-{{ .Values.postgres.db_id }}
@@ -34,15 +28,20 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
        }
        const decodedPassword= decrypt(postgresInstance.password,process.env.ENCRYPT_SECRET!,process.env.ENCRYPT_SALT!)
        const url=`postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
-       addressTable.set(key,url)
        const authCredential = generateScramCredential(decodedPassword)
        res.status(200).json({
         backend_url:url,
-        auth_credential:authCredential
+        user_cred:{
+          salt:authCredential.salt,
+          iterations:authCredential.iterations,
+          stored_key:authCredential.storedKey,
+          server_key:authCredential.serverKey
+        },
+        success:true
        })
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error });
+    
+        res.status(500).json({message:"Internal server error", success:false });
     }
 }
 export const postgresConnectionUpdate=async(req:Request,res:Response)=>{
@@ -52,11 +51,35 @@ export const postgresConnectionUpdate=async(req:Request,res:Response)=>{
             res.status(400).json({ message: "Invalid data",success:false });
             return;
         }
-      
+        const postgresInstance = await  prismaClient.postgresDB.findFirst({
+            where:{
+                id:parsedData.data.resource_id
+            }
+        })
+        if(!postgresInstance){
+            res.status(404).json({ message: "Postgres instance not found",success:false });
+            return;
+        }
+      const decodedPassword= decrypt(postgresInstance.password,process.env.ENCRYPT_SECRET!,process.env.ENCRYPT_SALT!)
+       const url=`postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
+       const authCredential = generateScramCredential(decodedPassword)
+       res.status(200).json({
+        backend_url:url,
+        old_key:parsedData.data.old_key,
+        new_key:parsedData.data.new_key,
+        auth_token:process.env.AUTH_TOKEN_POSTGRES_PROXY!,
+        user_cred:{
+          salt:authCredential.salt,
+          iterations:authCredential.iterations,
+          stored_key:authCredential.storedKey,
+          server_key:authCredential.serverKey
+        },
+        success:true
+       })
       
          
     } catch (error) {
-        
+        res.status(500).json({message:"Internal server error", success:false });
     }
 }
 

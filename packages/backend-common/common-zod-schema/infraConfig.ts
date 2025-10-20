@@ -20,5 +20,6 @@ export const updateInfraConfigSchema=z.object({
     resource_id:z.string(),
     username:z.string(),
     password:z.string(),
-    
+    old_key:z.string(),
+    new_key:z.string(),
 })
