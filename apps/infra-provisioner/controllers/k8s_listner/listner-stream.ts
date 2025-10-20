@@ -173,6 +173,7 @@ private parseApp(app: ArgoCDApplication) {
                     id:this.extractId(name)
                 },
                 data:{
+                    is_provisioned:status==ProvisioningFlowStatus.COMPLETED,
                     provisioning_flow_status: status
                 }
             })
@@ -208,6 +209,7 @@ private parseApp(app: ArgoCDApplication) {
                     id:this.extractId(name)
                 },
                 data:{
+                  
                     provisioning_flow_status:status
                 }
             })
@@ -226,6 +228,7 @@ private parseApp(app: ArgoCDApplication) {
                     id:this.extractId(name)
                 },
                 data:{
+                    is_provisioned:status==ProvisioningFlowStatus.COMPLETED,
                     provisioning_flow_status: status
                 }
             })
@@ -261,7 +264,7 @@ private parseApp(app: ArgoCDApplication) {
                     id:this.extractId(name)
                 },
                 data:{
-                    provisioning_flow_status:status
+                            provisioning_flow_status:status
                 }
             })
             console.log("rabbitmq updated",response)
@@ -279,6 +282,7 @@ private parseApp(app: ArgoCDApplication) {
                     id:this.extractId(name) 
                 },
                 data:{
+                    is_provisioned: status==ProvisioningFlowStatus.COMPLETED,
                     provisioning_flow_status: status
                 }
             })

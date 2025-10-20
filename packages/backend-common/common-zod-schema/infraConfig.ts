@@ -15,3 +15,10 @@ export const InfraConfigSchema = z.object({
     resource_id: z.string(),
     namespace: z.string(),
 });
+
+export const updateInfraConfigSchema=z.object({
+    resource_id:z.string(),
+    username:z.string(),
+    password:z.string(),
+    
+})

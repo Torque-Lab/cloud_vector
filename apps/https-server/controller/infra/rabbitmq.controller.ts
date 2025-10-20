@@ -8,12 +8,12 @@ import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { rabbitmqQueue } from "@cloud/backend-common";
+import {CONTROL_PLANE_URL,CUSTOMER_RABBIT_HOST} from "../config/config"
+import axios from "axios";
 
 const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
 const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
 
-
-const customerRabbitHost="cloud-rabbitmq.suvidhaportal.com"
 export const createRabbitInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -160,8 +160,8 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
         })
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } }catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to add task to queue", error });
+      
+        res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
 }
 
@@ -178,11 +178,19 @@ export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
+      await prismaClient.rabbitMQ.update({
+        where:{
+          id:rabbitmqId
+        },
+        data:{
+          is_active:false,
+        }
+      })
   
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to add task to queue", error });
+      
+      res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
   };
 export const getRabbitMQStatus=async(req:Request,res:Response)=>{
@@ -199,8 +207,8 @@ export const getRabbitMQStatus=async(req:Request,res:Response)=>{
         })
         res.status(200).json({ rabbitmqStatus:rabbitmqStatus?.provisioning_flow_status,success:true });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to get rabbitmq status", error });
+     
+        res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }
 export const resetRabbitInstance=async(req:Request,res:Response)=>{
@@ -221,16 +229,16 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
                 id:rabbitmqId
             }
         })
-        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/rabbitmq/routetable",{
-        //     resource_id:postgresId,
-        //     username:response?.username,
-        //     password:response?.password,
+        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/rabbitmq/routetable",{
+            resource_id:rabbitmqId,
+            username:response?.username,
+            password:response?.password,
             
-        // })
-        const connectionString=`amqp://${response?.username}:${password}@${customerRabbitHost}:${response?.port}/`
+        })
+        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_RABBIT_HOST}:${response?.port}`
         res.status(200).json({ message:"RabbitMQ updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {
-        console.log(e)
+    
         res.status(500).json({ message: "Failed to update rabbitmq status",success:false });
     }
 }
@@ -317,7 +325,7 @@ export const getOneRabbitMQInstance = async (req: Request, res: Response) => {
         }    
         res.status(200).json({ rabbitmq:rabbitmq,success:true });
     } catch (_) {
-        res.status(500).json({ message: "Failed to get rabbitmq status" });
+        res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }
 export const getRabbitMQConnectionString = async (req: Request, res: Response) => {
@@ -345,11 +353,11 @@ export const getRabbitMQConnectionString = async (req: Request, res: Response) =
             res.status(404).json({ message: "RabbitMQ not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${customerRabbitHost}:${rabbit.port}`
+        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}:${rabbit.port}`
         res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
     } catch (e) {
-      console.log(e)
-        res.status(500).json({ message: "Failed to get rabbitmq status" });
+    
+        res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }
 

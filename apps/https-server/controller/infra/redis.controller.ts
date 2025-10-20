@@ -1,19 +1,19 @@
 
 import type { Request, Response } from "express";
-import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { redisSchema, projectSchema, decrypt} from "@cloud/backend-common";
+import { PermissionList, prismaClient, } from "@cloud/db";
+import { redisSchema, decrypt} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { redisQueue } from "@cloud/backend-common";
+import {CONTROL_PLANE_URL, CUSTOMER_REDIS_HOST} from "../config/config"
+import axios from "axios";
 
 
 const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
 const REDIS_ENCRYPT_SECRET=process.env.REDIS_ENCRYPT_SECRET!
-
-const customerRedisHost="cloud-redis.suvidhaportal.com"
 
 export const createRedisInstance=async(req:Request,res:Response)=>{
 
@@ -145,7 +145,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
                 projectId:parsedData.data.projectId,
                 redis_name:parsedData.data.name,
                 username:generateUsername(),
-                password:await encrypt(generateRandomString(),REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT),
+                password: encrypt(generateRandomString(),REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT),
                 port:"6379",
                 namespace:namespace,
                 initialMemory:parsedData.data.initialMemory,
@@ -161,8 +161,8 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
         })
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } }catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to add task to queue", error });
+       
+        res.status(500).json({ message: "Failed to add task to queue", success:false });
     }
 }
 export const deleteRedisInstance= async (req: Request, res: Response) => {
@@ -178,11 +178,18 @@ export const deleteRedisInstance= async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
-  
+  await prismaClient.redis.update({
+    where:{
+      id:redisId
+    },
+    data:{
+      is_active:false
+    }
+  })
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to add task to queue", error });
+      
+      res.status(500).json({ message: "Failed to add task to queue", success:false });
     }
   };
 export const getRedisStatus=async(req:Request,res:Response)=>{
@@ -212,7 +219,7 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
         }
         const password=generateRandomString()
         const encryptedPassword=encrypt(password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT);
-        const response=await prismaClient.rabbitMQ.update({
+        const response=await prismaClient.redis.update({
             data:{
                 username:generateUsername(),
                 password:encryptedPassword,
@@ -221,13 +228,13 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
                 id:redisId
             }
         })
-        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/rabbitmq/routetable",{
-        //     resource_id:postgresId,
-        //     username:response?.username,
-        //     password:response?.password,
+        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/redis/routetable",{
+            resource_id:redisId,
+            username:response?.username,
+            password:response?.password,
             
-        // })
-        const connectionString=`amqp://${response?.username}:${password}@${customerRedisHost}:${response?.port}/`
+        })
+        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_REDIS_HOST}:${response?.port}/`
         res.status(200).json({ message:"Redis updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {
         console.log(e)
@@ -345,11 +352,10 @@ export const getRedisConnectionString = async (req: Request, res: Response) => {
             res.status(404).json({ message: "Redis not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${customerRedisHost}:${redis.port}`
+        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}:${redis.port}`
         res.status(200).json({message:"Redis connection string", connectionString:connectionString,success:true });
     } catch (e) {
-      console.log(e)
-        res.status(500).json({ message: "Failed to get rabbitmq status" });
+        res.status(500).json({ message: "Failed to get redis connection string" ,success:false});
     }
 }
 

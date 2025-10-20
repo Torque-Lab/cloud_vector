@@ -9,6 +9,7 @@ import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { postgresQueue } from "@cloud/backend-common";
 import { CUSTOMER_POSTGRES_HOST,CONTROL_PLANE_URL } from "../config/config";
+import axios from "axios";
 
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
 const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
@@ -178,11 +179,20 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
         return;
       }
       const response = await pushInfraConfigToQueueToDelete(postgresQueue.DELETE,postgresId)
+
   
       if (!response) {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
+      await prismaClient.postgresDB.update({
+        where:{
+          id:postgresId
+        },
+        data:{
+          is_active:false,
+        }
+      })
   
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
@@ -226,12 +236,12 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
                 id:postgresId
             }
         })
-        // const updateProxyPlane= await axios.post(controlPlaneUrl+"/api/postgres/routetable",{
-        //     resource_id:postgresId,
-        //     username:response?.username,
-        //     password:response?.password,
+        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/postgres/routetable",{
+            resource_id:postgresId,
+            username:response?.username,
+            password:response?.password,
             
-        // })
+        })
         const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}:${response?.port}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {

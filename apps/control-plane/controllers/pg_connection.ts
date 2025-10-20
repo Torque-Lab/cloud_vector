@@ -2,6 +2,7 @@ import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { decrypt } from "@cloud/backend-common";
+import { updateInfraConfigSchema } from "@cloud/backend-common";
 
 const  addressTable = new Map<string, string>();
 export const getPostgresInstance = async (req: Request, res: Response) => {
@@ -31,7 +32,7 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
          res.status(404).json({ error: "Postgres instance not found" });
          return
        }
-       const decodedPassword= await decrypt(postgresInstance.password,process.env.ENCRYPT_SECRET!)
+       const decodedPassword= decrypt(postgresInstance.password,process.env.ENCRYPT_SECRET!,process.env.ENCRYPT_SALT!)
        const url=`postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
        addressTable.set(key,url)
        const authCredential = generateScramCredential(decodedPassword)
@@ -44,7 +45,20 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
         res.status(500).json({ error });
     }
 }
-
+export const postgresConnectionUpdate=async(req:Request,res:Response)=>{
+    try {
+        const parsedData=updateInfraConfigSchema.safeParse(req.body)
+        if(!parsedData.success){
+            res.status(400).json({ message: "Invalid data",success:false });
+            return;
+        }
+      
+      
+         
+    } catch (error) {
+        
+    }
+}
 
 
 /* do this in control plane
@@ -69,6 +83,10 @@ type SCRAMCredential = {
     serverKey: string;  // base64
   };
   
+
+
+
+
   function generateScramCredential(password: string): SCRAMCredential {
     const saltBytes = crypto.randomBytes(16);
     const iterations = 4096; 
