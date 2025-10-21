@@ -13,6 +13,13 @@ export default function DashboardClientPage({data,projects}: {data: DashboardDat
   const [selectedProject, setSelectedProject] = useState("all")
   const currentData = data.allData[selectedProject]
   const router=useRouter()
+  const parseStorage = (str: string) => {
+  const value = parseFloat(str);
+  if (str.toLowerCase().includes("ti")) return value * 1024;
+  if (str.toLowerCase().includes("gi")) return value;
+  if (str.toLowerCase().includes("mi")) return value / 1024;
+  return value; 
+};
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8 ">
@@ -135,7 +142,7 @@ export default function DashboardClientPage({data,projects}: {data: DashboardDat
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Total Storage</span>
-                      <span className="text-sm text-muted-foreground">{data.allData.all?.storageBreakdown?.reduce((total, item) => total + Number(item.storage), 0)}</span>
+                      <span className="text-sm text-muted-foreground">{data.allData.all?.storageBreakdown?.reduce((total, item) => total + parseStorage(item.storage), 0).toFixed(2)} GB</span>
                     </div>
 
                   </>

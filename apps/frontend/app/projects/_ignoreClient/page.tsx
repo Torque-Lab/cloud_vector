@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ProjectData } from "@cloud/shared_types"
+import { parseDateWithLocale } from "@/lib/utils"
 
 export default function ProjectsPage({projectData}: {projectData: ProjectData[]}) {
   const router = useRouter()
@@ -58,7 +59,7 @@ export default function ProjectsPage({projectData}: {projectData: ProjectData[]}
 
               <div className="flex justify-between items-center mt-6 pt-4 border-t">
                 <span className="text-xs text-muted-foreground">
-                {project.createdAt}
+                {parseDateWithLocale(project.createdAt)}
                 </span>
                 <div className="flex space-x-2">
                   <Button size="sm" className="cursor-pointer" onClick={() => handleProjectSettings(project.id)}>

@@ -59,3 +59,23 @@ export type Metric = {
     cost: string;
     createdAt: string;
   };
+
+
+
+export interface teamMember{
+    id:string;
+    name: string;
+    email: string;
+    role: string;
+  
+}
+export interface projectDataDetails{
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    admin: string;
+    created: string;
+    team: teamMember[];
+    
+}

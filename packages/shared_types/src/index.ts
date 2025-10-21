@@ -1,9 +1,8 @@
 import {postgresqlSchema,projectSchema,rabbitmqSchema,redisSchema,SignUpSchema,SignInSchema,ForgotSchema,ResetSchema,VerifySchema} from "@cloud/backend-common";
 import { z } from "zod";
 import type { InfraConfigSchema, vmSchema } from "@cloud/backend-common"
-export type {DashboardDataType} from "./dashboardData"
+export type {DashboardDataType,teamMember,projectDataDetails,ProjectData} from "./dashboardData"
 export type {Metric,RecentActivity,TopDatabase,StorageBreakdown} from "./dashboardData"
-export type {ProjectData} from "./dashboardData"
 export { PermissionList } from "@cloud/db";
 export type postgresqlSchema = z.infer<typeof postgresqlSchema>;
 export type projectSchema = z.infer<typeof projectSchema>;

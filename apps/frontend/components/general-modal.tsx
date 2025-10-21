@@ -33,7 +33,7 @@ export function GeneralModal({ isOpen, onClose, children, title, inputMode=true,
     
     }
 try{
-  const response = await axios.post<Project>("/api/projects", { name: projectName, description:description })
+  const response = await axios.post<Project>("/api/v1/infra/project/create", { name: projectName, description:description })
   if(response.data.success){
     setIsLoading(false)
     toast({
