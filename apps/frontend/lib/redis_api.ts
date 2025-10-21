@@ -9,6 +9,7 @@ export interface redisData extends redisSchema {
   region: string;
   projectName: string;
   is_provisioned: boolean;
+  redis_name:string;
 }
 export interface Project {
   id: string;
@@ -24,6 +25,7 @@ export const RedisApi = {
         },
       }
     );
+  
     return response.data.redis;
   },
 
@@ -36,6 +38,7 @@ export const RedisApi = {
         },
       }
     );
+    
     return response.data.redis;
   },
   createRedis: async (data: redisSchema, token?:string  ): Promise<redisData> => {

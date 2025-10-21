@@ -247,7 +247,7 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
             return;
         }
 
-        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_RABBIT_HOST}:${response?.port}`
+        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_RABBIT_HOST}`
         res.status(200).json({ message:"RabbitMQ updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {
     
@@ -269,7 +269,7 @@ export const getAllRabbitMQInstance = async (req: Request, res: Response) => {
     }
 
     const allRabbitMQ = await prismaClient.rabbitMQ.findMany({
-      where: { projectId: { in: projectIds } },
+      where: { projectId: { in: projectIds },is_active:true },
       select: {
         projectId: true,
         id: true,
@@ -310,7 +310,8 @@ export const getOneRabbitMQInstance = async (req: Request, res: Response) => {
         }
         const rabbitmq=await prismaClient.rabbitMQ.findUnique({
             where:{
-                id:rabbitmqId
+                id:rabbitmqId,
+                is_active:true
             },
          select:{
             projectId:true,
@@ -365,7 +366,7 @@ export const getRabbitMQConnectionString = async (req: Request, res: Response) =
             res.status(404).json({ message: "RabbitMQ not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}:${rabbit.port}`
+        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}`
         res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
     } catch (e) {
     

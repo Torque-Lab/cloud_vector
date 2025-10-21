@@ -249,7 +249,7 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
             new_key:response?.username+":"+response?.database_name,
             namespace:oldcred?.namespace,
         })
-        const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}:${response?.port}/${response?.database_name}?pgbouncer=true`
+        const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {
  
@@ -271,7 +271,7 @@ export const getAllPostgresInstance = async (req: Request, res: Response) => {
     }
 
     const allPostgres = await prismaClient.postgresDB.findMany({
-      where: { projectId: { in: projectIds } },
+      where: { projectId: { in: projectIds },is_active:true },
       select: {
         projectId: true,
         id: true,
@@ -312,7 +312,8 @@ export const getOnePostgresInstance = async (req: Request, res: Response) => {
         }
         const postgres=await prismaClient.postgresDB.findUnique({
             where:{
-                id:postgresId
+                id:postgresId,
+                is_active:true
             },
          select:{
             projectId:true,
@@ -362,7 +363,7 @@ export const getPostgresConnectionString = async (req: Request, res: Response) =
          }
             
         })
-        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}:${postgres!.port}/${postgres!.database_name}?pgbouncer=true`
+        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}/${postgres!.database_name}?pgbouncer=true`
         res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
        

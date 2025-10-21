@@ -1,127 +1,169 @@
-"use client"
+"use client";
 
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import  {useParams} from "next/navigation"
-import { useState } from "react"
-import { GeneralModal } from "@/components/general-modal"
-import { ConnectChildSection } from "@/components/connect-child-section"
-import { toast } from "@/hooks/use-toast"
-import { RefreshCcw } from "lucide-react"
-import { pgData, PostgresApi } from "@/lib/pg_api"
-import { parseDateWithLocale } from "@/lib/utils"
+import { DashboardLayout } from "@/components/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { GeneralModal } from "@/components/general-modal";
+import { ConnectChildSection } from "@/components/connect-child-section";
+import { toast } from "@/hooks/use-toast";
+import { RefreshCcw } from "lucide-react";
+import { pgData, PostgresApi } from "@/lib/pg_api";
+import { parseDateWithLocale } from "@/lib/utils";
 
+export default function DatabaseDetailPage({ database }: { database: pgData }) {
+  const [isConnectModelOpen, setIsConnectModelOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-export default function DatabaseDetailPage({database}: {database: pgData }) {
-  const [isConnectModelOpen, setIsConnectModelOpen] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-
-  const params = useParams()
+  const params = useParams();
   const handleDeletePostgres = async () => {
     try {
-        setDeleteLoading(true)
-        const id = params.id as string
-        const response = await PostgresApi.deleteDatabase(id)
-        if(!response.success){
-          toast({
-            title: "Error",
-            description: "Failed to delete PostgresSQL",
-            variant: "destructive",
-          })
-          setShowDeleteConfirm(false)
-        }
+      setDeleteLoading(true);
+      const id = params.id as string;
+      const response = await PostgresApi.deleteDatabase(id);
+      if (!response.success) {
         toast({
-          title: "Success",
-          description: "PostgresSQL deleted successfully",
-          variant: "default",
-        })
-        setShowDeleteConfirm(false)
-          
+          title: "Error",
+          description: "Failed to delete PostgresSQL",
+          variant: "destructive",
+        });
+        setShowDeleteConfirm(false);
+      }
+      toast({
+        title: "Success",
+        description: "PostgresSQL deleted successfully",
+        variant: "default",
+      });
+      setShowDeleteConfirm(false);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete PostgresSQL",
         variant: "destructive",
-      })
-       setDeleteLoading(false)
+      });
+      setDeleteLoading(false);
     } finally {
-        setDeleteLoading(false)
+      setDeleteLoading(false);
     }
-        
-  }
+  };
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-             
-              <h2 className="text-3xl font-bold tracking-tight">{database?.database_name}</h2>
-
+              <h2 className="text-3xl font-bold tracking-tight">
+                {database?.database_name}
+              </h2>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button className="cursor-pointer " onClick={() => {setIsConnectModelOpen(true)}}>Connect</Button>
+            <Button
+              className="cursor-pointer "
+              onClick={() => {
+                setIsConnectModelOpen(true);
+              }}
+            >
+              Connect
+            </Button>
           </div>
         </div>
-
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Database Configuration */}
           <Card>
             <CardHeader>
               <CardTitle>Configuration</CardTitle>
-              <CardDescription>Current database settings and parameters.</CardDescription>
+              <CardDescription>
+                Current database settings and parameters.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status:</span>
 
-               <div className="flex justify-between items-center">
-  <span className="text-sm text-muted-foreground">Status:</span>
+                     <div className="flex items-center gap-2">
+                    {!database?.is_provisioned && (
+                      <RefreshCcw className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                    <span className="text-sm font-medium">
+                      
+                          <Badge variant={database?.is_provisioned === true ? "success" : "secondary"}>{database?.is_provisioned===true ? "Live" : "Under process"}</Badge>
 
-  <div className="flex items-center gap-2">
-    {!database?.is_provisioned && (
-      <RefreshCcw className="h-4 w-4 animate-spin text-muted-foreground" />
-    )}
-    <span className="text-sm font-medium">
-      {database?.is_provisioned ? "Live" : "Under process"}
-    </span>
-  </div>
-</div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{database?.maxVCpu}</span>
+                    </span>
+                    </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Memory Limit:</span>
-                  <span className="text-sm font-medium">{database?.maxMemory}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Database Name:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {database?.database_name}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    CPU Limit:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {database?.maxVCpu}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Memory Limit:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {database?.maxMemory}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Region:</span>
-                  <span className="text-sm font-medium">{database?.region}</span>
+                  <span className="text-sm font-medium">
+                    {database?.region}
+                  </span>
                 </div>
                 <div className="flex justify-between items-start">
-  <div className="flex flex-col">
-    <span className="text-sm text-muted-foreground">Auto-scaling:</span>
-    <small className="text-xs text-muted-foreground mt-1">
-      * scaling in same instance, not add new machine
-    </small>
-  </div>
-  <Badge variant={database?.autoScale ? "success" : "secondary"}>
-    {database?.autoScale ? "Enabled" : "Disabled"}
-  </Badge>
-</div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">
+                      Auto-scaling:
+                    </span>
+                    <small className="text-xs text-muted-foreground mt-1">
+                      * scaling in same instance, not add new machine
+                    </small>
+                  </div>
+                  <Badge
+                    variant={database?.autoScale ? "success" : "secondary"}
+                  >
+                    {database?.autoScale ? "Enabled" : "Disabled"}
+                  </Badge>
+                </div>
 
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Created:</span>
-                  <span className="text-sm font-medium">{parseDateWithLocale(database?.createdAt)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Created:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {parseDateWithLocale(database?.createdAt)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Updated:</span>
-                  <span className="text-sm font-medium">{parseDateWithLocale(database?.updatedAt)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Updated:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {parseDateWithLocale(database?.updatedAt)}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -131,30 +173,40 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
           <Card>
             <CardHeader>
               <CardTitle>Performance Overview</CardTitle>
-              <CardDescription>Query latency and throughput over time.</CardDescription>
+              <CardDescription>
+                Query latency and throughput over time.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[200px] flex items-center justify-center bg-muted/20 rounded-lg">
                 <div className="text-center">
-
-                  <span >coming soon</span>
+                  <span>coming soon</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-
         {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common database operations and management tasks.</CardDescription>
+            <CardDescription>
+              Common database operations and management tasks.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col space-y-2 bg-transparent cursor-pointer">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Button
+                variant="outline"
+                className="h-20 flex-col space-y-2 bg-transparent cursor-pointer"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -163,25 +215,40 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
                   />
                 </svg>
                 <span className="text-sm">Export Data</span>
-                <span className="text-xs text-muted-foreground">coming soon</span>
+                <span className="text-xs text-muted-foreground">
+                  coming soon
+                </span>
               </Button>
-            
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to PostgresSQL" inputMode={false} onClick={() => {}} children={<ConnectChildSection api={PostgresApi} resourceId={params.id as string} label="PostgresSQL" />} />
+        <GeneralModal
+          isOpen={isConnectModelOpen}
+          onClose={() => setIsConnectModelOpen(false)}
+          title="Connect to PostgresSQL"
+          inputMode={false}
+          onClick={() => {}}
+          children={
+            <ConnectChildSection
+              api={PostgresApi}
+              resourceId={params.id as string}
+              label="PostgresSQL"
+            />
+          }
+        />
 
-
-
-          {/* Danger Zone */}
-          <Card className="p-6 border-red-200 dark:border-red-900/50">
-          <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
+        {/* Danger Zone */}
+        <Card className="p-6 border-red-200 dark:border-red-900/50">
+          <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4">
+            Danger Zone
+          </h2>
           <div className="space-y-4">
-            
             <div className="flex items-center justify-between p-4 border border-none rounded-lg">
               <div>
                 <p className="font-medium">Delete PostgresSQL</p>
-                <p className="text-sm text-muted-foreground">Permanently delete this PostgresSQL and all its data</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete this PostgresSQL and all its data
+                </p>
               </div>
               <Button
                 variant="outline"
@@ -198,13 +265,20 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Card className="p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Delete PostgresSQL</h3>
+              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
+                Delete PostgresSQL
+              </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Are you sure you want to delete "{database.name}"? This action cannot be undone and will permanently
-                delete all associated data.
+                Are you sure you want to delete "{database?.database_name}"?. This action
+                cannot be undo and will permanently delete all associated
+                data.
               </p>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" className="cursor-pointer" onClick={() => setShowDeleteConfirm(false)}>
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -213,7 +287,11 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
                   disabled={deleteLoading}
                   className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent cursor-pointer"
                 >
-                  {deleteLoading ? <RefreshCcw className="mr-2 h-4 w-4 animate-spin" /> : "Delete PostgresSQL"}
+                  {deleteLoading ? (
+                    <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    "Delete PostgresSQL"
+                  )}
                 </Button>
               </div>
             </Card>
@@ -221,5 +299,5 @@ export default function DatabaseDetailPage({database}: {database: pgData }) {
         )}
       </div>
     </DashboardLayout>
-  )
+  );
 }

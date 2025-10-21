@@ -60,7 +60,7 @@ export default function RedisDetailPage({redis}: {redis: redisData }) {
             <div className="flex items-center space-x-2">
              
               <h2 className="text-3xl font-bold tracking-tight">{redis?.name}</h2>
-              <Badge variant={redis?.is_provisioned === true ? "success" : "warning"}>{redis?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
+  
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -78,6 +78,25 @@ export default function RedisDetailPage({redis}: {redis: redisData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
+
+             <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+
+                  <div className="flex items-center gap-2">
+                    {!redis?.is_provisioned && (
+                      <RefreshCcw className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                    <span className="text-sm font-medium">
+                      
+                          <Badge variant={redis?.is_provisioned === true ? "success" : "secondary"}>{redis?.is_provisioned===true ? "Live" : "Under process"}</Badge>
+
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Redis Name:</span>
+                  <span className="text-sm font-medium">{redis?.redis_name}</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
                   <span className="text-sm font-medium">{redis?.maxVCpu}</span>
@@ -187,7 +206,7 @@ export default function RedisDetailPage({redis}: {redis: redisData }) {
             <Card className="p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Delete Redis</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Are you sure you want to delete "{redis.name}"? This action cannot be undone and will permanently
+                Are you sure you want to delete "{redis?.redis_name}"?.This action cannot be undo  and will permanently
                 delete all associated data.
               </p>
               <div className="flex justify-end space-x-2">

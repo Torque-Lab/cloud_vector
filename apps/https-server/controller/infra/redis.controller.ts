@@ -244,7 +244,7 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
             
             
         })
-        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_REDIS_HOST}:${response?.port}/`
+        const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_REDIS_HOST}`
         res.status(200).json({ message:"Redis updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {
         console.log(e)
@@ -266,7 +266,7 @@ export const getAllRedisInstance = async (req: Request, res: Response) => {
     }
 
     const allRedis = await prismaClient.redis.findMany({
-      where: { projectId: { in: projectIds } },
+      where: { projectId: { in: projectIds } ,is_active:true},
       select: {
         projectId: true,
         id: true,
@@ -362,7 +362,7 @@ export const getRedisConnectionString = async (req: Request, res: Response) => {
             res.status(404).json({ message: "Redis not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}:${redis.port}`
+        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}`
         res.status(200).json({message:"Redis connection string", connectionString:connectionString,success:true });
     } catch (e) {
         res.status(500).json({ message: "Failed to get redis connection string" ,success:false});
