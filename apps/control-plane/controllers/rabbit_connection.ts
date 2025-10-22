@@ -20,8 +20,8 @@ export const getRabbitInstance = async (req: Request, res: Response) => {
     }
     const encyrptedPassword = encrypt(
       password,
-      process.env.ENCRYPT_SECRET!,
-      process.env.ENCRYPT_SALT!
+      process.env.RABBITMQ_ENCRYPT_SECRET!,
+      process.env.RABBITMQ_ENCRYPT_SALT!
     );
 
     const rabbitInstance = await prismaClient.rabbitMQ.findFirst({
@@ -34,7 +34,7 @@ export const getRabbitInstance = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Rabbit instance not found" });
       return;
     }
-    const url = `amqp://${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local:5672`;
+    const url = `amqp://${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local`;
     res.status(200).json({
       backend_url: url,
     });
@@ -53,26 +53,26 @@ export const updateRabbitMQRouteTable = async (req: Request, res: Response) => {
     const { old_key, new_key, namespace, password, resource_id } =
       updateInfraConfigSchema.parse(req.body);
 
-    const url = `amqp://${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local:5672`;
+    const url = `amqp://${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local`;
     const decodedOldKey =
       old_key.split(":")[0]! +
       ":" +
       decrypt(
         old_key.split(":")[1]!,
-        process.env.ENCRYPT_SECRET!,
-        process.env.ENCRYPT_SALT!
+        process.env.RABBITMQ_ENCRYPT_SECRET!,
+        process.env.RABBITMQ_ENCRYPT_SALT!
       );
     const decodedNewKey =
       new_key.split(":")[0]! +
       ":" +
       decrypt(
         new_key.split(":")[1]!,
-        process.env.ENCRYPT_SECRET!,
-        process.env.ENCRYPT_SALT!
+        process.env.RABBITMQ_ENCRYPT_SECRET!,
+        process.env.RABBITMQ_ENCRYPT_SALT!
       );
 
     const updateProxyPlane = await axios.post(
-      PROXY_RABBITMQ_URL + "/api/v1/rabbitmq/update-table",
+      PROXY_RABBITMQ_URL + "/api/v1/infra/rabbit/update-table",
       {
         message: "Route table updated successfully",
         auth_token: process.env.AUTH_TOKEN_RABBITMQ_PROXY!,

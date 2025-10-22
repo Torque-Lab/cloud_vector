@@ -276,7 +276,7 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
                 id:postgresId
             }
         })
-        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/postgres/routetable",{
+        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/v1/infra/postgres/route-table-update",{
             resource_id:postgresId,
             username:response?.username,
             password:response?.password,

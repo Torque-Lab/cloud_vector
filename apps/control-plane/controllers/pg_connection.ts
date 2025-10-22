@@ -46,7 +46,7 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error", success: false });
   }
 }
-export const postgresConnectionUpdate = async (req: Request, res: Response) => {
+export const updatePostgresRouteTable = async (req: Request, res: Response) => {
   try {
     const auth_token = req.headers.authorization?.startsWith('Bearer') ? req.headers.authorization.split(' ')[1] : undefined;
     if (auth_token !== process.env.AUTH_TOKEN_CONTROL_PLANE!) {
@@ -62,7 +62,7 @@ export const postgresConnectionUpdate = async (req: Request, res: Response) => {
     const url = `postgresql://$postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:5432/${old_key.split(":")[1]}`
     const authCredential = generateScramCredential(decodedPassword)
 
-    const updateProxyPlane = await axios.post(PROXY_POSTGRES_URL + "/api/v1/postgres/update-table", {
+    const updateProxyPlane = await axios.post(PROXY_POSTGRES_URL + "/api/v1/infra/postgres/update-table", {
       backend_url: url,
       old_key: old_key,
       new_key: new_key,

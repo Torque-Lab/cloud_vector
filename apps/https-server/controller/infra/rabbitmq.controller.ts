@@ -271,12 +271,10 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
                 id:rabbitmqId
             }
         })
-        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/rabbitmq/routetable",{
+        const updateProxyPlane= await axios.post<{message:string,backend_url:string,success:boolean}>(CONTROL_PLANE_URL+"/api/v1/infra/rabbit/route-table-update",{
             resource_id:rabbitmqId,
-            username:response?.username,
-            password:response?.password,
-            old_key:oldCred?.username+":"+oldCred?.queue_name,
-            new_key:response?.username+":"+response?.queue_name,
+            old_key:oldCred?.username+":"+oldCred?.password+":"+oldCred?.queue_name,
+            new_key:response?.username+":"+response?.password+":"+response?.queue_name,
             namespace:oldCred?.namespace,
         })
         if(updateProxyPlane.status!=200){

@@ -269,7 +269,7 @@ export const resetRedisInstance=async(req:Request,res:Response)=>{
                 id:redisId
             }
         })
-        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/redis/routetable",{
+        const updateProxyPlane= await axios.post(CONTROL_PLANE_URL+"/api/v1/infra/redis/route-table-update",{
             resource_id:redisId,
             username:response?.username,
             password:response?.password,

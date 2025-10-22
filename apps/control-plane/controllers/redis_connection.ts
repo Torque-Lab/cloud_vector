@@ -45,7 +45,7 @@ export const getRedisInstance = async (req: Request, res: Response) => {
     }
 };
 
-export const updateRouteTable = async (req: Request, res: Response) => {
+export const updateRedisRouteTable = async (req: Request, res: Response) => {
     try {
         const auth_token = req.headers.authorization?.startsWith('Bearer') ? req.headers.authorization.split(' ')[1] : req.query.auth_token as string;
         if (auth_token !== process.env.AUTH_TOKEN_CONTROL_PLANE!) {
