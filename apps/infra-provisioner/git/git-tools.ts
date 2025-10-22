@@ -20,7 +20,7 @@ export async function waitForPauseToCommit(): Promise<void> {
   export async function waitForPauseGitPush(): Promise<void> {
     return new Promise((resolve) => {
         const checkInterval = setInterval(async () => {
-            if (await acquireGitPushLock()) {
+            if (await acquireGitPushLock(120,"git-push-lock-ops")) {
                 clearInterval(checkInterval);
                 resolve();
             }
@@ -66,6 +66,6 @@ export async function waitForPauseToCommit(): Promise<void> {
         ["git", "push", repoUrlWithPAT, branch],
         { cwd: repoPath() + "/cloud-infra-ops" }
     );
-    await releaseGitPushLock();
+    await releaseGitPushLock("git-push-lock-ops");
   }
   

@@ -139,4 +139,41 @@ export const rabbitMQProvisioner = async(infraConfig:InfraConfig) => {
   }
 };
 
+export const rabbitMQDestroyer = async(resource_id:string):Promise<boolean> => {
+  try {
+    await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
+    await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
 
+    const rabbitmqPath = path.join(
+      repoPath(),
+      "cloud-infra-ops",
+      "apps",
+      "external-charts",
+      resource_id
+    );
+    const argocdFilePath = path.join(
+      repoPath(),
+      "cloud-infra-ops",
+      "argocd",
+      "external",
+      `${resource_id}.yaml`
+    );
+
+   
+    if (fs.existsSync(rabbitmqPath)) {
+      fs.rmSync(rabbitmqPath, { recursive: true, force: true });
+    }
+
+    if (fs.existsSync(argocdFilePath)) {
+      fs.unlinkSync(argocdFilePath);
+    }
+
+    await safeGitCommit("Removed rabbitmq app", resource_id);
+    triggerGitPush();
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to destroy RabbitMQ app:", error);
+    return false;
+  }
+};

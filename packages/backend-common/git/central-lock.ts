@@ -1,15 +1,15 @@
 import { getRedisClient } from "../src/common";
 
-export async function acquireGitPushLock(ttlInSeconds = 120): Promise<boolean> {
+export async function acquireGitPushLock(ttlInSeconds = 120,lockName:string): Promise<boolean> {
     try {
         const client = await getRedisClient();
-        const currentLock = await client.get("git-push-lock");
+        const currentLock = await client.get(lockName);
 
         if (currentLock === "lock-busy") {
             return false; 
         }
 
-        const result = await client.set("git-push-lock", JSON.stringify("lock-busy"), {
+        const result = await client.set(lockName, JSON.stringify("lock-busy"), {
             expiration: { type: 'EX', value: ttlInSeconds },
         });
 
@@ -19,10 +19,10 @@ export async function acquireGitPushLock(ttlInSeconds = 120): Promise<boolean> {
         return false;
     }
 }
-export async function releaseGitPushLock(): Promise<boolean> {
+export async function releaseGitPushLock(lockName:string): Promise<boolean> {
     try {
         const client = await getRedisClient();
-        const result = await client.del("git-push-lock");
+        const result = await client.del(lockName);
 
         if (result === 1) {
             return true; 

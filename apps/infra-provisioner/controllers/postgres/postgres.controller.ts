@@ -139,4 +139,40 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
   }
 };
 
+export const PostgresDestroyer = async(resource_id:string):Promise<boolean> => {
+  try {
+    await runCommand(["git", "clone", repoUrlWithPAT], { cwd: repoPath() });
+    await runCommand(["git", "checkout", branch], { cwd: repoPath()+"/cloud-infra-ops" });
 
+    const dbPath = path.join(
+      repoPath(),
+      "cloud-infra-ops",
+      "apps",
+      "external-charts",
+      resource_id
+    );
+    const argocdFilePath = path.join(
+      repoPath(),
+      "cloud-infra-ops",
+      "argocd",
+      "external",
+      `${resource_id}.yaml`
+    );
+
+   
+    if (fs.existsSync(dbPath)) {
+      fs.rmSync(dbPath, { recursive: true, force: true });
+    }
+    if (fs.existsSync(argocdFilePath)) {
+      fs.unlinkSync(argocdFilePath);
+    }
+
+    await safeGitCommit("Removed postgresDB app", resource_id);
+    triggerGitPush();
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to destroy PostgresDB app:", error);
+    return false;
+  }
+}
