@@ -10,12 +10,17 @@ import { generateCuid } from "../../utils/random";
 import { postgresQueue } from "@cloud/backend-common";
 import { CUSTOMER_POSTGRES_HOST,CONTROL_PLANE_URL } from "../config/config";
 import axios from "axios";
+import { 
+  resourceProvisionedTotal, 
+  resourceDeletedTotal, 
+  activeResources,
+  userActivityTotal 
+} from '../../moinitoring/promotheous';
 
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
 const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
 
 export const createPostgresInstance=async(req:Request,res:Response)=>{
-  console.log(req.body,"req.body")
 
     try {
         const parsedData=postgresqlSchema.safeParse(req.body);
@@ -165,6 +170,17 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
             }
         })
 
+        // Track metrics
+        resourceProvisionedTotal.inc({ 
+          resource_type: 'postgres', 
+          tier: subscription?.tier || 'unknown',
+          status: 'queued'
+        });
+        userActivityTotal.inc({ 
+          activity_type: 'create_postgres', 
+          user_tier: subscription?.tier || 'unknown'
+        });
+        
         res.status(200).json({ message: "Task added to Queue to provisioned",database:{id:postgresId},success:true });
      }catch (error) {
   
@@ -174,6 +190,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 export const deletePostgresInstance = async (req: Request, res: Response) => {
     try {
       const  postgresId  = req.params.id;
+      const userId=req.userId
       if(!postgresId){
         res.status(400).json({ message: "Invalid postgresId", success: false });
         return;
@@ -185,15 +202,33 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
-      await prismaClient.postgresDB.update({
-        where:{
-          id:postgresId
-        },
-        data:{
-          is_active:false,
-        }
-      })
-  
+   
+       const[postgres,subscription]=await Promise.all([
+        prismaClient.postgresDB.update({
+          where:{
+            id:postgresId
+          },
+          data:{
+            is_active:false,
+          }
+        }),
+        prismaClient.subscription.findUnique({
+          where:{
+            userBaseAdminId:userId
+          }
+        })
+      ])
+
+   //metric
+      resourceDeletedTotal.inc({ 
+        resource_type: 'postgres', 
+        tier:  subscription?.tier || 'unknown'
+      });
+      userActivityTotal.inc({ 
+        activity_type: 'delete_postgres', 
+        user_tier: subscription?.tier || 'unknown'
+      });
+      
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
 

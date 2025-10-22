@@ -1,7 +1,7 @@
 
 import type { Request, Response } from "express";
-import { PermissionList, prismaClient, ProvisioningFlowStatus } from "@cloud/db";
-import { rabbitmqSchema, projectSchema, decrypt} from "@cloud/backend-common";
+import { PermissionList, prismaClient } from "@cloud/db";
+import { rabbitmqSchema, decrypt} from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";
@@ -10,6 +10,11 @@ import { generateCuid } from "../../utils/random";
 import { rabbitmqQueue } from "@cloud/backend-common";
 import {CONTROL_PLANE_URL,CUSTOMER_RABBIT_HOST} from "../config/config"
 import axios from "axios";
+import { 
+  resourceProvisionedTotal, 
+  resourceDeletedTotal, 
+  userActivityTotal 
+} from '../../moinitoring/promotheous';
 
 const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
 const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
@@ -158,6 +163,18 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
                 
             }
         })
+        
+        // Track metrics
+        resourceProvisionedTotal.inc({ 
+          resource_type: 'rabbitmq', 
+          tier: subscription?.tier || 'unknown',
+          status: 'queued'
+        });
+        userActivityTotal.inc({ 
+          activity_type: 'create_rabbitmq', 
+          user_tier: subscription?.tier || 'unknown'
+        });
+        
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } }catch (error) {
       
@@ -168,6 +185,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
 export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
     try {
       const  rabbitmqId  = req.params.id;
+      const userId=req.userId
       if(!rabbitmqId){
         res.status(400).json({ message: "Invalid rabbitmqId", success: false });
         return;
@@ -178,15 +196,34 @@ export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
-      await prismaClient.rabbitMQ.update({
-        where:{
-          id:rabbitmqId
-        },
-        data:{
-          is_active:false,
-        }
-      })
-  
+ 
+      const[rabbitmq,subscription]=await Promise.all([
+        prismaClient.rabbitMQ.update({
+          where:{
+            id:rabbitmqId
+          },
+          data:{
+            is_active:false,
+          }
+        }),
+        prismaClient.subscription.findUnique({
+          where:{
+            userBaseAdminId:userId
+          }
+        })
+      ])
+
+
+      // Track metrics
+      resourceDeletedTotal.inc({ 
+        resource_type: 'rabbitmq', 
+        tier: subscription?.tier || 'unknown'
+      });
+      userActivityTotal.inc({ 
+        activity_type: 'delete_rabbitmq', 
+        user_tier: subscription?.tier || 'unknown'
+      });
+      
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
       

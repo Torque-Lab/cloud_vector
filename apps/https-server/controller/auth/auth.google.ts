@@ -7,6 +7,7 @@ import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie } from './auth.controller';
 import { generateTimeId } from './auth.controller';
 import { generateRandomString } from './auth.controller';
+import { authAttemptsTotal, authSuccessTotal, authFailuresTotal, authDuration } from '../../moinitoring/promotheous';
 
 
 
@@ -29,7 +30,7 @@ passport.use(new GoogleStrategy(
           data: {
             id:profile.id,
             email: email,
-            frist_name: profile?.name?.givenName,
+            first_name: profile?.name?.givenName,
             last_name: profile?.name?.familyName,
             password:  generateRandomString()
           },
@@ -51,7 +52,7 @@ interface googleUser{
     id: string;
     createdAt: Date;
     updatedAt: Date;
-    frist_name: string | null;
+    first_name: string | null;
     last_name: string | null;
     image: string | null;
     email: string;
@@ -63,20 +64,31 @@ export const startGoogleAuth = (): RequestHandler => {
 
 
 export const googleCallbackMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+  authAttemptsTotal.inc({ method: 'google', status: 'started' });
+  const startTime = Date.now();
+  
   passport.authenticate('google', { session: false }, (err: Error, user: googleUser) => {
     if (err || !user) {
       console.error('Google OAuth error:', err);
-       res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=google`);
-       return;
+      const duration = (Date.now() - startTime) / 1000;
+      authFailuresTotal.inc({ method: 'google', reason: 'oauth_error' });
+      authDuration.observe({ method: 'google', status: 'failed' }, duration);
+      res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=google`);
+      return;
     }
     req.user = user;
+    (req as any).authStartTime = startTime;
     next();
   })(req, res, next);
 };
 export const handleGoogleCallback = async(req: Request, res: Response): Promise<void> => {
+  const startTime = (req as any).authStartTime || Date.now();
   const user = req.user as googleUser;
 
   if (!user) {
+    const duration = (Date.now() - startTime) / 1000;
+    authFailuresTotal.inc({ method: 'google', reason: 'no_user' });
+    authDuration.observe({ method: 'google', status: 'failed' }, duration);
     res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=google`);
     return;
   }
@@ -102,6 +114,11 @@ export const handleGoogleCallback = async(req: Request, res: Response): Promise<
 
   setAuthCookie(res, access_token, "access_token", 60 * 60 * 1000);
   setAuthCookie(res, refresh_token, "refresh_token", 60 * 60 * 1000 * 24 * 7);
+
+  // Track success metrics
+  const duration = (Date.now() - startTime) / 1000;
+  authSuccessTotal.inc({ method: 'google' });
+  authDuration.observe({ method: 'google', status: 'success' }, duration);
 
   res.redirect(`${process.env.NEXT_PUBLIC_URL }/callback` || 'http://localhost:3000/callback');
   return;

@@ -10,6 +10,11 @@ import { generateCuid } from "../../utils/random";
 import { redisQueue } from "@cloud/backend-common";
 import {CONTROL_PLANE_URL, CUSTOMER_REDIS_HOST} from "../config/config"
 import axios from "axios";
+import { 
+  resourceProvisionedTotal, 
+  resourceDeletedTotal, 
+  userActivityTotal 
+} from '../../moinitoring/promotheous';
 
 
 const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
@@ -159,6 +164,17 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
                 
             }
         })
+        // Track metrics
+        resourceProvisionedTotal.inc({ 
+          resource_type: 'redis', 
+          tier: subscription?.tier || 'unknown',
+          status: 'queued'
+        });
+        userActivityTotal.inc({ 
+          activity_type: 'create_redis', 
+          user_tier: subscription?.tier || 'unknown'
+        });
+        
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } }catch (error) {
        
@@ -168,6 +184,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
 export const deleteRedisInstance= async (req: Request, res: Response) => {
     try {
       const  redisId  = req.params.id;
+      const userId=req.userId
       if(!redisId){
         res.status(400).json({ message: "Invalid redisId", success: false });
         return;
@@ -178,14 +195,32 @@ export const deleteRedisInstance= async (req: Request, res: Response) => {
         res.status(500).json({ message: "Failed to add task to queue", success: false });
         return;
       }
-  await prismaClient.redis.update({
-    where:{
-      id:redisId
-    },
-    data:{
-      is_active:false
-    }
-  })
+      const[redis,subscription]=await Promise.all([
+        prismaClient.redis.update({
+          where:{
+            id:redisId
+          },
+          data:{
+            is_active:false
+          }
+        }),
+        prismaClient.subscription.findUnique({
+          where:{
+            userBaseAdminId:userId
+          }
+        })
+      ])
+
+        // Track metrics
+      resourceDeletedTotal.inc({ 
+        resource_type: 'redis', 
+        tier: subscription?.tier || 'unknown'
+      });
+      userActivityTotal.inc({ 
+        activity_type: 'delete_redis', 
+        user_tier: subscription?.tier || 'unknown'
+      });
+      
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
       

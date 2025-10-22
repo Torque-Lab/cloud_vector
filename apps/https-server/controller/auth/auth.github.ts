@@ -5,6 +5,7 @@ import { prismaClient } from '@cloud/db';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie, generateTimeId, hashPassword, generateRandomString } from './auth.controller';
+import { authAttemptsTotal, authSuccessTotal, authFailuresTotal, authDuration } from '../../moinitoring/promotheous';
 
 passport.use(new GitHubStrategy(
   {
@@ -31,7 +32,7 @@ passport.use(new GitHubStrategy(
           data: {
             id: dbId,
             email: email,
-            frist_name: profile?.name?.givenName?? '',
+            first_name: profile?.name?.givenName?? '',
             last_name: profile?.name?.familyName?? '',
             password: await hashPassword(generateRandomString())
           },
@@ -52,7 +53,7 @@ interface githubUser {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  frist_name: string | null;
+  first_name: string | null;
   last_name: string | null;
   image: string | null;
   username: string;
@@ -63,22 +64,33 @@ export const startGithubAuth = (): RequestHandler => {
   return passport.authenticate('github', { scope: ['user:email'] });
 };
 export const githubCallbackMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+  authAttemptsTotal.inc({ method: 'github', status: 'started' });
+  const startTime = Date.now();
+  
   passport.authenticate('github', { session: false }, (err: Error, user: githubUser) => {
     if (err || !user) {
       console.error('GitHub OAuth error:', err);
-       res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=github`);
-       return;
+      const duration = (Date.now() - startTime) / 1000;
+      authFailuresTotal.inc({ method: 'github', reason: 'oauth_error' });
+      authDuration.observe({ method: 'github', status: 'failed' }, duration);
+      res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=github`);
+      return;
     }
     req.user = user;
+    (req as any).authStartTime = startTime;
     next();
   })(req, res, next);
 };
 
 export const handleGithubCallback = async (req: Request, res: Response): Promise<void> => {
+  const startTime = (req as any).authStartTime || Date.now();
   const user = req.user as githubUser;
 
   if (!user) {
     console.error('No user in request after GitHub auth');
+    const duration = (Date.now() - startTime) / 1000;
+    authFailuresTotal.inc({ method: 'github', reason: 'no_user' });
+    authDuration.observe({ method: 'github', status: 'failed' }, duration);
     res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=github`);
     return;
   }
@@ -104,6 +116,11 @@ export const handleGithubCallback = async (req: Request, res: Response): Promise
 
   setAuthCookie(res, access_token, 'access_token', 60 * 60 * 1000);
   setAuthCookie(res, refresh_token, 'refresh_token', 60 * 60 * 1000 * 24 * 7);
+
+  // Track success metrics
+  const duration = (Date.now() - startTime) / 1000;
+  authSuccessTotal.inc({ method: 'github' });
+  authDuration.observe({ method: 'github', status: 'success' }, duration);
 
   res.redirect(`${process.env.NEXT_PUBLIC_URL}/callback`);
 };

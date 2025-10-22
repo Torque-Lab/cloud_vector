@@ -2,6 +2,11 @@ import { pushVmToQueueToCreate, pushVmToQueueToDelete, vmQueue, vmSchema } from 
 import { prismaClient } from "@cloud/db"
 import type { Request, Response } from "express"
 import { generateCuid } from "../../utils/random"
+import { 
+  resourceProvisionedTotal, 
+  resourceDeletedTotal, 
+  userActivityTotal 
+} from '../../moinitoring/promotheous';
 
 export const createVm=async(req:Request,res:Response)=>{
     try {
@@ -39,6 +44,18 @@ export const createVm=async(req:Request,res:Response)=>{
                
             }
         })
+        
+        // Track metrics
+        resourceProvisionedTotal.inc({ 
+          resource_type: 'vm', 
+          tier: user?.tierRule.tier || 'unknown',
+          status: 'queued'
+        });
+        userActivityTotal.inc({ 
+          activity_type: 'create_vm', 
+          user_tier: user?.tierRule.tier || 'unknown'
+        });
+        
         return res.status(201).json({message:"Vm created successfully",success:true})
 
 
@@ -53,6 +70,7 @@ export const updateVm=async(req:Request,res:Response)=>{
 export const deleteVm=async(req:Request,res:Response)=>{
     try {
         const vmId=req.params.vmId as string
+        const userId=req.userId
         if(!vmId){
             return res.status(400).json({message:"Vm id is required",success:false})
         }
@@ -60,14 +78,31 @@ export const deleteVm=async(req:Request,res:Response)=>{
         if(!success){
             return res.status(500).json({message:"Failed to push vm to queue",success:false})
         }
-        const vmDeleted=await prismaClient.virtualMachine.update({
+     const [vm,subscription]=await Promise.all([
+        prismaClient.virtualMachine.update({
             where:{
                 id:vmId
             },
             data:{
                 is_active:false
             }
+        }),
+        prismaClient.subscription.findUnique({
+            where:{
+                userBaseAdminId:userId
+            }
         })
+     ])
+        
+        resourceDeletedTotal.inc({ 
+          resource_type: 'vm', 
+          tier: subscription?.tier || 'unknown'
+        });
+        userActivityTotal.inc({ 
+          activity_type: 'delete_vm', 
+          user_tier: subscription?.tier || 'unknown'
+        });
+        
         return res.status(200).json({message:"Vm deleted successfully",success:true})
     } catch (error) {
         return res.status(500).json({message:"Failed to delete vm",success:false})
