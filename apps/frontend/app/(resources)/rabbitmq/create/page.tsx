@@ -24,6 +24,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { ArrowLeftIcon, RefreshCcw } from "lucide-react";
 import { RabbitApi } from "@/lib/rabbit_api";
+import { rabbitmqSchema } from "@cloud/shared_types";
 
 interface Project {
   id: string;
@@ -34,7 +35,7 @@ export default function CreateRabbitMQPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<rabbitmqSchema>({
     name: "",
     projectId: "",
     region: "",
@@ -45,7 +46,7 @@ export default function CreateRabbitMQPage() {
     initialVCpu: "",
     maxVCpu: "",
     autoScale: "",
-    backUpFrequency: "",
+    backUpFrequency: undefined,
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [isProjectsLoading, setIsProjectsLoading] = useState(true);

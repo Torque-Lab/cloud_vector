@@ -24,6 +24,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { ArrowLeftIcon, RefreshCcw } from "lucide-react";
 import { RedisApi } from "@/lib/redis_api";
+import { redisSchema } from "@cloud/shared_types";
 
 interface Project {
   id: string;
@@ -34,7 +35,7 @@ export default function CreateRedisPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<redisSchema>({
     name: "",
     projectId: "",
     region: "",
@@ -45,7 +46,7 @@ export default function CreateRedisPage() {
     initialVCpu: "",
     maxVCpu: "",
     autoScale: "",
-    backUpFrequency: "",
+    backUpFrequency: undefined,
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [isProjectsLoading, setIsProjectsLoading] = useState(true);

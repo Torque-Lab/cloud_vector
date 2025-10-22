@@ -79,3 +79,5 @@ export interface projectDataDetails{
     team: teamMember[];
     
 }
+
+

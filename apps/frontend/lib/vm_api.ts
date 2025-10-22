@@ -19,7 +19,7 @@ export interface Project {
 }
 export const vmApi = {
   getAllVm: async (token?:string): Promise<vmData[]> => {
-    const response = await axios.get<{vm:vmData[],success:boolean}>(`${API_BASE_URL}/api/all-vm`,
+    const response = await axios.get<{vms:vmData[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/all-vm`,
       {
         withCredentials: true,
         headers: {
@@ -27,11 +27,11 @@ export const vmApi = {
         },
       }
     );
-    return response.data.vm;
+    return response.data.vms;
   },
 
   getVm: async (id: string,token?:string): Promise<vmData> => {
-    const response = await axios.get<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-get/${id}`,
+    const response = await axios.get<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/vm-get/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -43,7 +43,7 @@ export const vmApi = {
   },
 
   getProjects: async (token?:string): Promise<Project[]> => {
-    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/projects`,
+    const response = await axios.get<{projects:Project[],success:boolean}>(`${API_BASE_URL}/api/v1/infra/projects`,
       {
         withCredentials: true,
         headers: {
@@ -55,7 +55,7 @@ export const vmApi = {
   },
 
   createVm: async (data: vmSchema ,token?:string): Promise<vmData> => {
-    const response = await axios.post<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-create`, data,
+    const response = await axios.post<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/vm-create`, data,
       {
         withCredentials: true,
         headers: {
@@ -67,7 +67,7 @@ export const vmApi = {
   },
 
   updateVm: async (id: string, token?:string): Promise<vmData> => {
-    const response = await axios.patch<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/vm-update/${id}`,
+    const response = await axios.patch<{vm:vmData,success:boolean}>(`${API_BASE_URL}/api/v1/infra/vm-update/${id}`,
       {
         withCredentials: true,
         headers: {
@@ -79,7 +79,7 @@ export const vmApi = {
   },
 
   deleteVm: async (id: string,token?:string): Promise<{message:string,success:boolean}> => {
-    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/vm-delete/${id}`,
+    const response=await axios.delete<{message:string,success:boolean}>(`${API_BASE_URL}/api/v1/infra/vm-delete/${id}`,
       {
         withCredentials: true,
         headers: {

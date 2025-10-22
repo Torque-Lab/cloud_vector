@@ -25,6 +25,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { ArrowLeftIcon, RefreshCcw } from "lucide-react";
 import { vmApi } from "@/lib/vm_api";
+import { vmSchema } from "@cloud/shared_types";
 
 interface Project {
   id: string;
@@ -35,7 +36,7 @@ export default function CreateVmPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<vmSchema>({
     name: "",
     projectId: "",
     region: "",
@@ -199,7 +200,7 @@ export default function CreateVmPage() {
         region: formData.region,
         memory: formData.memory,
         storage: formData.storage,
-        vcpu: formData.vCpu,
+        vCpu: formData.vCpu,
         publicKey: formData.publicKey,
       });
 
@@ -208,7 +209,7 @@ export default function CreateVmPage() {
         description: `${formData.name} will be created soon!.Redirecting to the vm page in 5 seconds`,
       });
 
-      // Redirect to the new database
+  
       setTimeout(() => {
         router.push(`/vm/${newVm.id}`);
       }, 5000);

@@ -1,6 +1,6 @@
 import amqp from "amqplib";
 import type { Channel, ChannelModel } from "amqplib";
-import type { InfraConfig } from "@cloud/shared_types";
+import type { InfraConfig, vmSchema } from "@cloud/shared_types";
 
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
@@ -124,6 +124,101 @@ export async function consumeInfraConfigFromQueueToDelete(queue_name: string, de
         console.error("Error in consumeFromQueue:", e);
     }
 }
+export interface vmSchemaDetails extends vmSchema{
+    vmId:string
+    subscriptionPlan:string
+}
+
+export async function pushVmToQueueToCreate(queue_name: string, item: vmSchemaDetails) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        const success = channel.sendToQueue(
+            queue_name, 
+            Buffer.from(JSON.stringify(item)), 
+            { persistent: true }
+        );
+        return success;
+    } catch (e) {
+        console.error("Error in pushToQueue:", e);
+        return false;
+    }
+}
+
+export async function pushVmToQueueToDelete(queue_name: string, item:string) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        const success = channel.sendToQueue(
+            queue_name, 
+            Buffer.from(JSON.stringify(item)), 
+            { persistent: true }
+        );
+        return success;
+    } catch (e) {
+        console.error("Error in pushToQueue:", e);
+        return false;
+    }
+}
+
+export async function consumeVmFromQueueToCreate(queue_name: string, provisioner: (vm: vmSchemaDetails) => Promise<{message:string,success:boolean,host:string}>) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        channel.prefetch(100);
+        
+        channel.consume(queue_name, async (msg) => {
+            if (!msg) return;
+            
+            const task:vmSchemaDetails = JSON.parse(msg.content.toString());
+            try {
+                const {success} = await provisioner(task);
+                if (success) {
+                    channel.ack(msg);
+                    console.log("Processed and acked:", task);
+                } else {
+                    channel.nack(msg, false, false);
+                    console.log("Processing failed:", task);
+                }
+            } catch (e) {
+                channel.nack(msg, false, false);
+                console.error("Error processing message:", e);
+            }
+        }, { noAck: false });
+    } catch (e) {
+        console.error("Error in consumeFromQueue:", e);
+    }
+}
+
+export async function consumeVmFromQueueToDelete(queue_name: string, destroyer: (vm: string) => Promise<boolean>) {
+    try {
+        const { channel } = await getRabbitMQChannel();
+        await channel.assertQueue(queue_name, { durable: true });
+        channel.prefetch(100);
+        
+        channel.consume(queue_name, async (msg) => {
+            if (!msg) return;
+            
+            const task:string = JSON.parse(msg.content.toString());
+            try {
+                const success = await destroyer(task);
+                if (success) {
+                    channel.ack(msg);
+                    console.log("Processed and acked:", task);
+                } else {
+                    channel.nack(msg, false, false);
+                    console.log("Processing failed:", task);
+                }
+            } catch (e) {
+                channel.nack(msg, false, false);
+                console.error("Error processing message:", e);
+            }
+        }, { noAck: false });
+    } catch (e) {
+        console.error("Error in consumeFromQueue:", e);
+    }
+}   
+
 
 
 process.on('SIGINT', async () => {

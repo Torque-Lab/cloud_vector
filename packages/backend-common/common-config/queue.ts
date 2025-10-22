@@ -12,4 +12,10 @@ export enum redisQueue{
     CREATE="redis_create_queue",
     DELETE="redis_delete_queue"
 }
+
+export enum vmQueue{
+    CREATE="vm_create_queue",
+    DELETE="vm_delete_queue"
+}
+
     

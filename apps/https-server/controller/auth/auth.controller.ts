@@ -178,7 +178,7 @@ export const signIn = async (req: Request, res: Response) => {
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS! ,);
         const refresh_token = jwt.sign({ payload2}, process.env.JWT_SECRET_REFRESH!,);
         
-        setAuthCookie(res, access_token, "access_token",60 * 300* 1000);
+        setAuthCookie(res, access_token, "access_token",60 * 60* 1000*24*2);
         setAuthCookie(res, refresh_token, "refresh_token",60 * 60 * 1000*24*7);
         
         res.status(200).json({ message: "User signed in successfully",success:true});
@@ -232,7 +232,7 @@ export const refresh = async (req: Request, res: Response) => {
 
         const access_token = jwt.sign({ payload1}, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667');
      
-        setAuthCookie(res, access_token, "access_token",60 * 60 * 1000);
+        setAuthCookie(res, access_token, "access_token",60 * 60 * 1000*24*2);
         res.status(200).json({ message: "Token refreshed successfully",success:true });
     } catch (error) {
         console.log(error);

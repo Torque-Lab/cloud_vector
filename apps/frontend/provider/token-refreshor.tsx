@@ -6,7 +6,7 @@ export default function TokenRefresher() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const ACCESS_TOKEN_LIFETIME_MS = 60 * 300 * 1000;   
+    const ACCESS_TOKEN_LIFETIME_MS = 60 * 60 * 1000*24*2;   
     const REFRESH_BEFORE_MS = 5 * 60 * 1000;           
     function scheduleRefresh() {
       const delay = Math.max(ACCESS_TOKEN_LIFETIME_MS - REFRESH_BEFORE_MS, 5_000);
@@ -14,7 +14,7 @@ export default function TokenRefresher() {
     }
     async function refreshToken() {
       try {
-        await fetch("/api/auth/refresh", {
+        await fetch("/api/v1/auth/refresh", {
           method: "POST",
           credentials: "include", 
         });
