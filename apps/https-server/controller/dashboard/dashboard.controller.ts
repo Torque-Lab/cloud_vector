@@ -192,3 +192,140 @@ export const getDashboardData = async (req: Request, res: Response) => {
       return res.status(500).json({ message: "Internal Server Error",success:false });
     }
   };
+
+
+  export const pauseProject = async (req: Request, res: Response) => {
+    const projectId = req.params.projectId as string;
+    if(!projectId){
+        return res.status(400).json({ message: "Project ID is required",success:false });
+    } 
+    try {
+      const project = await prismaClient.project.findUnique({
+        where: { id: projectId },
+        include:{
+          virtualMachines:true,
+          postgresDB:true,
+          rabbitmq:true,
+          redis:true,
+          vectorDB:true,
+         
+        }
+       
+      });
+      if (!project) {
+        return res.status(404).json({ message: "Project not found",success:false });
+      }
+      if(project.virtualMachines.find((vm)=>vm.is_active==true)||project.postgresDB.find((db)=>db.is_active==true)||project.rabbitmq.find((rmq)=>rmq.is_active==true)||project.redis.find((redis)=>redis.is_active==true)||project.vectorDB.find((vdb)=>vdb.is_active==true)){
+        //metric
+          {
+          userActivityTotal.inc({ 
+            activity_type: 'pause_project_failed', 
+            user_tier: "unknown"
+            
+          });
+          logBusinessOperation("pause_project_failed","dashboard",{
+            userId:"anonymous",
+            tier:"unknown",
+            error_type:"project_is_active and has associated resources"
+          })
+
+
+          }
+
+        return res.status(400).json({ message: "Project is can't be paused due to active resources",success:false });
+      }
+
+      const updatedProject = await prismaClient.project.update({
+        where: { id: projectId },
+        data: { status: "paused" },
+      });
+
+      //start metric
+      {
+      userActivityTotal.inc({ 
+        activity_type: 'pause_project', 
+        user_tier: "unknown"
+      });
+      logBusinessOperation("pause_project","dashboard",{
+        userId:"anonymous",
+        tier:"unknown"
+      })
+
+
+      }
+      return res.status(200).json({ updatedProject, message: "Project paused successfully", success: true });
+    } catch (e) {
+      logError(e instanceof Error ? e : new Error("Failed to fetch project details"));
+      return res.status(500).json({ message: "Internal Server Error",success:false });
+    }
+  };  
+
+
+  export const deleteProject = async (req: Request, res: Response) => {
+
+
+
+    const projectId = req.params.projectId as string;
+    if(!projectId){
+        return res.status(400).json({ message: "Project ID is required",success:false });
+    } 
+    try {
+      const project = await prismaClient.project.findUnique({
+        where: { id: projectId },
+        include:{
+          virtualMachines:true,
+          postgresDB:true,
+          rabbitmq:true,
+          redis:true,
+          vectorDB:true,
+         
+        }
+       
+      });
+      if (!project) {
+        return res.status(404).json({ message: "Project not found",success:false });
+      }
+      if(project.virtualMachines.find((vm)=>vm.is_active==true)||project.postgresDB.find((db)=>db.is_active==true)||project.rabbitmq.find((rmq)=>rmq.is_active==true)||project.redis.find((redis)=>redis.is_active==true)||project.vectorDB.find((vdb)=>vdb.is_active==true)){
+        //metric
+          {
+          userActivityTotal.inc({ 
+            activity_type: 'delete_project_failed', 
+            user_tier: "unknown"
+            
+          });
+          logBusinessOperation("delete_project_failed","dashboard",{
+            userId:"anonymous",
+            tier:"unknown",
+            error_type:"project_is_active and has associated resources"
+          })
+
+
+          }
+
+        return res.status(400).json({ message: "Project is can't be deleted due to active resources",success:false });
+      }
+
+      const updatedProject = await prismaClient.project.update({
+        where: { id: projectId },
+        data: { status: "deleted" },
+      });
+
+      //start metric
+      {
+      userActivityTotal.inc({ 
+        activity_type: 'delete_project', 
+        user_tier: "unknown"
+      });
+      logBusinessOperation("delete_project","dashboard",{
+        userId:"anonymous",
+        tier:"unknown"
+      })
+
+
+      }
+      return res.status(200).json({ updatedProject, message: "Project deleted successfully", success: true });
+    } catch (e) {
+      logError(e instanceof Error ? e : new Error("Failed to delete project details"));
+      return res.status(500).json({ message: "Internal Server Error",success:false });
+    }
+  };  

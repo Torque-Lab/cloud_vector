@@ -288,12 +288,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
     try {
         const parsedData = ResetSchema.safeParse(req.body);
+        const token=req.headers.authorization?.split("Bearer")[1]?.trim()||"";
     
         if (!parsedData.success) {
             res.status(400).json({ message: "Invalid data",success:false });
             return;
         }
-        const { token, newPassword } = parsedData.data;
+        const { newPassword } = parsedData.data;
         const resetPayloadData = jwt.verify(token, process.env.JWT_SECRET_ACCESS || 'z78hei7ritgfb67385vg7667') as {resetPayload:{ userId: string ,timeId: string ,tokenId: string ,issuedAt: number}};
     
         if (!await isTokenValid(token)) {
