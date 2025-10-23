@@ -1,5 +1,3 @@
-
-
 import type { Request, Response, NextFunction } from 'express';
 import {
   httpRequestDuration,
@@ -9,7 +7,8 @@ import {
   httpRequestSizeBytes,
   slowRequestsTotal,
   httpErrorsTotal
-} from "./promotheous"
+} from "./promotheous";
+import { logHttpRequest } from './Log-collection/winston';
 
 export function httpMetricsMiddleware(req: Request, res: Response, next: NextFunction) {
   if (req.path === '/metrics') {
@@ -57,6 +56,10 @@ res.end = (function (...args: any[]) {
     const errorType = res.statusCode >= 500 ? 'server_error' : 'client_error';
     httpErrorsTotal.inc({ method, route, status_code: statusCode, error_type: errorType });
   }
+  
+
+  logHttpRequest(req, res, duration * 1000); // Convert to ms
+  
   return originalEnd(...args);
 }) as typeof res.end;
 

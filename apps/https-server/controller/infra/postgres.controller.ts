@@ -13,9 +13,9 @@ import axios from "axios";
 import { 
   resourceProvisionedTotal, 
   resourceDeletedTotal, 
-  activeResources,
   userActivityTotal 
 } from '../../moinitoring/promotheous';
+import { logBusinessOperation, logAudit,logError, } from '../../moinitoring/Log-collection/winston';
 
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
 const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
@@ -144,6 +144,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
 
         const success=await pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{...parsedData.data,resource_id:postgresId,namespace})
         if(!success){
+          
             res.status(500).json({ message: "Failed to add task to queue",success:false });
             return;
         }
@@ -170,7 +171,9 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
             }
         })
 
-        // Track metrics
+
+        //start metric
+      {
         resourceProvisionedTotal.inc({ 
           resource_type: 'postgres', 
           tier: subscription?.tier || 'unknown',
@@ -181,8 +184,28 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
           user_tier: subscription?.tier || 'unknown'
         });
         
+        logBusinessOperation('create_postgres', 'postgres', {
+          postgresId,
+          userId: "anonymous",
+          tier: subscription?.tier,
+          projectId: parsedData.data.projectId,
+          config: {
+            initialMemory: parsedData.data.initialMemory,
+            maxMemory: parsedData.data.maxMemory,
+            autoScale: parsedData.data.autoScale
+          }
+        });
+        
+        logAudit('CREATE_POSTGRES_INSTANCE', "anonymous", {
+          resourceId: postgresId,
+          resourceType: 'postgres',
+          tier: subscription?.tier
+        });
+      }
+        
         res.status(200).json({ message: "Task added to Queue to provisioned",database:{id:postgresId},success:true });
      }catch (error) {
+   logError(error instanceof Error ? error : new Error("Failed to add task to queue"));
   
         res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
@@ -219,8 +242,9 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
         })
       ])
 
-   //metric
-      resourceDeletedTotal.inc({ 
+      //start metric
+   {
+        resourceDeletedTotal.inc({ 
         resource_type: 'postgres', 
         tier:  subscription?.tier || 'unknown'
       });
@@ -228,9 +252,21 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
         activity_type: 'delete_postgres', 
         user_tier: subscription?.tier || 'unknown'
       });
+      logBusinessOperation('delete_postgres', 'postgres', {
+        postgresId,
+        userId: "anonymous",
+        tier: subscription?.tier
+      });
+      
+      logAudit('DELETE_POSTGRES_INSTANCE', "anonymous", {
+        resourceId: postgresId,
+        resourceType: 'postgres'
+      });
+   }
       
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
+      logError(error instanceof Error ? error : new Error("Failed to add task to queue for postgres Destruction"));
 
       res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
@@ -247,9 +283,23 @@ export const getPostgresStatus=async(req:Request,res:Response)=>{
                 id:postgresId
             }
         })
+
+        //start metric
+        {
+        userActivityTotal.inc({ 
+          activity_type: 'sent_postgres_status', 
+          user_tier: "unknown"
+        });
+        logBusinessOperation("sent_postgres_status","postgres",{
+          postgresId,
+          userId:"anonymous",
+          tier:"unknown"
+        })
+        }
+        //end metric
         res.status(200).json({ postgresDB:postgresStatus?.provisioning_flow_status,success:true });
     } catch (error) {
- 
+      logError(error instanceof Error ? error : new Error("Failed to response postgresDB status")); 
         res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }
@@ -284,10 +334,26 @@ export const resetPostgresInstance=async(req:Request,res:Response)=>{
             new_key:response?.username+":"+response?.database_name,
             namespace:oldcred?.namespace,
         })
+
+        //start metric
+       {
+        userActivityTotal.inc({ 
+          activity_type: 'reset_postgres_instance', 
+          user_tier: "unknown"
+        });
+        logBusinessOperation("reset_postgres_instance","postgres",{
+          postgresId,
+          userId:"anonymous",
+          tier:"unknown"
+        })
+       }
+
+
+
         const connectionString=`postgresql://${response?.username}:${password}@${CUSTOMER_POSTGRES_HOST}/${response?.database_name}?pgbouncer=true`
         res.status(200).json({ message:"PostgresDB updated successfully",success:true ,connectionString:connectionString});
     } catch (error) {
- 
+        logError(error instanceof Error ? error : new Error("Failed to update postgresDB status")); 
         res.status(500).json({ message: "Failed to update postgresDB status",success:false });
     }
 }
@@ -332,9 +398,24 @@ const finalPostgres = allPostgres.map(db => ({
   projectName: projectMap.get(db.projectId)
 }));
 
+
+//start metric
+{
+  userActivityTotal.inc({ 
+    activity_type: 'sent_all_postgres_instance', 
+    user_tier: "unknown"
+  });
+  logBusinessOperation("sent_all_postgres_instance","postgres",{
+    AllPostgresIds:allPostgres.map((p) => p.id),
+    userId:"anonymous",
+    tier:"unknown"
+  })
+}
+
+
     res.status(200).json({ databases: finalPostgres, success: true });
   } catch (error) {
- 
+      logError(error instanceof Error ? error : new Error("Failed to send all postgresDB status")); 
     res.status(500).json({ message: "Failed to get postgresDB status",success:false });
   }
 };
@@ -369,10 +450,23 @@ export const getOnePostgresInstance = async (req: Request, res: Response) => {
          }
             
         })
+
+        //start metric
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'sent_one_postgres_instance', 
+            user_tier: "unknown"
+          });
+          logBusinessOperation("sent_one_postgres_instance","postgres",{
+            postgresId,
+            userId:"anonymous",
+            tier:"unknown"
+          })
+        }
     
         res.status(200).json({ database:postgres,success:true });
     } catch (error) {
-        
+        logError(error instanceof Error ? error : new Error("Failed to send one postgresDB status")); 
         res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }
@@ -398,10 +492,26 @@ export const getPostgresConnectionString = async (req: Request, res: Response) =
          }
             
         })
+
+        //start metric
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'send_postgres_connection_string', 
+            user_tier: "unknown"
+          });
+          logBusinessOperation("send_postgres_connection_string","postgres",{
+            postgresId,
+            userId:"anonymous",
+            tier:"unknown"
+          })
+
+        }
+      
+
         const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}/${postgres!.database_name}?pgbouncer=true`
         res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
-       
+        logError(error instanceof Error ? error : new Error("Failed to send postgresDB connection string")); 
         res.status(500).json({ message: "Failed to get postgresDB status",success:false });
     }
 }

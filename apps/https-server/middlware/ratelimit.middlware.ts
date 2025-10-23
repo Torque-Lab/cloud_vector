@@ -2,6 +2,7 @@ import rateLimit from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
 import { getRedisClient } from "@cloud/backend-common";
 import { rateLimitHitsTotal } from '../moinitoring/promotheous';
+import { logRateLimit, securityLogger } from '../moinitoring/Log-collection/winston';
 
 
 export function genricRateLimiter(windowInMinutes:number,max:number){
@@ -19,7 +20,20 @@ export function genricRateLimiter(windowInMinutes:number,max:number){
             // Track rate limit hits
             const route = req.path;
             const userType = req.userId ? 'authenticated' : 'anonymous';
+            const userId = req.userId || 'anonymous';
+            
             rateLimitHitsTotal.inc({ route, user_type: userType });
+            
+            // Log rate limit event
+            logRateLimit(route, "anonymous", 0, true);
+            
+            securityLogger.warn('Rate limit exceeded', {
+              route,
+              userId: "anonymous",
+              userType,
+              ip: req.ip,
+              userAgent: req.headers['user-agent']
+            });
             
             res.status(429).json({
               status: 429,

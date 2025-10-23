@@ -15,6 +15,7 @@ import {
   healthCheckDuration,
 } from '../moinitoring/promotheous';
 import {httpMetricsMiddleware} from '../moinitoring/https-metric-middlware';
+import logger, { logOnConsole } from "../moinitoring/Log-collection/winston";
 
 const app = express();
 app.use(httpMetricsMiddleware);
@@ -74,12 +75,17 @@ app.get("/api/v1/health", (req, res) => {
 
 
 app.listen(3005, () => {
-    console.log("Server started on port 3005");
+  logOnConsole(' HTTPS Server started', { 
+    port: 3005, 
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version
+  });
+   
 });
 
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection:', reason);
+logger.error('Unhandled Rejection:', reason);
   applicationErrorsTotal.inc({ 
     error_type: 'unhandled_rejection', 
     severity: 'critical',
@@ -88,7 +94,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+logger.error('Uncaught Exception:', err);
   applicationErrorsTotal.inc({ 
     error_type: 'uncaught_exception', 
     severity: 'critical',
@@ -96,6 +102,6 @@ process.on('uncaughtException', (err) => {
   });
 });
 process.on("SIGTERM", (s) => {
-    console.log("SIGTERM received",s);
+    logOnConsole("SIGTERM received",{"signal-SIGTERM":s},true);
     process.exit(0);
 });

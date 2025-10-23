@@ -1,6 +1,8 @@
 import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";
 import type { DashboardDataType,Metric,RecentActivity,TopDatabase,StorageBreakdown, projectDataDetails } from "@cloud/shared_types"
+import { logBusinessOperation, logError } from "../../moinitoring/Log-collection/winston";
+import { userActivityTotal } from "../../moinitoring/promotheous";
 
 export const getDashboardData = async (req: Request, res: Response) => {
     const userId = req.userId; 
@@ -114,12 +116,27 @@ export const getDashboardData = async (req: Request, res: Response) => {
       }
   
       const DashboardData: DashboardDataType = { allData };
+
+     {
+      
+      userActivityTotal.inc({ 
+        activity_type: 'get_dashboard_data', 
+        user_tier: "unknown"
+      });
+      logBusinessOperation("get_dashboard_data","dashboard",{
+        userId,
+        tier:"unknown"
+      })
+
+     }
+
       res.status(200).json({
         DashboardData,
         message: "User dashboard data loaded",
         success: true,
       });
     } catch (e) {
+      logError(e instanceof Error ? e : new Error("Failed to fetch dashboard data"));
       res.status(500).json({ message: "Internal Server Error",success:false });
     }
   };
@@ -156,8 +173,22 @@ export const getDashboardData = async (req: Request, res: Response) => {
          
         })),
       };
+      //start metric
+      {
+      userActivityTotal.inc({ 
+        activity_type: 'get_project_details', 
+        user_tier: "unknown"
+      });
+      logBusinessOperation("get_project_details","dashboard",{
+        userId:"anonymous",
+        tier:"unknown"
+      })
+
+
+      }
       return res.status(200).json({ projectDetails, message: "Project details loaded", success: true });
     } catch (e) {
+      logError(e instanceof Error ? e : new Error("Failed to fetch project details"));
       return res.status(500).json({ message: "Internal Server Error",success:false });
     }
   };

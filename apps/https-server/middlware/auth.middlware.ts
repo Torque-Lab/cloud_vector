@@ -7,12 +7,14 @@ import {
   authFailuresTotal,
   authDuration,
 } from '../moinitoring/promotheous';
+import { logAuthEvent, securityLogger } from '../moinitoring/Log-collection/winston';
 
 
 declare global {
   namespace Express {
     interface Request {
       userId?: string;
+      authStartTime?: number;
     }
   }
 }
@@ -31,6 +33,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       const duration = (Date.now() - startTime) / 1000;
       authFailuresTotal.inc({ method: authMethod, reason: 'no_token' });
       authDuration.observe({ method: authMethod, status: 'failed' }, duration);
+      logAuthEvent('JWT authentication failed', { 
+        reason: 'no_token', 
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      }, false);
+
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
@@ -41,6 +49,11 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       const duration = (Date.now() - startTime) / 1000;
       authFailuresTotal.inc({ method: authMethod, reason: 'invalid_payload' });
       authDuration.observe({ method: authMethod, status: 'failed' }, duration);
+      logAuthEvent('JWT authentication failed', { 
+        reason: 'invalid_payload',
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      }, false);
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
@@ -62,6 +75,11 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       const duration = (Date.now() - startTime) / 1000;
       authFailuresTotal.inc({ method: authMethod, reason: 'user_not_found' });
       authDuration.observe({ method: authMethod, status: 'failed' }, duration);
+      securityLogger.warn('Authentication attempt with invalid user', {
+        userId: decoded.payload1.userId,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
@@ -73,12 +91,23 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     authSuccessTotal.inc({ method: authMethod });
     authDuration.observe({ method: authMethod, status: 'success' }, duration);
     
+    logAuthEvent('JWT authentication successful', {
+      userId: 'anonymous',
+      email: 'anonymous',
+      duration: `${duration*1000}ms`,
+      ip: req.ip
+    }, true);
+    
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
     const duration = (Date.now() - startTime) / 1000;
     authFailuresTotal.inc({ method: authMethod, reason: 'exception' });
     authDuration.observe({ method: authMethod, status: 'failed' }, duration);
+    logAuthEvent('JWT authentication exception', {
+      error: error instanceof Error ? error.message : String(error),
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    }, false);
     res.status(401).json({ error: 'Invalid token' });
     return;
   }

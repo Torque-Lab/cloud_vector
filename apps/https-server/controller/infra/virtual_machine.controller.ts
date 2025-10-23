@@ -7,6 +7,7 @@ import {
   resourceDeletedTotal, 
   userActivityTotal 
 } from '../../moinitoring/promotheous';
+import { logBusinessOperation ,logError,logAudit} from '../../moinitoring/Log-collection/winston';
 
 export const createVm=async(req:Request,res:Response)=>{
     try {
@@ -45,22 +46,24 @@ export const createVm=async(req:Request,res:Response)=>{
             }
         })
         
-        // Track metrics
-        resourceProvisionedTotal.inc({ 
-          resource_type: 'vm', 
-          tier: user?.tierRule.tier || 'unknown',
-          status: 'queued'
-        });
-        userActivityTotal.inc({ 
-          activity_type: 'create_vm', 
-          user_tier: user?.tierRule.tier || 'unknown'
-        });
+        //start metric
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'create_vm', 
+            user_tier: user?.tierRule.tier || 'unknown'
+          });
+          logBusinessOperation("create_vm","vm",{
+            vmId,
+            userId,
+            tier:user?.tierRule.tier || 'unknown'
+          })
+        }
         
         return res.status(201).json({message:"Vm created successfully",success:true})
 
-
+       
     } catch (error) {
-      
+        logError(error instanceof Error ? error : new Error("Failed to create vm"));
         return res.status(500).json({message:"Failed to create vm",success:false})
     }
     
@@ -94,7 +97,8 @@ export const deleteVm=async(req:Request,res:Response)=>{
         })
      ])
         
-        resourceDeletedTotal.inc({ 
+       {
+         resourceDeletedTotal.inc({ 
           resource_type: 'vm', 
           tier: subscription?.tier || 'unknown'
         });
@@ -102,9 +106,11 @@ export const deleteVm=async(req:Request,res:Response)=>{
           activity_type: 'delete_vm', 
           user_tier: subscription?.tier || 'unknown'
         });
+       }
         
         return res.status(200).json({message:"Vm deleted successfully",success:true})
     } catch (error) {
+        logError(error instanceof Error ? error : new Error("Failed to delete vm"));
         return res.status(500).json({message:"Failed to delete vm",success:false})
     }
     
@@ -145,9 +151,22 @@ export const getAllVm=async(req:Request,res:Response)=>{
                 
             }
         })
+
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'get_vm', 
+            user_tier: "unknown"
+          });
+          logBusinessOperation("get_vm","vm",{
+            AllVm:vms.map((vm)=>vm.id),
+            userId,
+            tier:"unknown"
+          })
+        }
         return res.status(200).json({message:"Vm fetched successfully",success:true,vms:vmData})
     } catch (error) {
-        return res.status(500).json({message:"Failed to fetch vm",success:false})
+        logError(error instanceof Error ? error : new Error("Failed to fetch vm"));
+            return res.status(500).json({message:"Failed to fetch vm",success:false})
     }
     
 }
@@ -174,8 +193,23 @@ export const getVm=async(req:Request,res:Response)=>{
                 description:"",
 
         }
+
+
+        {
+            userActivityTotal.inc({ 
+                activity_type: 'get_vm', 
+                user_tier: "unknown"
+              });
+
+                logBusinessOperation("get_vm","vm",{
+                    vmId,
+                    userId:"anonymous",
+                    tier:"unknown"
+                })
+        }
         return res.status(200).json({message:"Vm fetched successfully",success:true,vm:vmData})
     } catch (error) {
+        logError(error instanceof Error ? error : new Error("Failed to fetch vm"));
         return res.status(500).json({message:"Failed to fetch vm",success:false})
     }
     

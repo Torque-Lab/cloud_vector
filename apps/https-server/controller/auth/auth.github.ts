@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie, generateTimeId, hashPassword, generateRandomString } from './auth.controller';
 import { authAttemptsTotal, authSuccessTotal, authFailuresTotal, authDuration } from '../../moinitoring/promotheous';
+import { logAuthEvent } from '../../moinitoring/Log-collection/winston';
 
 passport.use(new GitHubStrategy(
   {
@@ -18,7 +19,10 @@ passport.use(new GitHubStrategy(
       const email = profile?.emails?.[0]?.value;
 
       if (!email) {
-        console.error('No email in GitHub profile — aborting user creation.');
+        logAuthEvent('GitHub OAuth failed', { 
+          reason: 'oauth_error', 
+          error: 'Email not found in GitHub profile' 
+        }, false);
         return done(null, false, { message: 'Email not found in GitHub profile' });
       }
 
@@ -41,7 +45,10 @@ passport.use(new GitHubStrategy(
 
       done(null, githubUser);
     } catch (err) {
-      console.error('Error in GitHub strategy:', err);
+      logAuthEvent('GitHub OAuth failed', { 
+        reason: 'oauth_error', 
+        error: 'Email not found in GitHub profile' 
+      }, false);
       done(err as Error, false);
     }
   }
@@ -69,28 +76,31 @@ export const githubCallbackMiddleware: RequestHandler = (req: Request, res: Resp
   
   passport.authenticate('github', { session: false }, (err: Error, user: githubUser) => {
     if (err || !user) {
-      console.error('GitHub OAuth error:', err);
       const duration = (Date.now() - startTime) / 1000;
       authFailuresTotal.inc({ method: 'github', reason: 'oauth_error' });
       authDuration.observe({ method: 'github', status: 'failed' }, duration);
+      logAuthEvent('GitHub OAuth failed', { 
+        reason: 'oauth_error', 
+        error: err?.message 
+      }, false);
       res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=github`);
       return;
     }
     req.user = user;
-    (req as any).authStartTime = startTime;
+    req.authStartTime = startTime;
     next();
   })(req, res, next);
 };
 
 export const handleGithubCallback = async (req: Request, res: Response): Promise<void> => {
-  const startTime = (req as any).authStartTime || Date.now();
+  const startTime = req.authStartTime || Date.now();
   const user = req.user as githubUser;
 
   if (!user) {
-    console.error('No user in request after GitHub auth');
     const duration = (Date.now() - startTime) / 1000;
     authFailuresTotal.inc({ method: 'github', reason: 'no_user' });
     authDuration.observe({ method: 'github', status: 'failed' }, duration);
+    logAuthEvent('GitHub OAuth failed', { reason: 'no_user' }, false);
     res.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=github`);
     return;
   }
@@ -121,6 +131,12 @@ export const handleGithubCallback = async (req: Request, res: Response): Promise
   const duration = (Date.now() - startTime) / 1000;
   authSuccessTotal.inc({ method: 'github' });
   authDuration.observe({ method: 'github', status: 'success' }, duration);
+  
+  logAuthEvent('GitHub OAuth successful', {
+    userId: 'anonymous',
+    username: 'anonymous',
+    duration: `${duration*1000}ms`
+  }, true);
 
   res.redirect(`${process.env.NEXT_PUBLIC_URL}/callback`);
 };

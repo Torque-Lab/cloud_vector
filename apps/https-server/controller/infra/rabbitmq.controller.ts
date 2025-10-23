@@ -15,6 +15,7 @@ import {
   resourceDeletedTotal, 
   userActivityTotal 
 } from '../../moinitoring/promotheous';
+import { logBusinessOperation, logAudit,logError } from '../../moinitoring/Log-collection/winston';
 
 const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
 const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
@@ -164,7 +165,9 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
             }
         })
         
-        // Track metrics
+      
+         //start metric
+      {
         resourceProvisionedTotal.inc({ 
           resource_type: 'rabbitmq', 
           tier: subscription?.tier || 'unknown',
@@ -175,9 +178,30 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
           user_tier: subscription?.tier || 'unknown'
         });
         
+        logBusinessOperation('create_rabbitmq', 'rabbitmq', {
+          rabbitmqId,
+          userId: "anonymous",
+          tier: subscription?.tier,
+          projectId: parsedData.data.projectId,
+          config: {
+            initialMemory: parsedData.data.initialMemory,
+            maxMemory: parsedData.data.maxMemory,
+            autoScale: parsedData.data.autoScale
+          }
+        });
+        
+        logAudit('CREATE_RABBITMQ_INSTANCE', "anonymous", {
+          resourceId: rabbitmqId,
+          resourceType: 'rabbitmq',
+          tier: subscription?.tier
+        });
+      }
+
+
+
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
     } }catch (error) {
-      
+      logError(error instanceof Error ? error : new Error("Failed to add task to queue"));
         res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
 }
@@ -214,19 +238,31 @@ export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
       ])
 
 
-      // Track metrics
-      resourceDeletedTotal.inc({ 
+       //start metric
+   {
+        resourceDeletedTotal.inc({ 
         resource_type: 'rabbitmq', 
-        tier: subscription?.tier || 'unknown'
+        tier:  subscription?.tier || 'unknown'
       });
       userActivityTotal.inc({ 
         activity_type: 'delete_rabbitmq', 
         user_tier: subscription?.tier || 'unknown'
       });
+      logBusinessOperation('delete_rabbitmq', 'rabbitmq', {
+        rabbitmqId,
+        userId: "anonymous",
+        tier: subscription?.tier
+      });
+      
+      logAudit('DELETE_RABBITMQ_INSTANCE', "anonymous", {
+        resourceId: rabbitmqId,
+        resourceType: 'rabbitmq'
+      });
+   }
       
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
     } catch (error) {
-      
+      logError(error instanceof Error ? error : new Error("Failed to add task to queue"));
       res.status(500).json({ message: "Failed to add task to queue",success:false });
     }
   };
@@ -242,9 +278,22 @@ export const getRabbitMQStatus=async(req:Request,res:Response)=>{
                 id:rabbitmqId
             }
         })
+         //start metric
+        {
+        userActivityTotal.inc({ 
+          activity_type: 'sent_rabbitmq_status', 
+          user_tier: "unknown"
+        });
+        logBusinessOperation("sent_rabbitmq_status","rabbitmq",{
+          rabbitmqId,
+          userId:"anonymous",
+          tier:"unknown"
+        })
+        }
+          
         res.status(200).json({ rabbitmqStatus:rabbitmqStatus?.provisioning_flow_status,success:true });
     } catch (error) {
-     
+      logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));
         res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }
@@ -281,11 +330,24 @@ export const resetRabbitInstance=async(req:Request,res:Response)=>{
             res.status(500).json({ message: "Failed to update rabbitmq status",success:false });
             return;
         }
+           //start metric
+       {
+        userActivityTotal.inc({ 
+          activity_type: 'reset_rabbitmq_instance', 
+          user_tier: "unknown"
+        });
+        logBusinessOperation("reset_rabbitmq_instance","rabbitmq",{
+          rabbitmqId,
+          userId:"anonymous",
+          tier:"unknown"
+        })
+       }
+
 
         const connectionString=`amqp://${response?.username}:${password}@${CUSTOMER_RABBIT_HOST}`
         res.status(200).json({ message:"RabbitMQ updated successfully",success:true ,connectionString:connectionString});
     } catch (e) {
-    
+        logError(e instanceof Error ? e : new Error("Failed to update rabbitmq status"));
         res.status(500).json({ message: "Failed to update rabbitmq status",success:false });
     }
 }
@@ -331,8 +393,23 @@ const finalRabbitMQ = allRabbitMQ.map(q => ({
   projectName: projectMap.get(q.projectId)
 }));
 
+
+//start metric
+{
+  userActivityTotal.inc({ 
+    activity_type: 'sent_all_rabbitmq_instance', 
+    user_tier: "unknown"
+  });
+  logBusinessOperation("sent_all_rabbitmq_instance","rabbitmq",{
+    AllRabbitMQIds:allRabbitMQ.map((p) => p.id),
+    userId:"anonymous",
+    tier:"unknown"
+  })
+}
+
     res.status(200).json({ rabbitmq: finalRabbitMQ,message:"RabbitMQ list", success: true });
-  } catch (_) {
+  } catch (error) {
+    logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));
     res.status(500).json({ rabbitmq:[],message: "Failed to get rabbitmq status", success: false });
   }
 };
@@ -371,8 +448,21 @@ export const getOneRabbitMQInstance = async (req: Request, res: Response) => {
             res.status(404).json({rabbitmq:{}, message: "RabbitMQ not found", success: false });
             return;
         }    
+        //start metric
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'sent_one_rabbitmq_instance', 
+            user_tier: "unknown"
+          });
+          logBusinessOperation("sent_one_rabbitmq_instance","rabbitmq",{
+            rabbitmqId,
+            userId:"anonymous",
+            tier:"unknown"
+          })
+        }
         res.status(200).json({ rabbitmq:rabbitmq,success:true });
-    } catch (_) {
+    } catch (error) {
+        logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));
         res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }
@@ -401,10 +491,22 @@ export const getRabbitMQConnectionString = async (req: Request, res: Response) =
             res.status(404).json({ message: "RabbitMQ not found",connectionString:"",success:false });
             return;
         }
+        //start metric
+        {
+          userActivityTotal.inc({ 
+            activity_type: 'sent_rabbitmq_instance_connection_string', 
+            user_tier: "unknown"
+          });
+          logBusinessOperation("sent_rabbitmq_instance_connection_string","rabbitmq",{
+            rabbitmqId,
+            userId:"anonymous",
+            tier:"unknown"
+          })
+        }
         const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}`
         res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
-    } catch (e) {
-    
+    } catch (error) {
+        logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));
         res.status(500).json({ message: "Failed to get rabbitmq status",success:false });
     }
 }

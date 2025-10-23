@@ -17,7 +17,6 @@ export const Histogram = client.Histogram;
 export const Summary = client.Summary;
 
 
-// HTTP METRICS
 export const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
@@ -57,8 +56,6 @@ export const httpRequestsInProgress = new client.Gauge({
 });
 
 
-// ERROR METRICS
-
 export const httpErrorsTotal = new client.Counter({
   name: 'http_errors_total',
   help: 'Total number of HTTP errors',
@@ -73,7 +70,6 @@ export const applicationErrorsTotal = new client.Counter({
   registers: [register],
 });
 
-// ROUTE PERFORMANCE METRICS
 export const slowRequestsTotal = new client.Counter({
   name: 'slow_requests_total',
   help: 'Total number of slow requests',
@@ -118,7 +114,6 @@ export const dbConnectionPoolActive = new client.Gauge({
 });
 
 // EXTERNAL API METRICS
-
 export const externalApiDuration = new client.Histogram({
   name: 'external_api_duration_seconds',
   help: 'Duration of external API calls in seconds',
@@ -171,7 +166,7 @@ export const authDuration = new client.Histogram({
   registers: [register],
 });
 
-// RATE LIMIT METRICS
+
 export const rateLimitHitsTotal = new client.Counter({
   name: 'rate_limit_hits_total',
   help: 'Total number of rate limit hits',

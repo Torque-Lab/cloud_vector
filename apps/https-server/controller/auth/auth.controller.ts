@@ -8,8 +8,7 @@ import { ResetSchema } from "@cloud/backend-common";
 import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "@cloud/backend-common"
 import { sendPasswordResetEmail } from "@cloud/backend-common";
 import jwt from "jsonwebtoken";
-
-
+import { logError } from "../../moinitoring/Log-collection/winston";
 
 export function setAuthCookie(res: Response, token: string, token_name: string,maxAge:number) {
     const isDev = process.env.NODE_ENV === "development";
@@ -101,7 +100,7 @@ export const signUp = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: "OTP sent successfully", success: true });
   } catch (error) {
-    console.error(error);
+    logError(error as Error ?? "Unknown error")
     res.status(500).json({ message: "Failed to send OTP", success: false });
   }
 };
@@ -132,7 +131,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
         res.status(201).json({ message: "User created successfully", success: true });
 
     } catch (error) {
-      console.error(error);
+      logError(error as Error ?? "Unknown error")
       res.status(500).json({ message: "Failed to create user", success: false });
     }
   };
@@ -235,7 +234,7 @@ export const refresh = async (req: Request, res: Response) => {
         setAuthCookie(res, access_token, "access_token",60 * 60 * 1000*24*2);
         res.status(200).json({ message: "Token refreshed successfully",success:true });
     } catch (error) {
-        console.log(error);
+        logError(error as Error ?? "Unknown error")
         res.status(500).json({ message: "Failed to refresh token",success:false });
     }
 };
