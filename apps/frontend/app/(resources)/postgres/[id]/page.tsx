@@ -1,3 +1,5 @@
+
+export const dynamic = 'force-dynamic';
 import DatabaseDetailPage from "../_ignoreClient/client_page";
 import { PostgresApi } from "@/lib/pg_api";
 import ErrorPage from "../_ignoreClient/error_page";

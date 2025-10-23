@@ -110,7 +110,7 @@ export default function CreatePolicyPage() {
                 <label className="text-sm font-medium">Resource Type</label>
                 <Select
                   value={formData.resourceType}
-                  onChange={(e) => setFormData({ ...formData, resourceType: e.target.value })}
+                 
                 >
                   {resourceTypes.map((type) => (
                     <option key={type} value={type}>
@@ -164,7 +164,7 @@ export default function CreatePolicyPage() {
                   <label className="text-sm font-medium">Principal Type</label>
                   <Select
                     value={newRule.principalType}
-                    onChange={(e) => setNewRule({ ...newRule, principalType: e.target.value as "user" | "role" })}
+                    
                   >
                     <option value="user">User</option>
                     <option value="role">Role</option>
@@ -175,7 +175,7 @@ export default function CreatePolicyPage() {
                   <label className="text-sm font-medium">{newRule.principalType === "user" ? "User" : "Role"}</label>
                   <Select
                     value={newRule.principal}
-                    onChange={(e) => setNewRule({ ...newRule, principal: e.target.value })}
+                    
                   >
                     <option value="">Select {newRule.principalType}</option>
                     {(newRule.principalType === "user" ? availableUsers : availableRoles).map((item) => (

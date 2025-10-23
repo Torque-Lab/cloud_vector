@@ -1,4 +1,5 @@
 
+export const dynamic = 'force-dynamic';
 import { PostgresApi } from "@/lib/pg_api";
 import ErrorPage from "./_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";

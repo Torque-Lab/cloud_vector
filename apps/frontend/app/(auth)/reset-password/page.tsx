@@ -3,40 +3,36 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { toast } from "@/hooks/use-toast"
+import { API_BASE_URL } from "@/lib/pg_api"
 
 export default function ResetPasswordPage() {
-  const searchParams = useSearchParams()
-  const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [oneTimeToken, setOneTimeToken] = useState<string | null>(null)
+    const [formData, setFormData] = useState({ password: "", confirmPassword: "" });
+  const [oneTimeToken, setOneTimeToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const oneTimeToken = searchParams.get("token")
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get("oneTimeToken");
 
-    if (oneTimeToken) {
-      sessionStorage.setItem('resetToken', oneTimeToken);
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-      
-      setOneTimeToken(oneTimeToken);
+    if (token) {
+      sessionStorage.setItem('resetToken', token);
+      setOneTimeToken(token);
+      const urlWithoutToken = window.location.pathname;
+      window.history.replaceState({}, '', urlWithoutToken);
     } else {
       const storedToken = sessionStorage.getItem('resetToken');
       if (storedToken) {
           setOneTimeToken(storedToken);
       }
     }
-  }, [searchParams])
+  }, [])
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,8 +59,17 @@ export default function ResetPasswordPage() {
         success: boolean;
         message: string;
       }
-      const response = await axios.post<User>("/api/v1/auth/reset-password", { oneTimeToken, formData })
-      console.log(response.data.success)
+      const response = await axios.post<User>(`${API_BASE_URL}/api/v1/auth/reset-password`, 
+     {
+      newPassword: formData.password,
+     },
+     {
+      headers: {
+          Authorization: `Bearer ${oneTimeToken}`,
+        },
+     }
+      )
+      
       setIsSuccess(true)
     } catch (e) {
       toast({

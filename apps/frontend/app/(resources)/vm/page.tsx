@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { vmApi, vmData ,Project} from "@/lib/vm_api";
 import ErrorPage from "./_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";
@@ -9,12 +10,9 @@ export default async function AllVmDetailPageServerWrapper() {
      redirect("/signin")
   }
    try{
-   //  const [vms,projects] = await Promise.all([vmApi.getAllVm(token),vmApi.getProjects(token)])
-   const vms:vmData[]=[];
-   const projects:Project[]=[];
+    const [vms,projects] = await Promise.all([vmApi.getAllVm(token),vmApi.getProjects(token)])
     return <AllVmPage vms={vms} projects={projects}/>
    }catch(e){
-      console.log(e)
     return  <ErrorPage cardTitle="Virtual Machines Not Found" paragraph="  We couldn’t load the requested virtual machine details. The virtual machines
     may not exist, or there was a problem fetching its information."/>
    }

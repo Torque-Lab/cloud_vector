@@ -221,14 +221,14 @@ export default function PoliciesPage() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={resourceFilter} onChange={(e) => setResourceFilter(e.target.value)}>
+            <Select value={resourceFilter} >
               <option value="all">All Resources</option>
               <option value="Project">Projects</option>
               <option value="Database">Databases</option>
               <option value="API Key">API Keys</option>
               <option value="Billing">Billing</option>
             </Select>
-            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <Select value={statusFilter}>
               <option value="all">All Status</option>
               <option value="Active">Active</option>
               <option value="Draft">Draft</option>
@@ -280,7 +280,7 @@ export default function PoliciesPage() {
               {/* Resource Info */}
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
-                  <Badge variant={getResourceColor(policy.resourceType)}>{policy.resourceType}</Badge>
+                  <Badge variant="outline">{policy.resourceType}</Badge>
                   <span className="text-muted-foreground">•</span>
                   <code className="text-xs bg-muted px-2 py-1 rounded">{policy.resourceId}</code>
                 </div>

@@ -150,7 +150,7 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
                     <TableCell>
                       <Badge variant={vm.status === "running" ? "success" : "warning"}>{vm.status}</Badge>
                     </TableCell>
-                    <TableCell>{vm.vcpu}</TableCell>
+                    <TableCell>{vm.vCpu}</TableCell>
                     <TableCell>{vm.memory}</TableCell>
                    
                   </TableRow>

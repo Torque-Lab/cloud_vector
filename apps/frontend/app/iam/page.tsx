@@ -64,6 +64,7 @@ export default function IAMPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Identity & Access Management</h1>
           <p className="text-muted-foreground">Manage users, roles, and permissions across your organization</p>
+          <p className="text-muted-foreground text-2xl italic">Page is not ready...</p>
         </div>
         <div className="flex items-center space-x-2">
           <Link href="/iam/users/invite">
@@ -183,13 +184,13 @@ export default function IAMPage() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+            <Select value={roleFilter}>
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
               <option value="developer">Developer</option>
               <option value="viewer">Viewer</option>
             </Select>
-            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <Select value={statusFilter}>
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

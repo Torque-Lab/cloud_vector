@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast"
 
 interface GenericApi {
   getConnection: (id: string,token?:string) => Promise<{ success: boolean; message:string,connectionString: string }>
-  resetConnection: (id: string,token?:string) => Promise<{ success: boolean; message:string,connectionString: string }>
+  resetConnection?: (id: string,token?:string) => Promise<{ success: boolean; message:string,connectionString: string }>
 }
 
 interface ConnectChildSectionProps {
@@ -66,8 +66,8 @@ export function ConnectChildSection({ api, resourceId, label }: ConnectChildSect
   const handleReset = async () => {
     try {
       setResetLoading(true)
-      const reset = await api.resetConnection(resourceId)
-      if (reset.success) setConnectionString(reset.connectionString)
+      const reset = await api.resetConnection?.(resourceId)
+      if (reset?.success) setConnectionString(reset.connectionString)
     } catch {
       toast({
         title: "Error",

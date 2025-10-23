@@ -142,10 +142,13 @@ const UsagePage = () => {
     <DashboardLayout>
       <div className="flex-1 space-y-6 p-8">
         <div className="flex items-center justify-between">
+
           <div>
+             <p className="text-muted-foreground text-2xl italic">Page is not ready for real data...</p>
             <h2 className="text-3xl font-bold tracking-tight">
               Usage & Billing
             </h2>
+
             <p className="text-muted-foreground">
               Monitor your usage and manage billing across projects.
             </p>

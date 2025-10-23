@@ -205,7 +205,6 @@ export default function IAMSettingsPage() {
                 <label className="text-sm font-medium">Default Role for New Users</label>
                 <Select
                   value={settings.defaultRole}
-                  onChange={(e) => setSettings({ ...settings, defaultRole: e.target.value })}
                 >
                   <option value="Viewer">Viewer</option>
                   <option value="Developer">Developer</option>

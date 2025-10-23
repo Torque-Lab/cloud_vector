@@ -1,3 +1,6 @@
+
+
+export const dynamic = 'force-dynamic';
 import getSessionInServer from "@/provider/server-session";
 import DashboardClientPage from "./_ignoreClient/page";
 import { redirect } from "next/navigation";

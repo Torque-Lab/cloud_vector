@@ -2,9 +2,6 @@
 import process from 'process';
 const apiBaseURL = process.env.NEXT_PUBLIC_API_BASE_URL; 
 const isDev = process.env.NEXT_PUBLIC_ENV === 'development';
-console.log(apiBaseURL)
-console.log(isDev)
-
 const nextConfig = {
     // Enable standalone output for efficient docker build
     output: 'standalone',
@@ -21,5 +18,13 @@ const nextConfig = {
         }
     })
 };
+
+process.on('unhandledRejection', (reason) => {
+  console.log('Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.log('Uncaught Exception:', err);
+});
 
 export default nextConfig;

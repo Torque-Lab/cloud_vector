@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import {projectDataDetails} from "@cloud/shared_types"
+import { dashboardApi } from "@/lib/dashboard-api"
+import { toast } from "@/hooks/use-toast"
 
 
 export default function ProjectSettingsDetailsPage({projectDataDetails}: {projectDataDetails: projectDataDetails    }) {
@@ -15,6 +17,76 @@ const router = useRouter()
   const [projectName, setProjectName] = useState(projectDataDetails.name || "")
   const [projectDescription, setProjectDescription] = useState(projectDataDetails.description || "")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleDeleteProject = async () => {
+    setLoading(true)
+    try {
+     const response= await dashboardApi.deleteProject(projectDataDetails.id)
+     if(response.success){
+      toast({
+        title:"Project Deleted",
+        description:"Project deleted successfully.Redirecting to projects page back",
+        variant:"default"
+      })
+      setTimeout(() => {
+        router.push("/projects")
+      }, 3000);
+     }
+
+     if(!response.success){
+      toast({
+        title:"Project Not Deleted",
+        description:response.message,
+        variant:"destructive"
+      })
+     }
+    } catch (error) {
+      toast({
+        title:"Error",
+        description:"Something went wrong",
+        variant:"destructive"
+      })
+      
+    } finally {
+      setLoading(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+  const handlePauseProject = async () => {
+    setLoading(true)
+    try {
+     const response= await dashboardApi.pauseProject(projectDataDetails.id)
+     if(response.success){
+      toast({
+        title:"Project Paused",
+        description:"Project paused successfully.Redirecting to projects page back",
+        variant:"default"
+      })
+      setTimeout(() => {
+        router.push("/projects")
+      }, 3000);
+     }
+
+     if(!response.success){
+      toast({
+        title:"Project Not Paused",
+        description:response.message,
+        variant:"destructive"
+      })
+     }
+    } catch (error) {
+      toast({
+        title:"Error",
+        description:"Something went wrong",
+        variant:"destructive"
+      })
+      
+    } finally {
+      setLoading(false)
+      setShowDeleteConfirm(false)
+    }
+  }
 
   if (!projectDataDetails) {
     return (
@@ -147,7 +219,9 @@ const router = useRouter()
               </div>
               <Button
                 variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent"
+                className={`border-red-200 cursor-pointer text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent ${loading ? "opacity-50 cursor-not-allowed animate-spin" : ""}`}
+                onClick={handlePauseProject}
+                disabled={loading}
               >
                 {projectDataDetails?.status === "active" ? "Pause Project" : "Resume Project"}
               </Button>
@@ -159,7 +233,7 @@ const router = useRouter()
               </div>
               <Button
                 variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent"
+                className="border-red-200 cursor-pointer text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent"
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 Delete Project
@@ -177,15 +251,17 @@ const router = useRouter()
                 Are you sure you want to delete "{projectDataDetails?.name}"? This action cannot be undone and will permanently
                 delete all databases, data, and configurations.
               </p>
-              <div className="flex justify-end space-x-2">
+              <div className="flex cursor-pointer justify-end space-x-2">
                 <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
                   Cancel
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent"
+                  onClick={handleDeleteProject}
+                  disabled={loading}
+                  className={`border-red-200 cursor-pointer text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/20 bg-transparent ${loading ? "opacity-50 cursor-not-allowed animate-spin" : ""}`}
                 >
-                  Delete Project
+                  {loading ? "" : "Delete Project"}
                 </Button>
               </div>
             </Card>

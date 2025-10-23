@@ -1,11 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import axios from "axios";
 import ProjectsPage from "./_ignoreClient/page";
 import { ProjectData } from "@cloud/shared_types";
 import getSessionInServer from "@/provider/server-session";
 import { redirect } from "next/navigation";
 import { API_BASE_URL } from "@/lib/pg_api";
-
-
 
 export default async function ProjectServerWrapper() {
     const token=await getSessionInServer()

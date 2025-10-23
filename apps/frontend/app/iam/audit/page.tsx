@@ -269,14 +269,14 @@ export default function AuditLogPage() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
+            <Select value={actionFilter}>
               <option value="all">All Actions</option>
               <option value="login">Login Events</option>
               <option value="created">Create Events</option>
               <option value="deleted">Delete Events</option>
               <option value="accessed">Access Events</option>
             </Select>
-            <Select value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+            <Select value={dateRange}>
               <option value="1">Last 24 hours</option>
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>

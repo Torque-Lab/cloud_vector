@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { RedisApi } from "@/lib/redis_api";
 import ErrorPage from "../_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";

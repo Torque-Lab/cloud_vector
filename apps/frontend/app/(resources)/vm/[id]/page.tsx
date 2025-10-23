@@ -1,4 +1,4 @@
-import VmDetailPage from "../_ignoreClient/client_page";
+export const dynamic = 'force-dynamic';import VmDetailPage from "../_ignoreClient/client_page";
 import { vmApi } from "@/lib/vm_api";
 import ErrorPage from "../_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";

@@ -1,4 +1,4 @@
-
+export const dynamic = 'force-dynamic';
 import { RabbitApi } from "@/lib/rabbit_api";
 import ErrorPage from "./_ignoreClient/error_page";
 import getSessionInServer from "@/provider/server-session";

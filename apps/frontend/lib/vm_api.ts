@@ -89,4 +89,26 @@ export const vmApi = {
     );
     return response.data
   },
-};
+  getConnection: async (id: string,token?:string): Promise<{ success: boolean; message:string,connectionString: string }> => {
+    const response = await axios.get<{success:boolean,message:string,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/vm-get-connection/${id}`,
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data  
+  },
+  resetConnection: async (id: string,token?:string): Promise<{ success: boolean; message:string,connectionString: string }> => {
+    const response = await axios.patch<{success:boolean,message:string,connectionString:string}>(`${API_BASE_URL}/api/v1/infra/vm-reset-connection/${id}`,
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data  
+  }
+}

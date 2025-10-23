@@ -212,7 +212,7 @@ export default function AccessControlPage() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={resourceFilter} onChange={(e) => setResourceFilter(e.target.value)}>
+            <Select value={resourceFilter}>
               <option value="all">All Resources</option>
               <option value="Project">Projects</option>
               <option value="Database">Databases</option>

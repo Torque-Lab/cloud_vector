@@ -103,7 +103,7 @@ export default function CompliancePage() {
           <p className="text-muted-foreground">Monitor compliance status and security posture</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Select value={reportPeriod} onChange={(e) => setReportPeriod(e.target.value)}>
+          <Select value={reportPeriod}>
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
             <option value="90">Last 90 days</option>

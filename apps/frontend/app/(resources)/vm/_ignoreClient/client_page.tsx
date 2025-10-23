@@ -80,7 +80,7 @@ export default function VmDetailPage({vm}: {vm: vmData }) {
               <div className="grid gap-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{vm?.vcpu}</span>
+                  <span className="text-sm font-medium">{vm?.vCpu}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Memory Limit:</span>
@@ -147,7 +147,7 @@ export default function VmDetailPage({vm}: {vm: vmData }) {
             </div>
           </CardContent>
         </Card>
-        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to VM " inputMode={false} onClick={() => {}} children={<ConnectChildSection vmId={params.id as string}  />} />
+        <GeneralModal isOpen={isConnectModelOpen} onClose={() => setIsConnectModelOpen(false)} title="Connect to VM " inputMode={false} onClick={() => {}} children={<ConnectChildSection  api={vmApi} resourceId={params.id as string}  />} />
 
 
 
