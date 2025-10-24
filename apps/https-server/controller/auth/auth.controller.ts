@@ -1,6 +1,6 @@
 
 import { isOTPValid, sendOTPEmail, SignUpSchema, storeOTP, VerifySchema } from "@cloud/backend-common";
-import { prismaClient } from "@cloud/db";
+import { prismaClient, Role, SubscriptionStatus, Tier_Subscription } from "@cloud/db";
 import type { Request, Response } from "express";   
 import { SignInSchema } from "@cloud/backend-common";
 import { ForgotSchema } from "@cloud/backend-common";
@@ -119,15 +119,43 @@ export const verifyOTP = async (req: Request, res: Response) => {
             return;
         }
         const hashedPassword = await hashPassword(password)
-         await prismaClient.userBaseAdmin.create({
-            data:{
-                email,
-                first_name,
-                last_name,
-                password:hashedPassword,
-                
-            }
-        })
+         const freeTierRule = await prismaClient.tierRule.upsert({
+            where: { tier: Tier_Subscription.FREE },
+            update: {},
+            create: {
+              tier: Tier_Subscription.FREE,
+              Max_Projects: 2,
+              Max_Resources: 10,
+              initialMemory: "500Mi",
+              maxMemory: "2Gi",
+              initialStorage: "5Gi",
+              maxStorage: "5Gi",
+              initialVCpu: "2",
+              maxVCpu: "4",
+            },
+          });
+        
+          const admin = await prismaClient.userBaseAdmin.create({
+            data: {
+              email:email,
+              password: hashedPassword,
+              first_name: first_name,
+              last_name: last_name,
+              role: Role.ADMIN,
+              is_active: true,
+            },
+          });
+        
+          await prismaClient.subscription.create({
+            data: {
+              userBaseAdminId: admin.id,
+              tier: Tier_Subscription.FREE,
+              tierId: freeTierRule.id,
+              status: SubscriptionStatus.ACTIVE,
+            },
+          });
+        
+         
         res.status(201).json({ message: "User created successfully", success: true });
 
     } catch (error) {
