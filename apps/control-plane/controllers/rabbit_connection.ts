@@ -1,8 +1,8 @@
 import {
   decrypt,
   encrypt,
-  updateInfraConfigSchema,
 } from "@cloud/backend-common";
+import { updateInfraConfigSchema } from "@cloud/backend-common/types";
 import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";
 import axios from "axios";

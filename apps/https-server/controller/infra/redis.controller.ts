@@ -1,7 +1,7 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient, } from "@cloud/db";
-import { redisSchema, decrypt} from "@cloud/backend-common";
+import { redisSchema, decrypt} from "@cloud/backend-common/types";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt, generateUsername } from "@cloud/backend-common";
 import { generateRandomString } from "../auth/auth.controller";

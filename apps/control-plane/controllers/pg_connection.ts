@@ -2,7 +2,7 @@ import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { decrypt } from "@cloud/backend-common";
-import { updateInfraConfigSchema } from "@cloud/backend-common";
+import { updateInfraConfigSchema } from "@cloud/backend-common/types";
 import { PROXY_POSTGRES_URL } from "../config/config";
 import axios from "axios"
 

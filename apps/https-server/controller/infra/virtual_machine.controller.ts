@@ -1,7 +1,8 @@
-import { pushVmToQueueToCreate, pushVmToQueueToDelete, vmQueue, vmSchema } from "@cloud/backend-common"
+import { pushVmToQueueToCreate, pushVmToQueueToDelete, vmQueue} from "@cloud/backend-common"
 import { prismaClient } from "@cloud/db"
 import type { Request, Response } from "express"
 import { generateCuid } from "../../utils/random"
+import { vmSchema } from "@cloud/backend-common/types"
 import { 
   resourceProvisionedTotal, 
   resourceDeletedTotal, 

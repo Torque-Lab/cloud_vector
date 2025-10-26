@@ -10,7 +10,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { PermissionList } from "@cloud/shared_types"
 import { PostgresApi, Project } from "@/lib/pg_api"
 import { toast } from "@/hooks/use-toast"
 const apiKeys = [
@@ -82,7 +81,35 @@ export default function ApiKeysPage() {
    
   }
 
-  const allPermissions = Object.values(PermissionList)
+ const allPermissions = [
+  "NONE",
+  "CREATE_USER",
+  "READ_USER",
+  "UPDATE_USER",
+  "DELETE_USER",
+  "CREATE_PROJECT",
+  "READ_PROJECT",
+  "UPDATE_PROJECT",
+  "DELETE_PROJECT",
+  "CREATE_POSTGRES",
+  "READ_POSTGRES",
+  "UPDATE_POSTGRES",
+  "DELETE_POSTGRES",
+  "DOWNLOAD_BACKUP",
+  "CREATE_RABBITMQ",
+  "READ_RABBITMQ",
+  "UPDATE_RABBITMQ",
+  "DELETE_RABBITMQ",
+  "CREATE_REDIS",
+  "READ_REDIS",
+  "UPDATE_REDIS",
+  "DELETE_REDIS",
+  "CREATE_VECTORDB",
+  "READ_VECTORDB",
+  "UPDATE_VECTORDB",
+  "DELETE_VECTORDB",
+] as const;
+
 
   return (
     <DashboardLayout>
@@ -254,7 +281,7 @@ export default function ApiKeysPage() {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select expiration" />
                   </SelectTrigger>
-                  <SelectContent className="z-[60]">
+                  <SelectContent className="z-60">
                     <SelectItem value="1 hour">1 hour</SelectItem>
                     <SelectItem value="6 hours">6 hours</SelectItem>
                     <SelectItem value="12 hours">12 hours</SelectItem>

@@ -40,6 +40,27 @@ model UserBaseAdmin {
   permissionMCP        PermissionMCP[]
   mcpApiKeys           MCPApiKeys[]
 }
+model Project {
+  id                       String    @id @default(cuid())
+  name                     String
+  userId                   String?
+  description              String?
+  userBaseAdminId          String
+  status                   String @default("ACTIVE")
+  cost                     String @default("0")
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  permissions              Permission[]
+  virtualMachines          VirtualMachine[]
+  postgresDB               PostgresDB[]
+  rabbitmq                 RabbitMQ[]
+  redis                    Redis[]
+  vectorDB                 VectorDB[]
+  permissionMCP            PermissionMCP[]
+  user                     User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
+  @@index([userBaseAdminId])
+}
 
 
 model User {
@@ -186,27 +207,7 @@ model MCPApiKeys{
   permission           PermissionMCP @relation(fields: [permissionMCPId], references: [id], onDelete: Cascade)
 }
 
-model Project {
-  id                       String    @id @default(cuid())
-  name                     String
-  userId                   String?
-  description              String?
-  userBaseAdminId          String
-  status                   String @default("ACTIVE")
-  cost                     String @default("0")
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
-  permissions              Permission[]
-  virtualMachines          VirtualMachine[]
-  postgresDB               PostgresDB[]
-  rabbitmq                 RabbitMQ[]
-  redis                    Redis[]
-  vectorDB                 VectorDB[]
-  permissionMCP            PermissionMCP[]
-  user                     User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userBaseAdmin            UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
-  @@index([userBaseAdminId])
-}
+
 model VirtualMachine{
   id                 String @id @default(cuid())
   projectId          String

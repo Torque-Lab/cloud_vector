@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { projectSchema } from "@cloud/backend-common";
+import { projectSchema } from "@cloud/backend-common/types";
 import { prismaClient } from "@cloud/db";
 import type { ProjectData } from "@cloud/shared_types"
 

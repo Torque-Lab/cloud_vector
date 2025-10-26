@@ -7,14 +7,17 @@ app.use(express.json());
 
 
 app.use("/api/v1/infra", connectionRoute);
-app.get("/api/v1/infra/health", (req, res) => {
+
+
+
+app.get("/api/v1/health", (req, res) => {
     const token = req.query.health_token as string;
 
     if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized",success:false });
     }
     if (token !== process.env.HEALTH_TOKEN) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized",success:false });
     }
     res.status(200).json({ message: "server is running successfully",success: true });
 });

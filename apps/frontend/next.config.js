@@ -1,22 +1,27 @@
 /** @type {import('next').NextConfig} */
 import process from 'process';
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const apiBaseURL = process.env.NEXT_PUBLIC_API_BASE_URL; 
 const isDev = process.env.NEXT_PUBLIC_ENV === 'development';
+
 const nextConfig = {
-    // Enable standalone output for efficient docker build
-    output: 'standalone',
-    
-    // This proxy is only efficient in development mode
-    ...(isDev && {
-        async rewrites() {
-            return [
-                {
-                    source: '/api/:path*',
-                    destination: `${apiBaseURL}/api/:path*`,
-                }
-            ];
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+
+  ...(isDev && {
+    async rewrites() {
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${apiBaseURL}/api/:path*`,
         }
-    })
+      ];
+    },
+  }),
 };
 
 process.on('unhandledRejection', (reason) => {

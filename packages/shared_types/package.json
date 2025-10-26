@@ -1,22 +1,35 @@
 {
   "name": "@cloud/shared_types",
-  "module": "index.ts",
   "type": "module",
   "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./index": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./index": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    } 
+  },
+  "scripts": {
+    "clean:build": "find . -type f ! -name '*.ts' -delete && find . -type d -empty -delete",
+    "build:js": "tsc -p tsconfig.build.json",
+    "build:prod": "bun run build:js"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest"  
   },
   "peerDependencies": {
     "typescript": "^5",
     "zod": "3.25.76"
   },
   "dependencies": {
-    "@cloud/backend-common": "*",
-    "@cloud/db": "*"
+    "@cloud/backend-common": "workspace:*",
+    "@cloud/db": "workspace:*"
 
   }
 }

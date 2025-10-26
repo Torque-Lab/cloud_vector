@@ -9,6 +9,7 @@ import redisRouter from "../routes/infra/redis.route";
 import dashboardRouter from "../routes/infra/dashboard.route";
 import { register } from '../moinitoring/promotheous';
 
+
 import {
   applicationErrorsTotal,
   healthCheckTotal,
@@ -50,16 +51,17 @@ app.get("/api/v1/metrics", async (req, res) => {
 
 app.get("/api/v1/health", (req, res) => {
     const start = Date.now();
-    const token=req.query.token;
+    const token=req.query.health_token as string;
     
     if(!token){
         healthCheckTotal.inc({ status: 'unauthorized' });
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized",success:false,});
     }
     
-   if(token!=process.env.HEALTH_CHECK_TOKEN){
+     
+   if(token!=process.env.HEALTH_TOKEN){
     healthCheckTotal.inc({ status: 'unauthorized' });
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized",success:false,});
    }
    
     const duration = (Date.now() - start) / 1000;

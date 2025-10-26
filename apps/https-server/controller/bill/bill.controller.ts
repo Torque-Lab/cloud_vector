@@ -24,9 +24,9 @@ export const createCustomer_subscription = async (
             res.status(404).json({ message: "User not found" });
             return;
         }
-        const { email, name } = consumer;
+        const { email, first_name} = consumer;
         let stripeName = "";
-        if (!name) {
+        if (!first_name) {
             stripeName = email.split("@")[0]!;
         }
 
@@ -55,6 +55,7 @@ export const createCustomer_subscription = async (
                 stripeSubscriptionId: subscription.id,
                 tier: Tier_Subscription[tier],
                 status: SubscriptionStatus.ACTIVE,
+                tierId:"4545655676"
             },
         });
 

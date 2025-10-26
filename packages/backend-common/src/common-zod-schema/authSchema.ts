@@ -55,7 +55,6 @@ export const SignInSchema = z.object({
   });
   
   export const ResetSchema = z.object({
-    token: z.string(),
     newPassword: z
       .string()
       .min(8)

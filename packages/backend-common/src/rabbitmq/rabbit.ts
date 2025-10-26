@@ -1,7 +1,11 @@
 import amqp from "amqplib";
 import type { Channel, ChannelModel } from "amqplib";
-import type { InfraConfig, vmSchema } from "@cloud/shared_types";
+import type { InfraConfigSchema,  } from "../common-zod-schema/infraConfig";
+import type { vmSchema } from "../common-zod-schema/vmSchema";
+import type z from "zod";
 
+type InfraConfig = z.infer<typeof InfraConfigSchema>;
+type vmSchema = z.infer<typeof vmSchema>;
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 

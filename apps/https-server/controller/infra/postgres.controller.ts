@@ -1,13 +1,14 @@
 
 import type { Request, Response } from "express";
 import { PermissionList, prismaClient,  } from "@cloud/db";
-import { decrypt, postgresqlSchema } from "@cloud/backend-common";
+import { decrypt } from "@cloud/backend-common";
 import { pushInfraConfigToQueueToCreate,pushInfraConfigToQueueToDelete } from "@cloud/backend-common";
 import { encrypt,generateUsername } from "@cloud/backend-common"
 import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { postgresQueue } from "@cloud/backend-common";
+import { postgresqlSchema } from "@cloud/backend-common/types";
 import { CUSTOMER_POSTGRES_HOST,CONTROL_PLANE_URL } from "../config/config";
 import axios from "axios";
 import { 

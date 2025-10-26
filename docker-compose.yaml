@@ -1,0 +1,230 @@
+
+services:
+  frontend: 
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    image: frontend:v2
+    container_name: cloud-vector-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    networks:
+      - frontend 
+    depends_on:
+      https-server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/docker_health_check_script/https.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: ["bun", "run", "dev:docker:frontend"]
+
+  https-server: 
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.https-server
+    image: https-server:latest
+    container_name: cloud-vector-https-server
+    ports:
+      - "3005:3005" 
+    environment:
+      NODE_ENV: development
+      PORT: 3005
+      DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+      LOG_DIR: /var/log/cloud_vector
+      NEXT_PUBLIC_URL: http://cloud-vector.suvidhaportal.com 
+      GITHUB_CLIENT_ID: dsncfh34t87fgb 
+      GITHUB_CLIENT_SECRET: ddjhcew87fgeb 
+      GOOGLE_CLIENT_ID: ewhf87egbw 
+      GOOGLE_CLIENT_SECRET: dnc38tfwgbciw 
+      RESEND_API_KEY: rhfoer87fycc3874tfgew
+      JWT_SECRET_ACCESS: hcbdhjffBYUIfcmY686tgVYKUcF&UKJYFVlifVI
+      JWT_SECRET_REFRESH: iefhvb76gbT87fcKwfdfvjgfwFSYxhreFIKetd
+      PG_ENCRYPT_SALT: BHJfhcvSVyfcbjgyjhtdcjGDFgx
+      PG_ENCRYPT_SECRET: hGYfvjHUtujvJtydBitjvRHFVKjolburtsxGggc
+      RABBITMQ_ENCRYPT_SALT: wdwhiudtgwdwukvjyxfv
+      RABBITMQ_ENCRYPT_SECRET: dijeuigcbliulugweu 
+      VECTORDB_ENCRYPT_SALT: dsscejoi9357rtgfwv 
+      VECTORDB_ENCRYPT_SECRET: dskcnwo87r638o7wgfus 
+      REDIS_ENCRYPT_SALT: dscdfhi3478wgyvx 
+      REDIS_ENCRYPT_SECRET: dsuhc7e89wtgfbcwefsg45eh 
+      HEALTH_TOKEN: 12345
+    volumes:
+      - logs_https:/var/log/cloud_vector
+      - ./:/app
+    
+    networks:
+      - frontend 
+      - backend 
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/docker_health_check_script/https.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: ["bun", "run", "dev:docker:https-server"]
+
+  control-plane: 
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.control-plane
+    image: control-plane:latest
+    container_name: cloud-vector-control-plane
+    ports:
+      - "3010:3010" 
+    environment:
+      NODE_ENV: development
+      PORT: 3010
+      HEALTH_TOKEN: 12345
+      DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+      LOG_DIR: /var/log/cloud_vector
+    volumes:
+      - logs_control:/var/log/cloud_vector
+      - ./:/app
+    networks:
+      - frontend 
+      - backend 
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/docker_health_check_script/cp.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: ["bun", "run", "dev:docker:control-plane"]
+  infra-provisioner: 
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.infra-provisioner
+    image: infra-provisioner:latest
+    container_name: cloud-vector-infra-provisioner
+    ports:
+      - "3015:3015" 
+    environment:
+      NODE_ENV: development
+      PORT: 3015
+      DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+      LOG_DIR: /var/log/cloud_vector
+    volumes:
+      - logs_infra:/var/log/cloud_vector
+      - ./:/app
+    networks:
+      - frontend 
+      - backend 
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: ["bun", "run", "dev:docker:infra-provisioner"]
+  rabbitmq: 
+    image: rabbitmq:3-management-alpine
+    container_name: cloud-vector-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+      
+
+  redis: 
+    image: redis:latest
+    container_name: cloud-vector-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  postgres: 
+    image: postgres:16-alpine
+    container_name: cloud-vector-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mydatabase 
+      POSTGRES_USER: user 
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_data:/var/lib/postgresql/data 
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s 
+
+networks:
+  frontend: 
+    driver: bridge
+    name: cloud-vector-frontend
+  backend: 
+    driver: bridge
+    name: cloud-vector-backend
+
+volumes:
+  db_data:
+    name: cloud-vector-db-data
+  redis_data:
+    name: cloud-vector-redis-data
+  rabbitmq_data:
+    name: cloud-vector-rabbitmq-data
+  logs_https:
+    name: cloud-vector-logs-https
+  logs_control:
+    name: cloud-vector-logs-control
+  logs_infra:
+    name: cloud-vector-logs-infra

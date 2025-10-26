@@ -10,7 +10,7 @@
     "build:prod": {
       "dependsOn": ["^build:prod"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "apps/**/.next/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

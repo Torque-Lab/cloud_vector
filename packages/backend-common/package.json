@@ -1,12 +1,26 @@
 {
   "name": "@cloud/backend-common",
-  "module": "common.ts",
   "type": "module",
   "private": true,
+  "main": "./dist/common.js",
+  "module": "./dist/common.js",
+  "types": "./dist/common.d.ts",
   "exports": {
-    ".": "./src/common.ts",
-    "./common": "./src/common.ts"
+    ".": {
+      "types": "./dist/common.d.ts",
+      "import": "./dist/common.js"
+    },
+    "./types": {
+      "types": "./dist/types/common-types.d.ts",
+      "import": "./dist/types/common-types.js"
+    }
   },
+"scripts": {
+  "clean:build": "rm -rf dist",
+  "build:js:types": "tsc -p tsconfig.build.json ",
+  "build:prod": "bun run clean:build && bun run build:js:types"
+}
+,
   "devDependencies": {
     "@types/bun": "latest",
     "@repo/eslint-config": "*",

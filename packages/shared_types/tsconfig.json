@@ -4,6 +4,8 @@
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "Preserve",
+    "declaration": true,
+    "declarationMap": true, 
     "moduleDetection": "force",
     "jsx": "react-jsx",
     "allowJs": true,

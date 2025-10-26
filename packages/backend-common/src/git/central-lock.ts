@@ -1,4 +1,4 @@
-import { getRedisClient } from "../src/common";
+import { getRedisClient } from "../common";
 
 export async function acquireGitPushLock(ttlInSeconds = 120,lockName:string): Promise<boolean> {
     try {

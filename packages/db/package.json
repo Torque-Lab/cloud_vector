@@ -5,11 +5,20 @@
   "types": "./src/prisma.ts",
   "private": true,
   "exports": {
-    ".": "./src/prisma.ts",
-    "./prisma": "./src/prisma.ts"
+    ".": {
+      "types": "./dist/prisma.d.ts",
+      "import": "./dist/prisma.js"
+    },
+    "./db-types": {
+      "types": "./generated/prisma/index.d.ts",
+      "import": "./generated/prisma/index.js"
+    }
   },
   "scripts": {
-    "db:generate": "bunx prisma generate",
+     "clean:build": "rm -rf dist",
+     "build:js:types": "tsc -p tsconfig.build.json ",
+    "build:prod": "bun run clean:build && bun run build:js:types",
+    "db:prod:generate": " bunx prisma generate && bun run build:prod",
     "db:migrate": "bunx prisma migrate dev",
     "db:seed": "bunx prisma seed",
     "db:deploy": "bunx prisma deploy",
@@ -22,10 +31,6 @@
   },
   "dependencies": {
     "@prisma/client": "6.15.0",
-    "@types/cookie-parser": "^1.4.9",
-    "@types/cors": "^2.8.19",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
     "prisma": "^6.15.0"
   }
 }

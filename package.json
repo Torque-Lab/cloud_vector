@@ -8,7 +8,7 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "bun@1.2.19",
+  "packageManager": "bun@1.3.1",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -16,14 +16,19 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "build:https-server": "turbo run build:prod --filter=@cloud/https-server",
-    "build:infra-provisioner": "turbo run build:prod --filter=@cloud/infra-provisioner",
-    "build:control-plane": "turbo run build:prod --filter=@cloud/control-plane",
-    "build:frontend": "turbo run build:prod --filter=@cloud/frontend",
-    "start:frontend": "cd apps/frontend &&  bun run start:prod",
-    "start:https-server": "cd apps/https-server && bun run start:prod",
-    "start:infra-provisioner": "cd apps/infra-provisioner && bun run start:prod",
-    "start:control-plane": "cd apps/control-plane && bun run start:prod"
+    "dev:docker:frontend": "cd apps/frontend && bun run dev",
+    "dev:docker:https-server": "cd apps/https-server && bun run dev",
+    "dev:docker:infra-provisioner": "cd apps/infra-provisioner && bun run dev",
+    "dev:docker:control-plane": "cd apps/control-plane && bun run dev",
+    "db:prod:generate": "cd packages/db && bun run db:prod:generate",
+    "build:prod:https-server": "turbo run build:prod --filter=@cloud/https-server",
+    "build:prod:infra-provisioner": "turbo run build:prod --filter=@cloud/infra-provisioner",
+    "build:prod:control-plane": "turbo run build:prod --filter=@cloud/control-plane",
+    "build:prod:frontend": "turbo run build:prod --filter=@cloud/frontend",
+    "start:prod:frontend": "cd apps/frontend &&  bun run start:prod",
+    "start:prod:https-server": "cd apps/https-server && bun run start:prod",
+    "start:prod:infra-provisioner": "cd apps/infra-provisioner && bun run start:prod",
+    "start:prod:control-plane": "cd apps/control-plane && bun run start:prod"
   },
   "workspaces": [
     "apps/*",

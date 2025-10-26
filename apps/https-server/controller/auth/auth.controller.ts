@@ -1,12 +1,12 @@
 
-import { isOTPValid, sendOTPEmail, SignUpSchema, storeOTP, VerifySchema } from "@cloud/backend-common";
+import { isOTPValid, sendOTPEmail, storeOTP} from "@cloud/backend-common";
 import { prismaClient, Role, SubscriptionStatus, Tier_Subscription } from "@cloud/db";
 import type { Request, Response } from "express";   
-import { SignInSchema } from "@cloud/backend-common";
-import { ForgotSchema } from "@cloud/backend-common";
-import { ResetSchema } from "@cloud/backend-common";
+import {  SignUpSchema,SignInSchema , VerifySchema } from "@cloud/backend-common/types";
+import { ForgotSchema } from "@cloud/backend-common/types";
+import { ResetSchema } from "@cloud/backend-common/types";
 import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken } from "@cloud/backend-common"
-import { sendPasswordResetEmail } from "@cloud/backend-common";
+import { sendPasswordResetEmail } from "@cloud/backend-common"
 import jwt from "jsonwebtoken";
 import { logError } from "../../moinitoring/Log-collection/winston";
 

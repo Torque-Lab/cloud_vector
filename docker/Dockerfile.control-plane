@@ -1,0 +1,46 @@
+
+    FROM oven/bun:1-slim AS base
+    WORKDIR /app
+  
+    FROM base AS deps
+    WORKDIR /app
+    COPY package.json bun.lock turbo.json ./
+    COPY apps/control-plane/package.json ./apps/control-plane/package.json
+    COPY apps/control-plane/tsconfig.json ./apps/control-plane/tsconfig.json
+    COPY packages/backend-common/package.json ./packages/backend-common/package.json
+    COPY packages/backend-common/tsconfig.json ./packages/backend-common/tsconfig.json
+    COPY packages/shared_types/package.json ./packages/shared_types/package.json
+    COPY packages/db/package.json ./packages/db/package.json
+    COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
+    COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+    RUN bun install 
+    
+    FROM base AS builder
+    WORKDIR /app
+    COPY --from=deps /app .
+    COPY apps/ ./apps/
+    COPY packages/ ./packages/
+    RUN apt-get update -y && apt-get install -y openssl libssl-dev
+    RUN bun run db:prod:generate
+    RUN bun run build:prod:control-plane
+    
+    FROM oven/bun:1-slim AS runner
+    WORKDIR /app
+    COPY --from=builder /app/apps/control-plane/dist ./apps/control-plane/dist
+    COPY --from=builder /app/apps/control-plane/package.json ./apps/control-plane/package.json
+    COPY --from=builder /app/apps/control-plane/tsconfig.json ./apps/control-plane/tsconfig.json
+    COPY --from=builder /app/packages/db/ ./packages/db/
+    COPY --from=builder /app/bun.lock ./bun.lock
+    COPY --from=builder /app/package.json ./package.json
+    RUN mkdir -p /app/node_modules/@cloud && ln -s /app/packages/db /app/node_modules/@cloud/db
+    
+    COPY --from=builder /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 /usr/lib/x86_64-linux-gnu/
+    COPY --from=builder /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/
+    COPY --from=builder /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/
+    COPY --from=builder /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/
+
+    ENV NODE_ENV=production
+    ENV PORT=3010
+    EXPOSE 3010
+    CMD ["bun","run","start:prod:control-plane"]
+    

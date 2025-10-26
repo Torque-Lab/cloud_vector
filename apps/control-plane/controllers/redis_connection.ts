@@ -1,5 +1,6 @@
-import { decrypt, updateInfraConfigSchema } from "@cloud/backend-common";
+import {  updateInfraConfigSchema } from "@cloud/backend-common/types";
 import { prismaClient } from "@cloud/db";
+import { decrypt } from "@cloud/backend-common"
 import type { Request, Response } from "express";
 import axios from "axios";
 import { PROXY_REDIS_URL } from "../config/config";

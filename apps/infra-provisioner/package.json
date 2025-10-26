@@ -4,11 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run ./src/index.ts",
+    "dev": "bun run --watch ./src/index.ts",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "build:prod": "bun build ./src/index.ts --outdir dist --external node:* --external db --external ../generated/prisma --external @prisma/client --external prisma --external .prisma",
-    "start:prod": "bun run ./dist/index.js"
+     "build:prod": "bun build ./src/index.ts --target bun --outdir dist --external node:* --external @cloud/db --sourcemap",
+      "start:prod": "bun run ./dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
