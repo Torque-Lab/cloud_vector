@@ -4,6 +4,9 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useState } from "react"
+import axios from "axios"
+import { toast } from "@/hooks/use-toast"
 
 const PlansPage = () => {
   const plans = [
@@ -62,12 +65,47 @@ const PlansPage = () => {
         "Launch Virtual Machine",
         "24/7 dedicated support",
         "SLA guarantee",
-        
+
       ],
       current: false,
       popular: false,
     },
   ]
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleSubscriptionUpgrade = async (planName: string) => {
+    setSelectedPlan(planName);
+    setIsUpgrading(true);
+
+    try {
+
+      const response = await axios.post<{
+        success: true,
+        message: string,
+        checkoutUrl: string
+      }>(`/api/v1/bill/create-subscription`, {
+        tier: planName,
+      });
+
+      if (response.data.success) {
+        toast({
+          title: "Success",
+          description: response.data.message,
+          variant: "default",
+        })
+        window.location.href = response.data.checkoutUrl;
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong, please try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpgrading(false);
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -93,13 +131,12 @@ const PlansPage = () => {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative overflow-hidden transition-all duration-300 ${
-                plan.current
+              className={`relative overflow-hidden transition-all duration-300 ${plan.current
                   ? "ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg dark:shadow-blue-500/10"
                   : plan.popular
                     ? "ring-2 ring-emerald-500 dark:ring-emerald-400 shadow-lg dark:shadow-emerald-500/10"
                     : "hover:shadow-lg dark:hover:shadow-lg"
-              }`}
+                }`}
             >
               {plan.popular && !plan.current && (
                 <div className="absolute -top-0 left-0 right-0">
@@ -145,20 +182,22 @@ const PlansPage = () => {
                 </ul>
 
                 <Button
-                  className={`w-full py-2.5 font-medium transition-all duration-200 cursor-pointer ${
-                    plan.current
+                  className={`w-full py-2.5 font-medium transition-all duration-200 cursor-pointer ${plan.current
                       ? "bg-muted text-muted-foreground cursor-not-allowed hover:bg-muted"
                       : plan.popular
                         ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                         : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
-                  }`}
-                  disabled={plan.current}
+                    }`}
+                  disabled={plan.current || isUpgrading}
+                  onClick={() => handleSubscriptionUpgrade(plan.name)}
                 >
                   {plan.current
                     ? "Current Plan"
-                    : plan.name === "Enterprise"
-                      ? "Contact Sales"
-                      : `Upgrade to ${plan.name}`}
+                    : isUpgrading && selectedPlan === plan.name
+                      ? "Processing..."
+                      : plan.name === "Enterprise"
+                        ? "Contact Sales"
+                        : `Upgrade to ${plan.name}`}
                 </Button>
 
                 {!plan.current && plan.name !== "Enterprise" && (

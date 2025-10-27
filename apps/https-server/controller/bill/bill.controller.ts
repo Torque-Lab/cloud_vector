@@ -14,8 +14,16 @@ export const createCustomer_subscription = async (
 ) => {
     try {
         const userId = req.userId;
-        const { tier } = req.body as { tier: Tier_Subscription };
-
+        let tier  = req.body.tier as string;
+        if(tier === "Enterprise"){
+          tier = "ENTERPRISE"
+        }else if(tier === "Pro"){
+          tier = "PRO"
+        }else if(tier === "Base"){
+          tier = "BASE"
+        }else if(tier === "Free"){
+          tier = "FREE"
+        }
 
         const consumer = await prismaClient.userBaseAdmin.findUnique({
             where: {
@@ -42,9 +50,9 @@ export const createCustomer_subscription = async (
         const session = await stripeClient.checkout.sessions.create({
             mode: 'subscription',
             customer: customer.id,
-            line_items: [{ price: 'price_ABC123', quantity: 0 }],
-            success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/usage/subscription/success?session_id={CHECKOUT_SESSION_ID}`, 
-            cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/usage/subscription/cancel`,
+            line_items: [{ price: 'price_1SMlip22D07AbNdukOa2bxN2'}],
+            success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/usage/plans/success?session_id={CHECKOUT_SESSION_ID}`, 
+            cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/usage/plans/cancel`,
             metadata: {
                 userId: userId!,
                 tier: tier,
@@ -74,15 +82,12 @@ export const createCustomer_subscription = async (
 
             },
         })
-
-
         return res.status(200).json({
             success: true,
             message: "Checkout session created",
             checkoutUrl: session.url,
         });
     } catch (error) {
-      
         res.status(500).json({ message: "Internal server error", success: false });
     }
 

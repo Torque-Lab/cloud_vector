@@ -13,7 +13,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      NEXT_PUBLIC_API_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://https-server:3005
     networks:
       - frontend 
     depends_on:
