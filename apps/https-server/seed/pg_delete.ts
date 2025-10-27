@@ -2,28 +2,24 @@ import { prismaClient } from "@cloud/db";
 
 async function main() {
   console.log(" Deleting ALL data from database...");
-  await prismaClient.permissionItem.deleteMany();
-  await prismaClient.permission.deleteMany();
-
-  await prismaClient.backupHistory.deleteMany();
-
-  await prismaClient.virtualMachine.deleteMany();
-  await prismaClient.vectorDB.deleteMany();
-  await prismaClient.postgresDB.deleteMany();
-  await prismaClient.rabbitMQ.deleteMany();
-  await prismaClient.redis.deleteMany();
-
-  await prismaClient.project.deleteMany();
-
-  await prismaClient.invoice.deleteMany();
-  await prismaClient.payment.deleteMany();
-  await prismaClient.resource_Usage.deleteMany();
-  await prismaClient.subscription.deleteMany();
-
-  await prismaClient.user.deleteMany();
-  await prismaClient.userBaseAdmin.deleteMany();
-
-  await prismaClient.tierRule.deleteMany();
+await Promise.all([
+    prismaClient.permissionItem.deleteMany(),
+    prismaClient.permission.deleteMany(),
+    prismaClient.backupHistory.deleteMany(),
+    prismaClient.virtualMachine.deleteMany(),
+    prismaClient.vectorDB.deleteMany(),
+    prismaClient.postgresDB.deleteMany(),
+    prismaClient.rabbitMQ.deleteMany(),
+    prismaClient.redis.deleteMany(),
+    prismaClient.project.deleteMany(),
+    prismaClient.invoice.deleteMany(),
+    prismaClient.payment.deleteMany(),
+    prismaClient.resource_Usage.deleteMany(),
+    prismaClient.subscription.deleteMany(),
+    prismaClient.user.deleteMany(),
+    prismaClient.userBaseAdmin.deleteMany(),
+    prismaClient.tierRule.deleteMany(),
+])
 
   console.log(" All data deleted successfully!");
 }

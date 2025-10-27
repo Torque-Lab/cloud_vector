@@ -19,8 +19,8 @@ export function genricRateLimiter(windowInMinutes:number,max:number){
           handler: (req, res) => {
             // Track rate limit hits
             const route = req.path;
-            const userType = req.userId ? 'authenticated' : 'anonymous';
-            const userId = req.userId || 'anonymous';
+            const userType = req?.userId ? 'authenticated' : 'anonymous';
+            const userId = req?.userId || 'anonymous';
             
             rateLimitHitsTotal.inc({ route, user_type: userType });
             

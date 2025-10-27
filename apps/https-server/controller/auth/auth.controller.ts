@@ -9,6 +9,7 @@ import { GetKeyValue, IncreaseValueOfKey, isTokenValid, SetKeyValue, storeToken 
 import { sendPasswordResetEmail } from "@cloud/backend-common"
 import jwt from "jsonwebtoken";
 import { logError } from "../../moinitoring/Log-collection/winston";
+import { generateCuid } from "../../utils/random";
 
 export function setAuthCookie(res: Response, token: string, token_name: string,maxAge:number) {
     const isDev = process.env.NODE_ENV === "development";
@@ -149,7 +150,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
           await prismaClient.subscription.create({
             data: {
               userBaseAdminId: admin.id,
-              tier: Tier_Subscription.FREE,
+              stripeCustomerId: generateCuid(),//dummy if for free tier
               tierId: freeTierRule.id,
               status: SubscriptionStatus.ACTIVE,
             },

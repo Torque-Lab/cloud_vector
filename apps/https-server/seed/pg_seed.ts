@@ -54,7 +54,7 @@ async function main() {
   await prismaClient.subscription.create({
     data: {
       userBaseAdminId: admin.id,
-      tier: Tier_Subscription.PRO,
+      stripeCustomerId: "cus_123",
       tierId: proTierRule.id,
       status: SubscriptionStatus.ACTIVE,
     },

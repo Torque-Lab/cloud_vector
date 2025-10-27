@@ -30,7 +30,7 @@ model UserBaseAdmin {
   last_logout          DateTime?
   last_active          DateTime?
   login_count          Int @default(0)
-  subscription         Subscription[]
+  subscription         Subscription?
   projects             Project[]
   resource_usages      Resource_Usage[]
   payments             Payment[]
@@ -391,7 +391,7 @@ model TierRule {
 model Subscription {
   id                     String   @id @default(cuid())
   userBaseAdminId        String @unique
-  stripeCustomerId       String? 
+  stripeCustomerId       String
   stripeSubscriptionId   String?   
   stripePriceId          String?   
   stripeProductId        String?   
@@ -399,11 +399,10 @@ model Subscription {
   currentPeriodStart     DateTime?   
   cancelAtPeriodEnd      Boolean @default(false)
   canceledAt             DateTime?
-  tier                   Tier_Subscription @default(FREE)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
-  tierId                 String @unique
-  tierRule TierRule @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  tierId                 String? @unique
+  tierRule TierRule? @relation(fields: [tierId], references: [id], onDelete: Cascade)
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }

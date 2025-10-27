@@ -17,16 +17,16 @@ import {
 } from '../moinitoring/promotheous';
 import {httpMetricsMiddleware} from '../moinitoring/https-metric-middlware';
 import logger, { logOnConsole } from "../moinitoring/Log-collection/winston";
+import billRouter from "../routes/bill/bill";
+import stripeWebhookRouter from "../routes/bill/webhook";
 
 const app = express();
+
+app.use("api/v1/bill",stripeWebhookRouter)
 app.use(httpMetricsMiddleware);
+
 app.use(express.json());
 app.use(cookieParser());
-const isDev=process.env.NODE_ENV==='developement';
-if(!isDev){
-  app.set("trust proxy", 1);
-}
-
 app.use(passport.initialize());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/infra",dashboardRouter)
@@ -34,6 +34,7 @@ app.use("/api/v1/infra",postgresRouter);
 app.use("/api/v1/infra",projectRouter);
 app.use("/api/v1/infra",rabbitmqRouter);
 app.use("/api/v1/infra",redisRouter);
+app.use("/api/v1/bill",billRouter)
 
 
 
