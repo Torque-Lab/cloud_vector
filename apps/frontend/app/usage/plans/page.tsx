@@ -139,15 +139,15 @@ const PlansPage = () => {
                 }`}
             >
               {plan.popular && !plan.current && (
-                <div className="absolute -top-0 left-0 right-0">
-                  <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-medium py-2 text-center">
+                <div className="absolute top-0 left-0 right-0">
+                  <div className="bg-linear-to-r from-emerald-500 to-emerald-600 text-white text-xs font-medium py-2 text-center">
                     Most Popular
                   </div>
                 </div>
               )}
               {plan.current && (
-                <div className="absolute -top-0 left-0 right-0">
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium py-2 text-center">
+                <div className="absolute top-0 left-0 right-0">
+                  <div className="bg-linear-to-r from-blue-500 to-blue-600 text-white text-xs font-medium py-2 text-center">
                     Current Plan
                   </div>
                 </div>
