@@ -28,7 +28,7 @@ export const createVm=async(req:Request,res:Response)=>{
         })
         const vm=parsedData.data
         const vmId=generateCuid()
-        const subscriptionPlan=user?.tierRule.tier
+        const subscriptionPlan=user?.tierRule?.tier
         const success=await pushVmToQueueToCreate(vmQueue.CREATE,{...vm,vmId:vmId,subscriptionPlan:subscriptionPlan ?subscriptionPlan :"FREE"})
         if(!success){
             return res.status(500).json({message:"Failed to push vm to queue",success:false})
@@ -51,12 +51,12 @@ export const createVm=async(req:Request,res:Response)=>{
         {
           userActivityTotal.inc({ 
             activity_type: 'create_vm', 
-            user_tier: user?.tierRule.tier || 'unknown'
+            user_tier: user?.tierRule?.tier || 'unknown'
           });
           logBusinessOperation("create_vm","vm",{
             vmId,
             userId,
-            tier:user?.tierRule.tier || 'unknown'
+            tier:user?.tierRule?.tier || 'unknown'
           })
         }
         
@@ -94,6 +94,9 @@ export const deleteVm=async(req:Request,res:Response)=>{
         prismaClient.subscription.findUnique({
             where:{
                 userBaseAdminId:userId
+            },
+            include:{
+                tierRule:true
             }
         })
      ])
@@ -101,11 +104,11 @@ export const deleteVm=async(req:Request,res:Response)=>{
        {
          resourceDeletedTotal.inc({ 
           resource_type: 'vm', 
-          tier: subscription?.tier || 'unknown'
+          tier: subscription?.tierRule?.tier || 'unknown'
         });
         userActivityTotal.inc({ 
           activity_type: 'delete_vm', 
-          user_tier: subscription?.tier || 'unknown'
+          user_tier: subscription?.tierRule?.tier || 'unknown'
         });
        }
         

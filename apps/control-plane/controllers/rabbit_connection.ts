@@ -34,7 +34,7 @@ export const getRabbitInstance = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Rabbit instance not found" });
       return;
     }
-    const url = `amqp://${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local`;
+    const url = `${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local:${rabbitInstance.port}`;
     res.status(200).json({
       backend_url: url,
     });
@@ -53,7 +53,7 @@ export const updateRabbitMQRouteTable = async (req: Request, res: Response) => {
     const { old_key, new_key, namespace, password, resource_id } =
       updateInfraConfigSchema.parse(req.body);
 
-    const url = `amqp://${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local`;
+    const url = `${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local:5672`;
     const decodedOldKey =
       old_key.split(":")[0]! +
       ":" +

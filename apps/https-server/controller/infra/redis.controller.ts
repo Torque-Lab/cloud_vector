@@ -96,7 +96,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
                   virtualMachinesCount 
               
 
-              if (subscription?.tier === "FREE") {
+              if (subscription?.tierRule?.tier === "FREE") {
                 if(totalResources>=subscription?.tierRule.Max_Resources!){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -113,7 +113,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
               }
               
 
-             if(subscription?.tier==="BASE"){
+             if(subscription?.tierRule?.tier==="BASE"){
               
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
@@ -125,7 +125,7 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
                 }
                 namespace="base-user-ns"
              }
-             if(subscription?.tier==="PRO"){
+             if(subscription?.tierRule?.tier==="PRO"){
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -167,12 +167,12 @@ export const createRedisInstance=async(req:Request,res:Response)=>{
         // Track metrics
         resourceProvisionedTotal.inc({ 
           resource_type: 'redis', 
-          tier: subscription?.tier || 'unknown',
+          tier: subscription?.tierRule?.tier || 'unknown',
           status: 'queued'
         });
         userActivityTotal.inc({ 
           activity_type: 'create_redis', 
-          user_tier: subscription?.tier || 'unknown'
+          user_tier: subscription?.tierRule?.tier || 'unknown'
         });
         
         res.status(200).json({ message: "Task added to Queue to provisioned",success:true });
@@ -207,6 +207,9 @@ export const deleteRedisInstance= async (req: Request, res: Response) => {
         prismaClient.subscription.findUnique({
           where:{
             userBaseAdminId:userId
+          },
+          include:{
+            tierRule:true
           }
         })
       ])
@@ -214,11 +217,11 @@ export const deleteRedisInstance= async (req: Request, res: Response) => {
         // Track metrics
       resourceDeletedTotal.inc({ 
         resource_type: 'redis', 
-        tier: subscription?.tier || 'unknown'
+        tier: subscription?.tierRule?.tier || 'unknown'
       });
       userActivityTotal.inc({ 
         activity_type: 'delete_redis', 
-        user_tier: subscription?.tier || 'unknown'
+        user_tier: subscription?.tierRule?.tier || 'unknown'
       });
       
       res.status(200).json({ message: "Task added to Queue for destructon", success: true });
@@ -397,7 +400,7 @@ export const getRedisConnectionString = async (req: Request, res: Response) => {
             res.status(404).json({ message: "Redis not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqp://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}`
+        const connectionString=`amqps://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}`
         res.status(200).json({message:"Redis connection string", connectionString:connectionString,success:true });
     } catch (e) {
         res.status(500).json({ message: "Failed to get redis connection string" ,success:false});

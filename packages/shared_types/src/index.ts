@@ -16,3 +16,11 @@ export type VerifySchema = z.infer<typeof VerifySchema>;
 export type InfraConfig = z.infer<typeof InfraConfigSchema>;
 export type vmSchema = z.infer<typeof vmSchema>;
 
+
+
+
+
+
+
+
+

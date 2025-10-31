@@ -90,7 +90,7 @@ async function main() {
         password:  encrypt("pgpass",PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT),
         host: "pg.dev.local",
         port: "5432",
-        database_name: "prodb",
+        database_name: "mydatabase",
         namespace: "pro-namespace",
         initialMemory: "500Mi",
         maxMemory: "2Gi",

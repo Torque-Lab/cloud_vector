@@ -62,7 +62,7 @@ export async function vmProvisioner(vmData:vmSchemaDetails):Promise<{message:str
 }
 `;
             fs.writeFileSync(outputsTfPath, outputsContent);
-            
+            await runCommand(["ln", "-sf", "../../providers.tf", "./providers.tf"], { cwd: newVmPath });
             await runCommand(["terraform", "init"], { cwd: newVmPath });
             await runCommand(["terraform", "apply", "-auto-approve"], { cwd: newVmPath });
             

@@ -28,8 +28,9 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Postgres instance not found" });
       return
     }
-    const decodedPassword = decrypt(postgresInstance.password, process.env.ENCRYPT_SECRET!, process.env.ENCRYPT_SALT!)
-    const url = `postgresql://$postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
+    const decodedPassword = decrypt(postgresInstance.password, process.env.PG_ENCRYPT_SECRET!, process.env.PG_ENCRYPT_SALT!)
+    const url = `postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
+ 
     const authCredential = generateScramCredential(decodedPassword)
     res.status(200).json({
       backend_url: url,
@@ -58,8 +59,8 @@ export const updatePostgresRouteTable = async (req: Request, res: Response) => {
       return;
     }
     const { old_key, new_key, namespace, password, resource_id } = parsedData.data
-    const decodedPassword = decrypt(password, process.env.ENCRYPT_SECRET!, process.env.ENCRYPT_SALT!)
-    const url = `postgresql://$postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:5432/${old_key.split(":")[1]}`
+    const decodedPassword = decrypt(password, process.env.PG_ENCRYPT_SECRET!, process.env.PG_ENCRYPT_SALT!)
+    const url = `postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:5432/${old_key.split(":")[1]}`
     const authCredential = generateScramCredential(decodedPassword)
 
     const updateProxyPlane = await axios.post(PROXY_POSTGRES_URL + "/api/v1/infra/postgres/update-table", {

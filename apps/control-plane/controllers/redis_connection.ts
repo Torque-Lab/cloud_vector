@@ -1,6 +1,6 @@
 import {  updateInfraConfigSchema } from "@cloud/backend-common/types";
 import { prismaClient } from "@cloud/db";
-import { decrypt } from "@cloud/backend-common"
+import { decrypt, encrypt } from "@cloud/backend-common"
 import type { Request, Response } from "express";
 import axios from "axios";
 import { PROXY_REDIS_URL } from "../config/config";
@@ -17,7 +17,7 @@ export const getRedisInstance = async (req: Request, res: Response) => {
         const redisInstance = await prismaClient.redis.findFirst({
             where: {
                 username: username,
-                password: password,
+                password: encrypt(password, process.env.REDIS_ENCRYPT_SECRET!, process.env.REDIS_ENCRYPT_SALT!),
             },
         });
         if (!redisInstance) {
@@ -30,7 +30,7 @@ export const getRedisInstance = async (req: Request, res: Response) => {
                 });
             return;
         }
-        const url = `redis://${redisInstance.redis_name}-${redisInstance.id}-service.${redisInstance.namespace}.svc.cluster.local:6379`;
+        const url = `${redisInstance.redis_name}-${redisInstance.id}-service.${redisInstance.namespace}.svc.cluster.local:6379`;
         res.status(200).json({
             backend_url: url,
             success: true,
@@ -55,22 +55,22 @@ export const updateRedisRouteTable = async (req: Request, res: Response) => {
         const { old_key, new_key, namespace, password, resource_id } =
             updateInfraConfigSchema.parse(req.body)
 
-        const url = `redis://${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local:6379`;
+        const url = `${old_key.split(":")[2]}-${resource_id}-service.${namespace}.svc.cluster.local:6379`;
         const decodedOldKey =
             old_key.split(":")[0]! +
             ":" +
             decrypt(
                 old_key.split(":")[1]!,
-                process.env.ENCRYPT_SECRET!,
-                process.env.ENCRYPT_SALT!
+                process.env.REDIS_ENCRYPT_SECRET!,
+                process.env.REDIS_ENCRYPT_SALT!
             );
         const decodedNewKey =
             new_key.split(":")[0]! +
             ":" +
             decrypt(
                 new_key.split(":")[1]!,
-                process.env.ENCRYPT_SECRET!,
-                process.env.ENCRYPT_SALT!
+                process.env.REDIS_ENCRYPT_SECRET!,
+                process.env.REDIS_ENCRYPT_SALT!
             );
 
         const updateProxyPlane = await axios.post(

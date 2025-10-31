@@ -96,7 +96,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
                   virtualMachinesCount 
               
 
-              if (subscription?.tier === "FREE") {
+              if (subscription?.tierRule?.tier === "FREE") {
                 if(totalResources>=subscription?.tierRule.Max_Resources!){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -113,7 +113,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
               }
               
 
-             if(subscription?.tier==="BASE"){
+             if(subscription?.tierRule?.tier==="BASE"){
               
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
@@ -125,7 +125,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
                 }
                 namespace="base-user-ns"
              }
-             if(subscription?.tier==="PRO"){
+             if(subscription?.tierRule?.tier==="PRO"){
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -170,18 +170,18 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
       {
         resourceProvisionedTotal.inc({ 
           resource_type: 'rabbitmq', 
-          tier: subscription?.tier || 'unknown',
+          tier: subscription?.tierRule?.tier || 'unknown',
           status: 'queued'
         });
         userActivityTotal.inc({ 
           activity_type: 'create_rabbitmq', 
-          user_tier: subscription?.tier || 'unknown'
+          user_tier: subscription?.tierRule?.tier || 'unknown'
         });
         
         logBusinessOperation('create_rabbitmq', 'rabbitmq', {
           rabbitmqId,
           userId: "anonymous",
-          tier: subscription?.tier,
+          tier: subscription?.tierRule?.tier || 'unknown',
           projectId: parsedData.data.projectId,
           config: {
             initialMemory: parsedData.data.initialMemory,
@@ -193,7 +193,7 @@ export const createRabbitInstance=async(req:Request,res:Response)=>{
         logAudit('CREATE_RABBITMQ_INSTANCE', "anonymous", {
           resourceId: rabbitmqId,
           resourceType: 'rabbitmq',
-          tier: subscription?.tier
+          tier: subscription?.tierRule?.tier || 'unknown'
         });
       }
 
@@ -233,6 +233,9 @@ export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
         prismaClient.subscription.findUnique({
           where:{
             userBaseAdminId:userId
+          },
+          include:{
+            tierRule:true
           }
         })
       ])
@@ -242,16 +245,16 @@ export const deleteRabbitMQInstance= async (req: Request, res: Response) => {
    {
         resourceDeletedTotal.inc({ 
         resource_type: 'rabbitmq', 
-        tier:  subscription?.tier || 'unknown'
+        tier:  subscription?.tierRule?.tier || 'unknown'
       });
       userActivityTotal.inc({ 
         activity_type: 'delete_rabbitmq', 
-        user_tier: subscription?.tier || 'unknown'
+        user_tier: subscription?.tierRule?.tier || 'unknown'
       });
       logBusinessOperation('delete_rabbitmq', 'rabbitmq', {
         rabbitmqId,
         userId: "anonymous",
-        tier: subscription?.tier
+        tier: subscription?.tierRule?.tier || 'unknown'
       });
       
       logAudit('DELETE_RABBITMQ_INSTANCE', "anonymous", {
@@ -503,7 +506,7 @@ export const getRabbitMQConnectionString = async (req: Request, res: Response) =
             tier:"unknown"
           })
         }
-        const connectionString=`amqp://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}`
+        const connectionString=`amqps://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}`
         res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
     } catch (error) {
         logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));

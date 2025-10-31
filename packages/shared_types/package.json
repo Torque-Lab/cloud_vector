@@ -13,15 +13,17 @@
     "./index": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    } 
+    }
   },
   "scripts": {
     "clean:build": "find . -type f ! -name '*.ts' -delete && find . -type d -empty -delete",
     "build:js": "tsc -p tsconfig.build.json",
-    "build:prod": "bun run build:js"
+    "build:prod": "bun run build:js",
+    "watch": "chokidar 'src/**/*.ts' -c 'bun run build:js'"
   },
   "devDependencies": {
-    "@types/bun": "latest"  
+    "@types/bun": "latest",
+    "chokidar-cli": "^3.0.0"
   },
   "peerDependencies": {
     "typescript": "^5",
@@ -30,6 +32,5 @@
   "dependencies": {
     "@cloud/backend-common": "workspace:*",
     "@cloud/db": "workspace:*"
-
   }
 }

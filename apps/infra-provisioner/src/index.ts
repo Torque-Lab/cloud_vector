@@ -1,5 +1,5 @@
 
-import { consumeInfraConfigFromQueueToCreate,consumeVmFromQueueToCreate } from "@cloud/backend-common";
+import { consumeInfraConfigFromQueueToCreate,consumeVmFromQueueToCreate, pushInfraConfigToQueueToCreate } from "@cloud/backend-common";
 import {consumeInfraConfigFromQueueToDelete,consumeVmFromQueueToDelete} from "@cloud/backend-common";
 import { PostgresProvisioner, PostgresDestroyer } from "../controllers/postgres/postgres.controller";
 import { rabbitMQProvisioner, rabbitMQDestroyer } from "../controllers/rabbitmq/rabbitmq.controller";
@@ -24,3 +24,27 @@ consumeVmFromQueueToDelete(vmQueue.DELETE,vmDestroyer);
 
 startAllConsumers();
 startAllConsumersDelete();
+
+for (let i = 0; i < 10; i++) {
+    console.log("pushing to queue",i);
+    pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{
+    name:"postgres",
+    projectId:"",
+    region:"",
+    initialMemory:"",
+    maxMemory:"",
+    initialStorage:"",
+    maxStorage:"",
+    initialVCpu:"",
+    maxVCpu:"",
+    autoScale:"",
+    resource_id:"",
+    namespace:"",
+    backFrequency:"daily",
+    
+
+});
+console.log("pushed to queue",i);
+    
+}
+

@@ -100,7 +100,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                   virtualMachinesCount 
               
 
-              if (subscription?.tier === "FREE") {
+              if (subscription?.tierRule?.tier === "FREE") {
                 if(totalResources>=subscription?.tierRule.Max_Resources!){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -117,7 +117,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
               }
               
 
-             if(subscription?.tier==="BASE"){
+             if(subscription?.tierRule?.tier==="BASE"){
               
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
@@ -129,7 +129,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 }
                 namespace="base-user-ns"
              }
-             if(subscription?.tier==="PRO"){
+             if(subscription?.tierRule?.tier==="PRO"){
                 if(totalResources>=subscription?.tierRule.Max_Resources){
                     res.status(403).json({ message: "You don't have enough resources",success:false });
                     return;
@@ -167,7 +167,6 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 autoScale: parsedData.data.autoScale === "true" ? true : false,
                 backUpFrequency:parsedData.data.backUpFrequency,
                 
-
                 
             }
         })
@@ -177,18 +176,18 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
       {
         resourceProvisionedTotal.inc({ 
           resource_type: 'postgres', 
-          tier: subscription?.tier || 'unknown',
+          tier: subscription?.tierRule?.tier || 'unknown',
           status: 'queued'
         });
         userActivityTotal.inc({ 
           activity_type: 'create_postgres', 
-          user_tier: subscription?.tier || 'unknown'
+          user_tier: subscription?.tierRule?.tier || 'unknown'
         });
         
         logBusinessOperation('create_postgres', 'postgres', {
           postgresId,
           userId: "anonymous",
-          tier: subscription?.tier,
+          tier: subscription?.tierRule?.tier || 'unknown',
           projectId: parsedData.data.projectId,
           config: {
             initialMemory: parsedData.data.initialMemory,
@@ -200,7 +199,7 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
         logAudit('CREATE_POSTGRES_INSTANCE', "anonymous", {
           resourceId: postgresId,
           resourceType: 'postgres',
-          tier: subscription?.tier
+          tier: subscription?.tierRule?.tier || 'unknown'
         });
       }
         
@@ -239,6 +238,9 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
         prismaClient.subscription.findUnique({
           where:{
             userBaseAdminId:userId
+          },
+          include:{
+            tierRule:true
           }
         })
       ])
@@ -247,16 +249,16 @@ export const deletePostgresInstance = async (req: Request, res: Response) => {
    {
         resourceDeletedTotal.inc({ 
         resource_type: 'postgres', 
-        tier:  subscription?.tier || 'unknown'
+        tier:  subscription?.tierRule?.tier || 'unknown'
       });
       userActivityTotal.inc({ 
         activity_type: 'delete_postgres', 
-        user_tier: subscription?.tier || 'unknown'
+        user_tier: subscription?.tierRule?.tier || 'unknown'
       });
       logBusinessOperation('delete_postgres', 'postgres', {
         postgresId,
         userId: "anonymous",
-        tier: subscription?.tier
+        tier: subscription?.tierRule?.tier
       });
       
       logAudit('DELETE_POSTGRES_INSTANCE', "anonymous", {
@@ -509,7 +511,7 @@ export const getPostgresConnectionString = async (req: Request, res: Response) =
         }
       
 
-        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}/${postgres!.database_name}?pgbouncer=true`
+        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}/${postgres!.database_name}?sslmode=require`
         res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
         logError(error instanceof Error ? error : new Error("Failed to send postgresDB connection string")); 
