@@ -19,7 +19,8 @@ import {httpMetricsMiddleware} from '../moinitoring/https-metric-middlware';
 import logger, { logOnConsole } from "../moinitoring/Log-collection/winston";
 import billRouter from "../routes/bill/bill";
 import stripeWebhookRouter from "../routes/bill/webhook";
-
+import accountRouter from "../routes/account/account.route";
+import vmRouter from "../routes/infra/virtual_machine.route";
 const app = express();
 
 app.use("api/v1/bill",stripeWebhookRouter)
@@ -29,11 +30,13 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/account",accountRouter)
 app.use("/api/v1/infra",dashboardRouter)
 app.use("/api/v1/infra",postgresRouter);
 app.use("/api/v1/infra",projectRouter);
 app.use("/api/v1/infra",rabbitmqRouter);
 app.use("/api/v1/infra",redisRouter);
+app.use("/api/v1/infra",vmRouter)
 app.use("/api/v1/bill",billRouter)
 
 

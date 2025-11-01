@@ -174,6 +174,10 @@ async function main() {
         host: "vm.dev.local",
         public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD...",
         is_provisioned: true,
+        memory:"500Mi",
+        cpu:"2",
+        storage:"5Gi",
+        region:"us-east-1",
       },
     }),
   ]);

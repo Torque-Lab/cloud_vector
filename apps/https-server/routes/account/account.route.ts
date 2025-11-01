@@ -1,8 +1,8 @@
 
 import Router from "express";
-import { getDashboardData } from "../../controller/dashboard/dashboard.controller";
+import { getAccount } from "../../controller/account/account.controller";
 import { authenticate } from "../../middlware/auth.middlware";
 import { genricRateLimiter } from "../../middlware/ratelimit.middlware";
 const router=Router()
-router.get("/dashboard",genricRateLimiter(15, 300),authenticate,getDashboardData)
+router.get("/settings/account",genricRateLimiter(15, 600),authenticate,getAccount)
 export default router

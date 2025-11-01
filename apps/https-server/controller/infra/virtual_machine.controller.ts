@@ -14,7 +14,6 @@ export const createVm=async(req:Request,res:Response)=>{
     try {
         const userId=req.userId
         const parsedData= vmSchema.safeParse(req.body)
-
         if(!parsedData.success){
             return res.status(400).json({message:"All fields are required",success:false})
         }
@@ -41,7 +40,11 @@ export const createVm=async(req:Request,res:Response)=>{
                 public_key:vm.publicKey,
                 host:"",
                 is_active:true,
-                is_provisioned:false
+                is_provisioned:false,
+                memory:vm.memory,
+                cpu:vm.vCpu,
+                storage:vm.storage,
+                region:vm.region,
                 
                
             }
@@ -120,6 +123,7 @@ export const deleteVm=async(req:Request,res:Response)=>{
     
 }
 export const getAllVm=async(req:Request,res:Response)=>{
+    console.log("getAllVm",req.userId)
     try {
         const userId=req.userId as string
         const projectAll=await prismaClient.project.findMany({
@@ -151,7 +155,6 @@ export const getAllVm=async(req:Request,res:Response)=>{
                 createdAt:vm.createdAt,
                 updatedAt:vm.updatedAt,
                 description:"",
-
                 
             }
         })
@@ -190,11 +193,13 @@ export const getVm=async(req:Request,res:Response)=>{
             ...vm,
                projectId:vm?.projectId,
                 ipAdress:vm?.host,
-                region:"",
+                region:vm?.region,
                 status:vm?.is_active,
                 createdAt:vm?.createdAt,
                 updatedAt:vm?.updatedAt,
                 description:"",
+                vCpu:vm?.cpu,
+              
 
         }
 
