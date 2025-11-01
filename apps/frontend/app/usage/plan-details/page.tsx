@@ -19,9 +19,10 @@ const PlanDetailsPage = () => {
             <div>
               <h1 className="text-3xl font-bold">Plan Details</h1>
               <p className="text-muted-foreground">Complete information about your current plan</p>
+              <p className="text-muted-foreground italic">Page is not ready for real data...</p>
             </div>
             <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-lg px-4 py-2 hover:not-enabled:cursor-not-allowed">
-              Pro Plan
+              Free Plan
             </Badge>
           </div>
         </div>
@@ -30,11 +31,11 @@ const PlanDetailsPage = () => {
         <Card className="p-8 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800/30">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h2 className="text-2xl font-bold mb-4 text-foreground">Pro Plan</h2>
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Free Plan</h2>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly Cost:</span>
-                  <span className="font-semibold text-2xl text-blue-600 dark:text-blue-400">$99.00</span>
+                  <span className="font-semibold text-2xl text-blue-600 dark:text-blue-400">$0.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Billing Cycle:</span>

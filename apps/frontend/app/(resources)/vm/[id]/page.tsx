@@ -12,6 +12,7 @@ export default async function VmDetailPageServerWrapper({params}: {params: Promi
 const id =  (await params).id
    try{
     const vm = await vmApi.getVm(id,token)
+    console.log(vm)
     return <VmDetailPage vm={vm}/>
    }catch(_){
     return  <ErrorPage cardTitle="Virtual Machine Not Found" paragraph="  We couldn’t load the requested virtual machine details. The virtual machine

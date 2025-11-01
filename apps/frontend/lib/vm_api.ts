@@ -9,6 +9,9 @@ export interface vmData extends vmSchema {
   description: string;
   status: string;
   region: string;
+  is_active: boolean;
+  is_provisioned: boolean;
+  vm_name: string;
   projectName: string;
   projectId: string;
   ipAdress: string;

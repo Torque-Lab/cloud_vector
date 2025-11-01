@@ -18,14 +18,14 @@ export function Header({ onCreateProject }: HeaderProps) {
     <>
       <header className="fixed  top-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex h-full items-center justify-between px-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">V</span>
-              </div>
-              <h1 className="text-lg font-semibold hidden sm:block">Vector Cloud</h1>
-            </div>
-          </div>
+            <Link href="/" className="flex items-center space-x-1">
+  <span className="text-logo-teal font-bold text-xl">V</span>
+  <span className="text-logo-mint font-bold text-xl">e</span>
+  <span className="text-logo-amber font-bold text-xl">c</span>
+  <span className="text-logo-violet font-bold text-xl">t</span>
+  <span className="text-logo-gray font-bold text-xl">or</span>
+  <span className="text-foreground font-bold text-xl"> Cloud</span>
+  </Link>
 
           <div className="flex items-center space-x-4 flex-1 max-w-2xl mx-4">
             <div className="relative flex-1">

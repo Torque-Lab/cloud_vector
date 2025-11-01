@@ -58,12 +58,14 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">V</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Vector Cloud</span>
-          </Link>
+             <Link href="/" className="flex items-center space-x-1">
+  <span className="text-logo-teal font-bold text-xl">V</span>
+  <span className="text-logo-mint font-bold text-xl">e</span>
+  <span className="text-logo-amber font-bold text-xl">c</span>
+  <span className="text-logo-violet font-bold text-xl">t</span>
+  <span className="text-logo-gray font-bold text-xl">or</span>
+  <span className="text-foreground font-bold text-xl"> Cloud</span>
+</Link>
           <h1 className="text-2xl font-bold text-foreground mb-2">Forgot your password?</h1>
           <p className="text-muted-foreground">Enter your email and we&apos;ll send you a reset link</p>
 

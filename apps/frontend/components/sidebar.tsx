@@ -111,24 +111,34 @@ export function Sidebar({ isOpen, onToggle,user }: SidebarProps) {
         isOpen ? "w-56" : "w-14"
       )}
     >
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden space-y-1 p-2">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
+        <div className="space-y-1">
         {sidebarItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center rounded-lg p-2 text-sm font-medium transition-colors w-full justify-center md:justify-start",
+              "flex items-center rounded-lg text-sm font-medium transition-all duration-200 w-full",
+              isOpen ? 'p-2' : 'p-1',
+              isOpen ? 'w-full' : 'w-8',
+              isOpen ? 'justify-start' : 'justify-center',
               isOpen && "md:space-x-3",
               pathname === item.href
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             )}
-            title={!isOpen ? item.title : undefined}
+            title={!isOpen ? item.title : ""}
           >
-            {item.icon}
-            {isOpen && <span>{item.title}</span>}
+            <div className={cn(
+              "flex items-center justify-center flex-shrink-0 transition-all duration-200",
+              isOpen ? 'w-4 h-4' : 'w-6 h-6 mx-auto'
+            )}>
+              {item.icon}
+            </div>
+            {isOpen && <span className="ml-2 truncate">{item.title}</span>}
           </Link>
         ))}
+        </div>
       </nav>
       <div className="p-2">
   <Button

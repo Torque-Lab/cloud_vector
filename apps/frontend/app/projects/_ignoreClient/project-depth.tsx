@@ -33,18 +33,16 @@ const router = useRouter()
         router.push("/projects")
       }, 3000);
      }
+     toast({
+      title:"Project Not Deleted",
+      description:response.message || "project can't be deleted due to active resources",
+      variant:"destructive"
+     })
 
-     if(!response.success){
-      toast({
-        title:"Project Not Deleted",
-        description:response.message,
-        variant:"destructive"
-      })
-     }
     } catch (error) {
       toast({
         title:"Error",
-        description:"Something went wrong",
+        description:"project can't be deleted due to active resources",
         variant:"destructive"
       })
       

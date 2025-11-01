@@ -137,7 +137,7 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
                     <TableCell>
                       <div>
                         <Link href={`/vm/${vm.id}`} className="font-medium hover:underline">
-                          {vm.name}
+                          {vm.vm_name}
                         </Link>
         
                       </div>
@@ -148,7 +148,7 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={vm.status === "running" ? "success" : "warning"}>{vm.status}</Badge>
+                      <Badge variant={vm.is_provisioned ? "success" : "warning"}>{vm.is_provisioned ? "Running" : "Not Running"}</Badge>
                     </TableCell>
                     <TableCell>{vm.vCpu}</TableCell>
                     <TableCell>{vm.memory}</TableCell>

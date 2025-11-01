@@ -105,10 +105,19 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadAccount = async () => {
       try {
-        const account = await axios.get<{ firstName: string, lastName: string, email: string, company: string, jobTitle: string }>('/api/v1/account', {
+        const account = await axios.get<{ firstName: string, lastName: string, email: string, company: string, jobTitle: string,success: boolean,message: string}>('/api/v1/account/settings/account', {
           withCredentials: true,
         });
+        if (!account.data.success) {
+          toast({
+            title: "Error",
+            description: account.data?.message || "Failed to load account",
+            variant: "destructive",
+          });
+          return;
+        }
         setAccount(account.data);
+      
       } catch (error) {
         toast({
           title: "Error",

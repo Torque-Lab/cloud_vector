@@ -293,11 +293,11 @@ const UsagePage = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-2xl font-bold">Pro Plan</h3>
+                  <h3 className="text-2xl font-bold">Free Plan</h3>
                   <Badge>Current</Badge>
                 </div>
                 <p className="text-3xl font-bold text-primary">
-                  $99
+                  $0
                   <span className="text-lg font-normal text-muted-foreground">
                     /month
                   </span>

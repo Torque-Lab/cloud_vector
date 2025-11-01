@@ -37,6 +37,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --logo-teal: oklch(0.72 0.10 180);
+  --logo-mint: oklch(0.80 0.08 165);
+  --logo-amber: oklch(0.78 0.10 75);
+  --logo-violet: oklch(0.68 0.12 305);
+  --logo-gray: oklch(0.30 0.02 260);
+  --logo-text: oklch(0.985 0 0);
 }
 
 .dark {
@@ -72,6 +79,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  
+   --logo-teal: oklch(0.75 0.12 210);
+  --logo-mint: oklch(0.90 0.07 230);
+  --logo-amber: oklch(0.68 0.12 75);
+  --logo-violet: oklch(0.73 0.12 305);
+  --logo-gray: oklch(0.55 0.02 260);
+  --logo-text: oklch(0.985 0 0);
+
 }
 
 @theme inline {
@@ -115,6 +130,7 @@
 
 @layer base {
   * {
+    
     @apply border-border outline-ring/50;
   }
   body {
@@ -132,11 +148,79 @@
   .dashboard-grid {
     @apply gap-4;
   }
+  
 }
 
 /* to remove scrollbar gutter when dropdown is open*/
 html {
+  
   @apply overflow-x-hidden;
   overflow-y: auto;
   scrollbar-gutter: stable both-edges;
+  
 } 
+
+
+@layer utilities {
+  .bg-logo-teal    { background-color: var(--logo-teal); }
+  .bg-logo-mint    { background-color: var(--logo-mint); }
+  .bg-logo-amber   { background-color: var(--logo-amber); }
+  .bg-logo-violet  { background-color: var(--logo-violet); }
+  .bg-logo-gray    { background-color: var(--logo-gray); }
+
+  .text-logo-teal    { color: var(--logo-teal); }
+  .text-logo-mint    { color: var(--logo-mint); }
+  .text-logo-amber   { color: var(--logo-amber); }
+  .text-logo-violet  { color: var(--logo-violet); }
+  .text-logo-gray    { color: var(--logo-gray); }
+
+  .text-logo { color: var(--logo-text); }
+}
+
+
+
+
+
+/* animation for theme transition */
+.theme-transition {
+  transition: none;
+  position: relative;
+  z-index: 9999;
+}
+
+.theme-transition.dark::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--background);
+  pointer-events: none;
+  animation: fade-to-dark 0.9s ease forwards;
+}
+.theme-transition.light::before {
+  background: white;
+  animation: arc-sweep-better 0.9s cubic-bezier(0.9, 0, 0.1, 1) forwards;
+}
+
+@keyframes arc-sweep-better {
+  0% {
+    clip-path: circle(160vmax at 105% -5%); 
+  }
+  
+  50% {
+    
+    clip-path: circle(150vmax at 50% 50%); 
+  }
+  
+  99% {
+    clip-path: circle(10vmax at -5% 105%); 
+  }
+  
+  100% {
+    clip-path: circle(0vmax at -5% 105%); 
+  }
+}
+
+@keyframes fade-to-dark {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

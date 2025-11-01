@@ -8,6 +8,14 @@ import { useEffect, useState } from "react"
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const switchTheme = (newTheme: "light" | "dark") => {
+    document.documentElement.classList.add("theme-transition");
+    setTheme(newTheme);
+
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transition");
+    }, 900); //same as css animation duration
+  };
 
   useEffect(() => {
     setMounted(true)
@@ -18,7 +26,7 @@ export function ThemeToggle() {
   }
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light")
+    switchTheme(theme === "light" ? "dark" : "light")
   }
 
   return (

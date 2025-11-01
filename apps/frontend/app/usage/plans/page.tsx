@@ -26,7 +26,6 @@ const PlansPage = () => {
         "Shard Namespaces",
         "Basic analytics",
       ],
-      current: false,
       popular: false,
     },
     {
@@ -46,7 +45,6 @@ const PlansPage = () => {
         "Advanced analytics",
         "99.9% SLA",
       ],
-      current: true,
       popular: true,
     },
     {
@@ -67,7 +65,6 @@ const PlansPage = () => {
         "SLA guarantee",
 
       ],
-      current: false,
       popular: false,
     },
   ]
@@ -112,7 +109,7 @@ const PlansPage = () => {
       <div className="space-y-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
+            <div className="space-y-1 px-8 py-2 mt-6">
               <Link
                 href="/usage"
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -127,33 +124,31 @@ const PlansPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-8">
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative overflow-hidden transition-all duration-300 ${plan.current
-                  ? "ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg dark:shadow-blue-500/10"
-                  : plan.popular
-                    ? "ring-2 ring-emerald-500 dark:ring-emerald-400 shadow-lg dark:shadow-emerald-500/10"
-                    : "hover:shadow-lg dark:hover:shadow-lg"
+              className={`relative overflow-hidden transition-all duration-300 ${plan.popular &&
+                   "ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg dark:shadow-blue-500/10"
+                 
                 }`}
             >
-              {plan.popular && !plan.current && (
+              {plan.popular  && (
                 <div className="absolute top-0 left-0 right-0">
                   <div className="bg-linear-to-r from-emerald-500 to-emerald-600 text-white text-xs font-medium py-2 text-center">
                     Most Popular
                   </div>
                 </div>
               )}
-              {plan.current && (
+              {plan.popular && (
                 <div className="absolute top-0 left-0 right-0">
                   <div className="bg-linear-to-r from-blue-500 to-blue-600 text-white text-xs font-medium py-2 text-center">
-                    Current Plan
+                    Popular Plan
                   </div>
                 </div>
               )}
 
-              <div className={`p-6 ${plan.popular && !plan.current ? "pt-12" : plan.current ? "pt-12" : "pt-6"}`}>
+              <div className={`p-6 ${plan.popular ? "pt-12" : "pt-6"}`}>
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
                   <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{plan.description}</p>
@@ -182,25 +177,16 @@ const PlansPage = () => {
                 </ul>
 
                 <Button
-                  className={`w-full py-2.5 font-medium transition-all duration-200 cursor-pointer ${plan.current
-                      ? "bg-muted text-muted-foreground cursor-not-allowed hover:bg-muted"
-                      : plan.popular
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  className={`w-full py-2.5 font-medium transition-all duration-200 cursor-pointer ${plan.popular &&
+                      "bg-muted text-muted-foreground  hover:bg-muted"
                     }`}
-                  disabled={plan.current || isUpgrading}
+        
                   onClick={() => handleSubscriptionUpgrade(plan.name)}
                 >
-                  {plan.current
-                    ? "Current Plan"
-                    : isUpgrading && selectedPlan === plan.name
-                      ? "Processing..."
-                      : plan.name === "Enterprise"
-                        ? "Contact Sales"
-                        : `Upgrade to ${plan.name}`}
+                 Upgrade to {plan.name}
                 </Button>
 
-                {!plan.current && plan.name !== "Enterprise" && (
+                {plan.name !== "Enterprise" && (
                   <p className="text-center text-xs text-muted-foreground mt-3">14-day free trial • Cancel anytime</p>
                 )}
               </div>

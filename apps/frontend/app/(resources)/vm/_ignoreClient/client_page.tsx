@@ -59,8 +59,8 @@ export default function VmDetailPage({vm}: {vm: vmData }) {
           <div>
             <div className="flex items-center space-x-2">
              
-              <h2 className="text-3xl font-bold tracking-tight">{vm?.name}</h2>
-              <Badge variant={vm?.status === "running" ? "success" : "warning"}>{vm?.status}</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">{vm?.vm_name}</h2>
+              <Badge variant={vm?.is_provisioned ? "success" : "warning"}>{vm?.is_provisioned ? "Running" : "Not Running"}</Badge>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -80,7 +80,7 @@ export default function VmDetailPage({vm}: {vm: vmData }) {
               <div className="grid gap-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">CPU Limit:</span>
-                  <span className="text-sm font-medium">{vm?.vCpu}</span>
+                  <span className="text-sm font-medium">{vm?.vCpu} vCPU</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Memory Limit:</span>
@@ -178,7 +178,7 @@ export default function VmDetailPage({vm}: {vm: vmData }) {
             <Card className="p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Delete PostgresSQL</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Are you sure you want to delete "{vm.name}"? This action cannot be undone and will permanently
+                Are you sure you want to delete "{vm.vm_name}"? This action cannot be undone and will permanently
                 delete all associated data.
               </p>
               <div className="flex justify-end space-x-2">

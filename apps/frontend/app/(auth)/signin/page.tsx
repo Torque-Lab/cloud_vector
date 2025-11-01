@@ -27,7 +27,7 @@ export default function SignInPage() {
         email,
         password,
       });
-  
+
       if (response.data.success) {
         setIsLoading(false);
         toast({
@@ -73,15 +73,17 @@ export default function SignInPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">V</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              Vector Cloud
-            </span>
+        <div className="text-center  mb-8">
+          <div className="flex items-center justify-center mb-8 space-x-1">
+            <Link href="/" className="flex items-center space-x-1">
+            <span className="text-logo-teal font-bold text-xl">V</span>
+            <span className="text-logo-mint font-bold text-xl">e</span>
+            <span className="text-logo-amber font-bold text-xl">c</span>
+            <span className="text-logo-violet font-bold text-xl">t</span>
+            <span className="text-logo-gray font-bold text-xl">or</span>
+            <span className="text-foreground font-bold text-xl"> Cloud</span>
           </Link>
+          </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Welcome back
           </h1>
@@ -199,7 +201,11 @@ export default function SignInPage() {
                 Forgot password?
               </Link>
             </div>
-            <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full cursor-pointer"
+              disabled={isLoading}
+            >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
