@@ -1,11 +1,8 @@
 import { prismaClient } from "@cloud/db";
 import type { Request, Response } from "express";
 import crypto from "crypto";
-import { decrypt } from "@cloud/backend-common";
+import { decrypt, getRedisClient } from "@cloud/backend-common";
 import { updateInfraConfigSchema } from "@cloud/backend-common/types";
-import { PROXY_POSTGRES_URL } from "../config/config";
-import axios from "axios"
-
 export const getPostgresInstance = async (req: Request, res: Response) => {
   try {
     const key = req.query.key as string
@@ -63,26 +60,25 @@ export const updatePostgresRouteTable = async (req: Request, res: Response) => {
     const url = `postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:5432/${old_key.split(":")[1]}`
     const authCredential = generateScramCredential(decodedPassword)
 
-    const updateProxyPlane = await axios.post(PROXY_POSTGRES_URL + "/api/v1/infra/postgres/update-table", {
+    
+
+       const client = await getRedisClient();
+      const reciverCount=await client.publish("update-table",JSON.stringify({
       backend_url: url,
       old_key: old_key,
       new_key: new_key,
-      auth_token: process.env.AUTH_TOKEN_POSTGRES_PROXY!,
       user_cred: {
         salt: authCredential.salt,
         iterations: authCredential.iterations,
         stored_key: authCredential.storedKey,
         server_key: authCredential.serverKey
-      },
-      success: true,
-      message:"updated postgres credentials"
-
-    })
-    if(updateProxyPlane.status!==200){
-      res.status(500).json({ message: "Internal server error", success: false });
-      return;
+      }
+    }))
+    if(reciverCount<0){
+      return res.status(500).json({ message: "updated postgres route table failed", success: false });
     }
-    res.status(200).json({ message: "updated postgres credentials", success: true });
+
+    res.status(200).json({ message: "updated postgres route table", success: true });
 
 
   } catch (error) {

@@ -1,0 +1,57 @@
+
+name: Build and Deploy Infra Provisioner
+on:
+  push:
+    paths:
+      - .github/workflows/infra-provisioner.yaml
+      - 'docker/Dockerfile.infra-provisioner'
+      - 'apps/infra-provisioner/**'
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile.infra-provisioner
+          push: true
+          tags: ring0exec/cloud-vector-infra-provisioner:${{ github.sha }}
+
+      - name: Clone gitops repo, update, and push
+        env:
+          PAT: ${{ secrets.CLOUD_VECTOR_GITOPS_TOKEN }}
+        run: |
+          git clone https://github.com/Torque-Lab/cloud-infra-ops.git
+          cd cloud-infra-ops
+          ls apps/internal-charts/infra-provisioner/
+          cat apps/internal-charts/infra-provisioner/values.yaml
+          sed -i "/infraProvisioner:/,/^[^ ]/s/^\(\s*tag:\s*\).*/\1${{ github.sha }}/" apps/internal-charts/infra-provisioner/values.yaml
+        
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+            git diff --quiet || {
+            git add apps/internal-charts/infra-provisioner/values.yaml
+            git commit -m "Update infra-provisioner image to ${{ github.sha }}"
+            git push https://${PAT}@github.com/Torque-Lab/cloud-infra-ops.git main --force
+          }
+
+          
+          

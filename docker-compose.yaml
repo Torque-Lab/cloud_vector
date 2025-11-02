@@ -81,39 +81,39 @@ services:
   #     start_period: 40s
   #   command: ["bun", "run", "dev:docker:https-server"]
 
-  control-plane: 
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.control-plane
-    image: control-plane:latest
-    container_name: cloud-vector-control-plane
-    ports:
-      - "3010:3010" 
-    environment:
-      NODE_ENV: development
-      PORT: 3010
-      HEALTH_TOKEN: 12345
-      DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
-      REDIS_URL: redis://redis:6379
-      RABBITMQ_URL: amqp://user:password@rabbitmq:5672
-      LOG_DIR: /var/log/cloud_vector
-    volumes:
-      - logs_control:/var/log/cloud_vector
-      - ./:/app
-    networks:
-      - frontend 
-      - backend 
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "/app/docker_health_check_script/cp.mjs"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    command: ["bun", "run", "dev:docker:control-plane"]
+  # control-plane: 
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.control-plane
+  #   image: control-plane:latest
+  #   container_name: cloud-vector-control-plane
+  #   ports:
+  #     - "3010:3010" 
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3010
+  #     HEALTH_TOKEN: 12345
+  #     DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
+  #     REDIS_URL: redis://redis:6379
+  #     RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+  #     LOG_DIR: /var/log/cloud_vector
+  #   volumes:
+  #     - logs_control:/var/log/cloud_vector
+  #     - ./:/app
+  #   networks:
+  #     - frontend 
+  #     - backend 
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "node", "/app/docker_health_check_script/cp.mjs"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   command: ["bun", "run", "dev:docker:control-plane"]
   # infra-provisioner: 
   #   build:
   #     context: .
@@ -151,8 +151,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: proxyuser
-      RABBITMQ_DEFAULT_PASS: proxypass
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: mypassword
       RABBITMQ_DEFAULT_VHOST: /
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -167,23 +167,23 @@ services:
       start_period: 60s
       
 
-  # redis: 
-  #   image: redis:latest
-  #   container_name: cloud-vector-redis
-  #   ports:
-  #     - "6379:6379"
-  #   command: redis-server --appendonly yes --requirepass "mypassword"
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - backend
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 60s
+  redis: 
+    image: redis:latest
+    container_name: cloud-vector-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   postgres: 
     image: postgres:16-alpine

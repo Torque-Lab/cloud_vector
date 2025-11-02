@@ -217,6 +217,10 @@ model VirtualMachine{
   vm_name            String
   public_key         String?
   host               String
+  memory             String
+  cpu                String
+  storage            String
+  region             String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   permissions        Permission[]
