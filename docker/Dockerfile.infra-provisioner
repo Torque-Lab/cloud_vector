@@ -18,8 +18,12 @@
     FROM base AS builder
     WORKDIR /app
     COPY --from=deps /app .
-    COPY apps/ ./apps/
-    COPY packages/ ./packages/
+    COPY apps/infra-provisioner ./apps/infra-provisioner
+    COPY packages/backend-common ./packages/backend-common
+    COPY packages/db ./packages/db
+    COPY packages/shared_types ./packages/shared_types
+    COPY packages/eslint-config ./packages/eslint-config
+    COPY packages/typescript-config ./packages/typescript-config
     RUN apt-get update -y && apt-get install -y openssl libssl-dev
     RUN bun run db:prod:generate
     RUN bun run build:prod:infra-provisioner
