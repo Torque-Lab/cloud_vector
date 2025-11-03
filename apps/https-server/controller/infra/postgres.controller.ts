@@ -9,7 +9,7 @@ import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { postgresQueue } from "@cloud/backend-common";
 import { postgresqlSchema } from "@cloud/backend-common/types";
-import { CUSTOMER_POSTGRES_HOST,CONTROL_PLANE_URL } from "../config/config";
+import { CUSTOMER_POSTGRES_HOST, } from "../config/config";
 import axios from "axios";
 import { 
   resourceProvisionedTotal, 
@@ -20,6 +20,7 @@ import { logBusinessOperation, logAudit,logError, } from '../../moinitoring/Log-
 
 const PG_ENCRYPT_SECRET = process.env.PG_ENCRYPT_SECRET!;
 const PG_ENCRYPT_SALT = process.env.PG_ENCRYPT_SALT!;
+const CONTROL_PLANE_URL = process.env.CONTROL_PLANE_URL!;
 
 export const createPostgresInstance=async(req:Request,res:Response)=>{
 
@@ -142,8 +143,10 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
              }
               const postgresId=generateCuid();
            
+              const postgresUser=generateUsername();
+              const postgresPassword=generateRandomString();
 
-        const success=await pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{...parsedData.data,resource_id:postgresId,namespace})
+        const success=await pushInfraConfigToQueueToCreate(postgresQueue.CREATE,{...parsedData.data,resource_id:postgresId,namespace,postgres_user:postgresUser})
         if(!success){
           
             res.status(500).json({ message: "Failed to add task to queue",success:false });
@@ -154,8 +157,8 @@ export const createPostgresInstance=async(req:Request,res:Response)=>{
                 id:postgresId,
                 projectId:parsedData.data.projectId,
                 database_name:parsedData.data.name,
-                username:generateUsername(),
-                password:encrypt(generateRandomString(),PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!),
+                username: postgresUser,
+                password:encrypt(postgresPassword,PG_ENCRYPT_SECRET!,PG_ENCRYPT_SALT!),
                 port:"5672",
                 namespace:namespace,
                 initialMemory:parsedData.data.initialMemory,
@@ -509,9 +512,8 @@ export const getPostgresConnectionString = async (req: Request, res: Response) =
           })
 
         }
-      
-
-        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}/${postgres!.database_name}?sslmode=require`
+    
+        const connectionString=`postgresql://${postgres!.username}:${  decrypt(postgres!.password,PG_ENCRYPT_SECRET,PG_ENCRYPT_SALT)}@${CUSTOMER_POSTGRES_HOST}:${5432}/${postgres!.database_name}?sslmode=require`
         res.status(200).json({ connectionString:connectionString,success:true });
     } catch (error) {
         logError(error instanceof Error ? error : new Error("Failed to send postgresDB connection string")); 

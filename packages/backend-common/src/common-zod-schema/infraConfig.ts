@@ -14,6 +14,10 @@ export const InfraConfigSchema = z.object({
     backFrequency: z.enum(["daily", "weekly", "monthly"]).optional(),
     resource_id: z.string(),
     namespace: z.string(),
+    postgres_user:z.string().optional(),
+    postgres_db:z.string().optional(),
+    
+ 
 });
 
 export const updateInfraConfigSchema=z.object({

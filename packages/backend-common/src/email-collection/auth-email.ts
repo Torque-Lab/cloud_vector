@@ -27,7 +27,7 @@ export async function sendOTPEmail(to: string, otp: string, mainSubject?: string
           </p>
           <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            &copy; ${new Date().getFullYear()} SiteWatch | <a href="https://vector-cloud.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">sitewatch.suvidhaportal.com</a>
+            &copy; ${new Date().getFullYear()} Cloud-vector | <a href="https://vector-cloud.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">cloud-vector.suvidhaportal.com</a>
           </p>
         </div>
       `,
@@ -57,11 +57,11 @@ export async function sendEmail(to: string, subject: string,body:string) {
             Please review the service immediately. If you are not responsible for this service, kindly forward this message to the appropriate team.
           </p>
           <p style="font-size: 14px; color: #6b7280;">
-            This automated alert was triggered by SiteWatch monitoring.
+            This automated alert was triggered by Cloud-vector monitoring.
           </p>
           <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            &copy; ${new Date().getFullYear()} SiteWatch | <a href="https://vector-cloud.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">vector-cloud.suvidhaportal.com</a>
+            &copy; ${new Date().getFullYear()} Cloud-vector | <a href="https://cloud-vector.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">cloud-vector.suvidhaportal.com</a>
           </p>
         </div>
       `,
@@ -95,7 +95,7 @@ export async function sendPasswordResetEmail(to: string, link: string) {
           </p>
           <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;" />
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            &copy; ${new Date().getFullYear()} SiteWatch | <a href="https://vector-cloud.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">vector-cloud.suvidhaportal.com</a>
+            &copy; ${new Date().getFullYear()} Cloud-vector | <a href="https://cloud-vector.suvidhaportal.com" style="color: #2563eb; text-decoration: none;">cloud-vector.suvidhaportal.com</a>
           </p>
         </div>
       `,

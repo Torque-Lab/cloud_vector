@@ -26,7 +26,7 @@ export const getPostgresInstance = async (req: Request, res: Response) => {
       return
     }
     const decodedPassword = decrypt(postgresInstance.password, process.env.PG_ENCRYPT_SECRET!, process.env.PG_ENCRYPT_SALT!)
-    const url = `postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:5432/${postgresInstance.database_name}`
+    const url = `postgres-pgbouncer-${postgresInstance.id}.${postgresInstance.namespace}.svc.cluster.local:6432/${postgresInstance.database_name}`
  
     const authCredential = generateScramCredential(decodedPassword)
     res.status(200).json({
@@ -57,7 +57,7 @@ export const updatePostgresRouteTable = async (req: Request, res: Response) => {
     }
     const { old_key, new_key, namespace, password, resource_id } = parsedData.data
     const decodedPassword = decrypt(password, process.env.PG_ENCRYPT_SECRET!, process.env.PG_ENCRYPT_SALT!)
-    const url = `postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:5432/${old_key.split(":")[1]}`
+    const url = `postgres-pgbouncer-${resource_id}.${namespace}.svc.cluster.local:6432/${old_key.split(":")[1]}`
     const authCredential = generateScramCredential(decodedPassword)
 
     

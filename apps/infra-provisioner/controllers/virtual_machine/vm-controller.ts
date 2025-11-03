@@ -3,6 +3,7 @@ import { runCommand } from "../../git/runCommand";
 import { repoUrlVmWithPAT,branch, vmRepoPath } from "../../config/config";
 import path from "path";
 import fs from "fs";
+import { prismaClient } from "@cloud/db";
 export async function vmProvisioner(vmData:vmSchemaDetails):Promise<{message:string,success:boolean,host:string}>{
     const {vmId,subscriptionPlan,...vm}=vmData
     try{
@@ -73,6 +74,17 @@ export async function vmProvisioner(vmData:vmSchemaDetails):Promise<{message:str
             await runCommand(["git", "add", "-A"], { cwd: vmRepoPath()+"/vm-tf" });
             await safeGitCommitVm("Added new vm ", vmId);
             await triggerGitPushVm();
+
+                await prismaClient.virtualMachine.update({
+                    where:{
+                        id:vmId
+                    },
+                    data:{
+                        is_provisioned:true,
+                        host:publicIp
+                       
+                    }
+                })
             
             return {
               success: true,

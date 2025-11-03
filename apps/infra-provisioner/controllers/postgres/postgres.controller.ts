@@ -5,6 +5,7 @@ import { repoUrlWithOutPAT,repoUrlWithPAT, repoPath, branch } from "../../config
 import { runCommand } from "../../git/runCommand";
 import { safeGitCommit, triggerGitPush } from "../../git/git-tools";
 import type { InfraConfig } from "@cloud/shared_types";
+import { generatePassword} from "../tools/random";
 
 export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
   try {
@@ -84,6 +85,11 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
             enabled: true,
             schedule: "0 0 * * *",
           },
+        },
+        env: {
+          POSTGRES_USER: infraConfig.postgres_user,
+          POSTGRES_PASSWORD: generatePassword(),
+          POSTGRES_DB: infraConfig.name,
         },
       },
     };  

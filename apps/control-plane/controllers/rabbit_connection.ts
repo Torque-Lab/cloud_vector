@@ -34,7 +34,7 @@ export const getRabbitInstance = async (req: Request, res: Response) => {
       res.status(404).json({ error: "Rabbit instance not found" });
       return;
     }
-    const url = `${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local:${rabbitInstance.port}`;
+    const url = `${rabbitInstance.queue_name}-${rabbitInstance.id}-service.${rabbitInstance.namespace}.svc.cluster.local:5672`;
     res.status(200).json({
       backend_url: url,
     });

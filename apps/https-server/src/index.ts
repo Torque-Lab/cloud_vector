@@ -43,7 +43,12 @@ app.use("/api/v1/bill",billRouter)
 
 
 app.get("/api/v1/metrics", async (req, res) => {
+
   try {
+    const metric_token= req.headers.authorization?.startsWith('Bearer') ? req.headers.authorization.split(' ')[1] : undefined;
+    if(metric_token!=process.env.METRIC_TOKEN){
+      return res.status(403).json({ message: "Forbidden",success:false,});
+    }
     res.set('Content-Type', register.contentType);
     const metrics = await register.metrics();
     res.end(metrics);

@@ -8,7 +8,7 @@ import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { rabbitmqQueue } from "@cloud/backend-common";
-import {CONTROL_PLANE_URL,CUSTOMER_RABBIT_HOST} from "../config/config"
+import {CUSTOMER_RABBIT_HOST} from "../config/config"
 import axios from "axios";
 import { 
   resourceProvisionedTotal, 
@@ -19,7 +19,7 @@ import { logBusinessOperation, logAudit,logError } from '../../moinitoring/Log-c
 
 const RABBITMQ_ENCRYPT_SALT=process.env.RABBITMQ_ENCRYPT_SALT!
 const RABBITMQ_ENCRYPT_SECRET=process.env.RABBITMQ_ENCRYPT_SECRET!
-
+const CONTROL_PLANE_URL = process.env.CONTROL_PLANE_URL!;
 export const createRabbitInstance=async(req:Request,res:Response)=>{
 
     try {
@@ -506,7 +506,7 @@ export const getRabbitMQConnectionString = async (req: Request, res: Response) =
             tier:"unknown"
           })
         }
-        const connectionString=`amqps://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}`
+        const connectionString=`amqps://${rabbit.username}:${decrypt(rabbit.password,RABBITMQ_ENCRYPT_SECRET,RABBITMQ_ENCRYPT_SALT)}@${CUSTOMER_RABBIT_HOST}:${5671}`
         res.status(200).json({message:"RabbitMQ connection string", connectionString:connectionString,success:true });
     } catch (error) {
         logError(error instanceof Error ? error : new Error("Failed to get rabbitmq status"));

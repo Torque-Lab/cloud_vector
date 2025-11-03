@@ -8,7 +8,7 @@ import { generateRandomString } from "../auth/auth.controller";
 import { parseMemory } from "../../utils/parser";
 import { generateCuid } from "../../utils/random";
 import { redisQueue } from "@cloud/backend-common";
-import {CONTROL_PLANE_URL, CUSTOMER_REDIS_HOST} from "../config/config"
+import { CUSTOMER_REDIS_HOST} from "../config/config"
 import axios from "axios";
 import { 
   resourceProvisionedTotal, 
@@ -19,6 +19,7 @@ import {
 
 const REDIS_ENCRYPT_SALT=process.env.REDIS_ENCRYPT_SALT!
 const REDIS_ENCRYPT_SECRET=process.env.REDIS_ENCRYPT_SECRET!
+const CONTROL_PLANE_URL = process.env.CONTROL_PLANE_URL!;
 
 export const createRedisInstance=async(req:Request,res:Response)=>{
 
@@ -400,7 +401,7 @@ export const getRedisConnectionString = async (req: Request, res: Response) => {
             res.status(404).json({ message: "Redis not found",connectionString:"",success:false });
             return;
         }
-        const connectionString=`amqps://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}`
+        const connectionString=`rediss://${redis.username}:${decrypt(redis.password,REDIS_ENCRYPT_SECRET,REDIS_ENCRYPT_SALT)}@${CUSTOMER_REDIS_HOST}:${6380}`
         res.status(200).json({message:"Redis connection string", connectionString:connectionString,success:true });
     } catch (e) {
         res.status(500).json({ message: "Failed to get redis connection string" ,success:false});

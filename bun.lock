@@ -133,20 +133,16 @@
       "name": "@cloud/infra-provisioner",
       "dependencies": {
         "@cloud/backend-common": "*",
+        "@cloud/db": "*",
         "@cloud/shared_types": "*",
         "@kubernetes/client-node": "^1.4.0",
-        "@types/express": "^5.0.3",
         "@types/js-yaml": "^4.0.9",
-        "express": "^5.1.0",
         "js-yaml": "^4.1.0",
       },
       "devDependencies": {
         "@repo/eslint-config": "*",
         "@repo/typescript-config": "*",
         "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "axios": "^1.12.2",
       },
     },
     "apps/mcp-client": {
