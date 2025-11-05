@@ -23,6 +23,9 @@ A robust Platform-as-a-Service (PaaS) solution that simplifies cloud infrastruct
   - Role-Based Access Control (RBAC)
   - Network policies
 
+ ## Architecture canvas Image
+ -- it it small but no way to make it big
+![alt text](arch.png)
 ## Architecture
 
 ```
