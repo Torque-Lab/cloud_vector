@@ -81,7 +81,7 @@ export const redisProvisioner = async(infraConfig:InfraConfig) => {
           },
           storage: infraConfig.initialStorage,
           backup: {
-            enabled: true,
+            enabled: false,
             schedule: "0 0 * * *",
           },
         },
@@ -104,7 +104,7 @@ export const redisProvisioner = async(infraConfig:InfraConfig) => {
         source: {
           repoURL: repoUrlWithOutPAT,
           targetRevision: branch,
-          path: `gitops/apps/${redis_id}`,
+          path: `apps/external-charts/${redis_id}`,
         },
         destination: {
           server: "https://kubernetes.default.svc",
@@ -125,7 +125,7 @@ export const redisProvisioner = async(infraConfig:InfraConfig) => {
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
     await safeGitCommit("Added new redis app",redis_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return {
       success:true,
@@ -168,7 +168,7 @@ export const redisDestroyer = async(resource_id:string):Promise<boolean> => {
     }
 
     await safeGitCommit("Removed redis app", resource_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return true;
   } catch (error) {

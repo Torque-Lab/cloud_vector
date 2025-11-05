@@ -82,7 +82,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
           },
           storage: infraConfig.initialStorage,
           backup: {
-            enabled: true,
+            enabled: false,
             schedule: "0 0 * * *",
           },
         },
@@ -110,7 +110,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
         source: {
           repoURL: repoUrlWithOutPAT,
           targetRevision: branch,
-          path: `gitops/apps/${db_id}`,
+          path: `apps/external-charts/${db_id}`,
         },
         destination: {
           server: "https://kubernetes.default.svc",
@@ -131,7 +131,7 @@ export const PostgresProvisioner = async(infraConfig:InfraConfig) => {
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
     await safeGitCommit("Added new postgresDB app",db_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return {
       success:true,
@@ -174,7 +174,7 @@ export const PostgresDestroyer = async(resource_id:string):Promise<boolean> => {
     }
 
     await safeGitCommit("Removed postgresDB app", resource_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return true;
   } catch (error) {

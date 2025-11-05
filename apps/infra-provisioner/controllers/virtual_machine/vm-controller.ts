@@ -37,10 +37,14 @@ export async function vmProvisioner(vmData:vmSchemaDetails):Promise<{message:str
             fs.cpSync(baseConfigPath, newVmPath, { recursive: true });
             
             const mainTfPath = path.join(newVmPath, "main.tf");
+            const bakendStatePath = path.join(newVmPath, "backend.tf");
             let mainTfContent = fs.readFileSync(mainTfPath, "utf-8");
-            
+            let bakendStateContent = fs.readFileSync(bakendStatePath, "utf-8");
+      
             const machineType = getMachineType(vm.vCpu, vm.memory);
-            
+            bakendStateContent = bakendStateContent.replace(/prefix\s*=\s*"[^"]*"/, `prefix  = "prod/vm/${vmId}/terraform.tfstate"`);
+            fs.writeFileSync(bakendStatePath, bakendStateContent);
+  
             mainTfContent = mainTfContent.replace(/instance_name\s*=\s*"[^"]*"/, `instance_name  = "${vm.name}"`);
             mainTfContent = mainTfContent.replace(/machine_type\s*=\s*"[^"]*"/, `machine_type   = "${machineType}"`);
             mainTfContent = mainTfContent.replace(/disk_size_gb\s*=\s*\d+/, `disk_size_gb   = ${vm.storage}`);
@@ -59,16 +63,16 @@ export async function vmProvisioner(vmData:vmSchemaDetails):Promise<{message:str
             const outputsTfPath = path.join(newVmPath, "outputs.tf");
             const outputsContent = `output "public_ip" {
   description = "Public IP address of the VM"
-  value       = module.${subscriptionPlanPath}.public_ip
+  value       = google_compute_instance.vm.network_interface[0].access_config[0].nat_ip
 }
 `;
             fs.writeFileSync(outputsTfPath, outputsContent);
-            await runCommand(["ln", "-sf", "../../providers.tf", "./providers.tf"], { cwd: newVmPath });
-            await runCommand(["terraform", "init"], { cwd: newVmPath });
-            await runCommand(["terraform", "apply", "-auto-approve"], { cwd: newVmPath });
-            
-            const outputResult = await runCommand(["terraform", "output", "-json"], { cwd: newVmPath });
-            const outputs = JSON.parse(outputResult.stdout);
+            await runCommand(["ln", "-sf", "../../providers.tf", "./providers.tf"], { cwd: newVmPath,timeoutMs:1000*60*15 });
+            await runCommand(["terraform", "init"], { cwd: newVmPath,timeoutMs:1000*60*15 });
+            await runCommand(["terraform", "apply", "-auto-approve"], { cwd: newVmPath,timeoutMs:1000*60*15 });
+      
+            const outputResult = await runCommand(["terraform", "output", "-json"], { cwd: newVmPath,timeoutMs:1000*60*15 });
+            const outputs= JSON.parse(outputResult.stdout);
             const publicIp = outputs.public_ip?.value || "";
             
             await runCommand(["git", "add", "-A"], { cwd: vmRepoPath()+"/vm-tf" });

@@ -81,7 +81,7 @@ export const rabbitMQProvisioner = async(infraConfig:InfraConfig) => {
           },
           storage: infraConfig.initialStorage,
           backup: {
-            enabled: true,
+            enabled: false,
             schedule: "0 0 * * *",
           },
         },
@@ -104,7 +104,7 @@ export const rabbitMQProvisioner = async(infraConfig:InfraConfig) => {
         source: {
           repoURL: repoUrlWithOutPAT,
           targetRevision: branch,
-          path: `gitops/apps/${rabbitmq_id}`,
+          path: `apps/external-charts/${rabbitmq_id}`,
         },
         destination: {
           server: "https://kubernetes.default.svc",
@@ -125,7 +125,7 @@ export const rabbitMQProvisioner = async(infraConfig:InfraConfig) => {
     fs.writeFileSync(filepath, yaml.dump(argocdApp), "utf8");
 
     await safeGitCommit("Added new rabbitmq app",rabbitmq_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return {
       success:true,
@@ -169,7 +169,7 @@ export const rabbitMQDestroyer = async(resource_id:string):Promise<boolean> => {
     }
 
     await safeGitCommit("Removed rabbitmq app", resource_id);
-    triggerGitPush();
+    await triggerGitPush();
     
     return true;
   } catch (error) {
