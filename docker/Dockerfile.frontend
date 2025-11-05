@@ -37,6 +37,7 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-lin
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/
 
+ENV NEXT_PUBLIC_URL=https://cloud-vector.suvidhaportal.com
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
