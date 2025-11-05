@@ -12,7 +12,7 @@ passport.use(new GitHubStrategy(
   {
     clientID: process.env.GITHUB_CLIENT_ID!,
     clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    callbackURL: new URL('/api/auth/github/callback', process.env.NEXT_PUBLIC_URL || 'http://localhost:3000').toString()
+    callbackURL: new URL('/api/v1/auth/github/callback', process.env.NEXT_PUBLIC_URL || 'http://localhost:3000').toString()
   },
   async (_access_token, _refresh_token, profile: Profile, done) => {
     try {
