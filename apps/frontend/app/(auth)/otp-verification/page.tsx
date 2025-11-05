@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import axios from "axios"
 import { OtpInput } from "@/components/ui/otpInput"
-import router from "next/router"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { VerifySchema } from "@cloud/shared_types"
 export default function ForgotPasswordPage() {
+  const router = useRouter()
   const [otp, setOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
       if (!data) {
         toast({
           title: "Error",
-          description: "Something went wrong",
+          description: "Session expired",
           variant: "destructive",
         })
         return
@@ -78,7 +79,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-           <Link href="/" className="flex items-center space-x-1">
+           <Link href="/" className="flex justify-center items-center space-x-1">
   <span className="text-logo-teal font-bold text-xl">V</span>
   <span className="text-logo-mint font-bold text-xl">e</span>
   <span className="text-logo-amber font-bold text-xl">c</span>

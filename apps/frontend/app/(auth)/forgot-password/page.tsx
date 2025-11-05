@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { toast } from "@/hooks/use-toast"
-import router from "next/router"
+import { useRouter } from "next/navigation"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -21,7 +22,7 @@ export default function ForgotPasswordPage() {
         success: boolean;
         message: string;
       }
-      const response = await axios.post<User>("/api/v1/auth/forgot-password", { email })
+      const response = await axios.post<User>("/api/v1/auth/forgot", { email })
       if(response.data.success){
         toast({
           title: "Success",
@@ -57,8 +58,8 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
-             <Link href="/" className="flex items-center space-x-1">
+        <div className="text-center mb-8 ">
+             <Link href="/" className="flex justify-center items-center space-x-1">
   <span className="text-logo-teal font-bold text-xl">V</span>
   <span className="text-logo-mint font-bold text-xl">e</span>
   <span className="text-logo-amber font-bold text-xl">c</span>

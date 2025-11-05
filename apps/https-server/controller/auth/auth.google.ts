@@ -1,16 +1,15 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy,  } from 'passport-google-oauth20';
 import type { Profile } from 'passport-google-oauth20';
-import { prismaClient } from '@cloud/db';
+import { prismaClient, Role, SubscriptionStatus, Tier_Subscription } from '@cloud/db';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
-import { setAuthCookie } from './auth.controller';
+import { hashPassword, setAuthCookie } from './auth.controller';
 import { generateTimeId } from './auth.controller';
 import { generateRandomString } from './auth.controller';
 import { authAttemptsTotal, authSuccessTotal, authFailuresTotal, authDuration } from '../../moinitoring/promotheous';
 import { logAuthEvent } from '../../moinitoring/Log-collection/winston';
-
-
+import { generateCuid } from '../../utils/random';
 
 passport.use(new GoogleStrategy(
   { 
@@ -27,15 +26,42 @@ passport.use(new GoogleStrategy(
       });
 
       if (!googleUser) {
-        googleUser = await prismaClient.userBaseAdmin.create({
-          data: {
-            id:profile.id,
-            email: email,
-            first_name: profile?.name?.givenName,
-            last_name: profile?.name?.familyName,
-            password:  generateRandomString()
-          },
-        });
+            const freeTierRule = await prismaClient.tierRule.upsert({
+                        where: { tier: Tier_Subscription.FREE },
+                        update: {},
+                        create: {
+                          tier: Tier_Subscription.FREE,
+                          Max_Projects: 2,
+                          Max_Resources: 10,
+                          initialMemory: "500Mi",
+                          maxMemory: "1Gi",
+                          initialStorage: "5Gi",
+                          maxStorage: "2Gi",
+                          initialVCpu: "1",
+                          maxVCpu: "2",
+                        },
+                      });
+                    
+                       googleUser = await prismaClient.userBaseAdmin.create({
+                        data: {
+                          email:email,
+                          password: await hashPassword(generateRandomString()),
+                          first_name: profile?.name?.givenName?? '',
+                          last_name: profile?.name?.familyName?? '',
+                          role: Role.ADMIN,
+                          is_active: true,
+                        },
+                      });
+                    
+                      await prismaClient.subscription.create({
+                        data: {
+                          userBaseAdminId: googleUser.id,
+                          stripeCustomerId: generateCuid(),//dummy if for free tier
+                          tierId: freeTierRule.id,
+                          status: SubscriptionStatus.ACTIVE,
+                        },
+                      });
+    
       }
 
       done(null, googleUser);

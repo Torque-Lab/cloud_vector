@@ -1,13 +1,13 @@
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github';
 import type { Profile } from 'passport-github';
-import { prismaClient } from '@cloud/db';
+import { prismaClient, Role, SubscriptionStatus, Tier_Subscription } from '@cloud/db';
 import jwt from 'jsonwebtoken';
 import type { Request, Response, RequestHandler, NextFunction } from 'express';
 import { setAuthCookie, generateTimeId, hashPassword, generateRandomString } from './auth.controller';
 import { authAttemptsTotal, authSuccessTotal, authFailuresTotal, authDuration } from '../../moinitoring/promotheous';
 import { logAuthEvent } from '../../moinitoring/Log-collection/winston';
-
+import { generateCuid } from '../../utils/random';
 passport.use(new GitHubStrategy(
   {
     clientID: process.env.GITHUB_CLIENT_ID!,
@@ -26,24 +26,51 @@ passport.use(new GitHubStrategy(
         return done(null, false, { message: 'Email not found in GitHub profile' });
       }
 
-      const dbId = `github-${profile.id}`;
-      let githubUser = await prismaClient.userBaseAdmin.findUnique({
-        where: { id: dbId }
+      const gitHubId = `github-${profile.id}`;
+      let gitHubUser = await prismaClient.userBaseAdmin.findUnique({
+        where: { id: gitHubId }
       });
 
-      if (!githubUser) {
-        githubUser = await prismaClient.userBaseAdmin.create({
-          data: {
-            id: dbId,
-            email: email,
-            first_name: profile?.name?.givenName?? '',
-            last_name: profile?.name?.familyName?? '',
-            password: await hashPassword(generateRandomString())
-          },
-        });
+      if (!gitHubUser) {
+        const freeTierRule = await prismaClient.tierRule.upsert({
+                    where: { tier: Tier_Subscription.FREE },
+                    update: {},
+                    create: {
+                      tier: Tier_Subscription.FREE,
+                      Max_Projects: 2,
+                      Max_Resources: 10,
+                      initialMemory: "500Mi",
+                      maxMemory: "1Gi",
+                      initialStorage: "5Gi",
+                      maxStorage: "2Gi",
+                      initialVCpu: "1",
+                      maxVCpu: "2",
+                    },
+                  });
+                
+                   gitHubUser = await prismaClient.userBaseAdmin.create({
+                    data: {
+                      email:email,
+                      password: await hashPassword(generateRandomString()),
+                      first_name: profile?.name?.givenName?? '',
+                      last_name: profile?.name?.familyName?? '',
+                      role: Role.ADMIN,
+                      is_active: true,
+                    },
+                  });
+                
+                  await prismaClient.subscription.create({
+                    data: {
+                      userBaseAdminId: gitHubUser.id,
+                      stripeCustomerId: generateCuid(),//dummy if for free tier
+                      tierId: freeTierRule.id,
+                      status: SubscriptionStatus.ACTIVE,
+                    },
+                  });
+
       }
 
-      done(null, githubUser);
+      done(null, gitHubUser);
     } catch (err) {
       logAuthEvent('GitHub OAuth failed', { 
         reason: 'oauth_error', 

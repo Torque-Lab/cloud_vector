@@ -389,7 +389,7 @@ model TierRule {
   maxVCpu              String @default("2")
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
-  subscriptions Subscription[]
+  subscriptions Subscription[] @relation("TierRuleToSubscription")
 }
 
 model Subscription {
@@ -405,8 +405,8 @@ model Subscription {
   canceledAt             DateTime?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
-  tierId                 String? @unique
-  tierRule TierRule? @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  tierId         String?
+  tierRule       TierRule? @relation("TierRuleToSubscription", fields: [tierId], references: [id], onDelete: Cascade)
   userBaseAdmin UserBaseAdmin @relation(fields: [userBaseAdminId], references: [id], onDelete: Cascade)
   @@index([userBaseAdminId])
 }

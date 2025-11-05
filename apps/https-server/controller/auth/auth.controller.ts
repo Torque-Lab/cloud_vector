@@ -160,6 +160,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
         res.status(201).json({ message: "User created successfully", success: true });
 
     } catch (error) {
+      console.log(error)
       logError(error as Error ?? "Unknown error")
       res.status(500).json({ message: "Failed to create user", success: false });
     }

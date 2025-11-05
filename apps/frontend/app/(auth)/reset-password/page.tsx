@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
         success: boolean;
         message: string;
       }
-      const response = await axios.post<User>(`${API_BASE_URL}/api/v1/auth/reset-password`, 
+      const response = await axios.post<User>(`${API_BASE_URL}/api/v1/auth/reset`, 
      {
       newPassword: formData.password,
      },
