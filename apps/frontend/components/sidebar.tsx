@@ -73,7 +73,7 @@ const sidebarItems = [
   },
   {
     title: "API Keys",
-    href: "/api-keys",
+    href: "/keys",
     icon: (
       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -130,7 +130,7 @@ export function Sidebar({ isOpen, onToggle,user }: SidebarProps) {
             title={!isOpen ? item.title : ""}
           >
             <div className={cn(
-              "flex items-center justify-center flex-shrink-0 transition-all duration-200",
+              "flex items-center justify-center shrink-0 transition-all duration-200",
               isOpen ? 'w-4 h-4' : 'w-6 h-6 mx-auto'
             )}>
               {item.icon}
@@ -184,7 +184,7 @@ export function Sidebar({ isOpen, onToggle,user }: SidebarProps) {
         </Button>
       </div>
 
-      <div className="border-t p-4 flex-shrink-0">
+      <div className="border-t p-4 shrink-0">
         <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
           

@@ -12,19 +12,19 @@ import { rabbitData } from "@/lib/rabbit_api"
 export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitData[],projects: {id: string; name: string}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
 
-  const filteredRabbitmq = rabbitmq.filter((rb) => {
+  const filteredRabbitmq = rabbitmq?.filter((rb) => {
     const matchesProject = selectedProject === "all" || rb.projectId === selectedProject
     return matchesProject
   })
 
   const getProjectStats = () => {
     const projectDbs =
-      selectedProject === "all" ? rabbitmq : rabbitmq.filter((rb) => rb.projectId === selectedProject)
-    const totalSize = projectDbs.reduce((sum, rb) => sum + Number.parseFloat(rb.initialStorage.replace(" GB", "")), 0)
-    const healthyCount = projectDbs.filter((rb) => rb.is_provisioned=== true).length
+      selectedProject === "all" ? rabbitmq : rabbitmq?.filter((rb) => rb?.projectId === selectedProject)
+    const totalSize = projectDbs?.reduce((sum, rb) => sum + Number.parseFloat(rb?.initialStorage.replace(" GB", "")), 0)
+    const healthyCount = projectDbs?.filter((rb) => rb?.is_provisioned=== true).length
 
     return {
-      total: projectDbs.length,
+      total: projectDbs?.length,
       size: `${Math.round(totalSize)} GB`,
       healthy: healthyCount,
     }
@@ -56,16 +56,16 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
+                {projects?.map((project) => (
+                  <SelectItem key={project?.id} value={project?.id}>
+                    {project?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           {selectedProject !== "all" && (
-            <Badge variant="outline">{projects.find((p) => p.id === selectedProject)?.name}</Badge>
+            <Badge variant="outline">{projects?.find((p) => p?.id === selectedProject)?.name}</Badge>
           )}
         </div>
 
@@ -77,7 +77,7 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-2xl font-bold">{stats?.total}</div>
               <p className="text-xs text-muted-foreground">
                 {selectedProject === "all" ? "Across all projects" : "In this project"}
               </p>
@@ -88,7 +88,7 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
               <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.size}</div>
+              <div className="text-2xl font-bold">{stats?.size}</div>
               <p className="text-xs text-muted-foreground">
                 {selectedProject === "all" ? "Total usage" : "Project usage"}
               </p>
@@ -99,9 +99,9 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
               <CardTitle className="text-sm font-medium">Healthy RabbitMQ</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.healthy}</div>
+              <div className="text-2xl font-bold">{stats?.healthy}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.total - stats.healthy > 0 ? `${stats.total - stats.healthy} need attention` : "All healthy"}
+                {stats?.total - stats?.healthy > 0 ? `${stats?.total - stats?.healthy} need attention` : "All healthy"}
               </p>
             </CardContent>
           </Card>
@@ -113,12 +113,12 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
             <CardTitle>
               {selectedProject === "all"
                 ? "All RabbitMQ"
-                : `${projects.find((p) => p.id === selectedProject)?.name} RabbitMQ`}
+                : `${projects?.find((p) => p.id === selectedProject)?.name} RabbitMQ`}
             </CardTitle>
             <CardDescription>
               {selectedProject === "all"
                 ? "A list of all your RabbitMQ across all projects."
-                : `RabbitMQ in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
+                : `RabbitMQ in the ${projects?.find((p) => p.id === selectedProject)?.name} project.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -134,26 +134,26 @@ export default function AllRabbitmqPage({rabbitmq,projects}: {rabbitmq: rabbitDa
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRabbitmq.map((rb) => (
-                  <TableRow key={rb.id}>
+                {filteredRabbitmq?.map((rb) => (
+                  <TableRow key={rb?.id}>
                     <TableCell>
                       <div>
-                        <Link href={`/rabbitmq/${rb.id}`} className="font-medium hover:underline">
-                          {rb.queue_name}
+                        <Link href={`/rabbitmq/${rb?.id}`} className="font-medium hover:underline">
+                          {rb?.queue_name}
                         </Link>
         
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
                       <TableCell>
-                          <Badge variant="outline">{rb.projectName}</Badge>
+                          <Badge variant="outline">{rb?.projectName}</Badge>
                         </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={rb.is_provisioned === true ? "success" : "warning"}>{rb.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
+                      <Badge variant={rb?.is_provisioned === true ? "success" : "warning"}>{rb?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
                     </TableCell>
-                    <TableCell>{rb.initialStorage}</TableCell>
-                    <TableCell>{rb.region}</TableCell>
+                    <TableCell>{rb?.initialStorage}</TableCell>
+                    <TableCell>{rb?.region}</TableCell>
                    
                   </TableRow>
                 ))}

@@ -12,19 +12,19 @@ import { vmData } from "@/lib/vm_api"
 export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: string; name: string}[]}) {
   const [selectedProject, setSelectedProject] = useState("all")
 
-  const filteredVms = vms.filter((vm) => {
-    const matchesProject = selectedProject === "all" || vm.projectId === selectedProject
+  const filteredVms = vms?.filter((vm) => {
+    const matchesProject = selectedProject === "all" || vm?.projectId === selectedProject
     return matchesProject
   })
 
   const getProjectStats = () => {
     const projectDbs =
-      selectedProject === "all" ? vms : vms.filter((vm) => vm.projectId === selectedProject)
-    const totalSize = projectDbs.reduce((sum, vm) => sum + Number.parseFloat(vm.memory), 0)
-    const healthyCount = projectDbs.filter((vm) => vm.status=== "running").length
+      selectedProject === "all" ? vms : vms?.filter((vm) => vm?.projectId === selectedProject)
+    const totalSize = projectDbs?.reduce((sum, vm) => sum + Number.parseFloat(vm?.memory), 0)
+    const healthyCount = projectDbs?.filter((vm) => vm?.status=== "running").length
 
     return {
-      total: projectDbs.length,
+      total: projectDbs?.length,
       size: `${Math.round(totalSize)} GB`,
       healthy: healthyCount,
     }
@@ -77,7 +77,7 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-2xl font-bold">{stats?.total}</div>
               <p className="text-xs text-muted-foreground">
                 {selectedProject === "all" ? "Across all projects" : "In this project"}
               </p>
@@ -99,9 +99,9 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
               <CardTitle className="text-sm font-medium">Healthy VM</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.healthy}</div>
+              <div className="text-2xl font-bold">{stats?.healthy}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.total - stats.healthy > 0 ? `${stats.total - stats.healthy} need attention` : "All healthy"}
+                {stats?.total - stats?.healthy > 0 ? `${stats?.total - stats?.healthy} need attention` : "All healthy"}
               </p>
             </CardContent>
           </Card>
@@ -111,12 +111,12 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
             <CardTitle>
               {selectedProject === "all"
                 ? "All VM"
-                : `${projects.find((p) => p.id === selectedProject)?.name} VM`}
+                : `${projects.find((p) => p?.id === selectedProject)?.name} VM`}
             </CardTitle>
             <CardDescription>
               {selectedProject === "all"
                 ? "A list of all your VM across all projects."
-                : `VM in the ${projects.find((p) => p.id === selectedProject)?.name} project.`}
+                : `VM in the ${projects.find((p) => p?.id === selectedProject)?.name} project.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -132,26 +132,26 @@ export default function AllVmPage({vms,projects}: {vms: vmData[],projects: {id: 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredVms.map((vm) => (
-                  <TableRow key={vm.id}>
+                {filteredVms?.map((vm) => (
+                  <TableRow key={vm?.id}>
                     <TableCell>
                       <div>
-                        <Link href={`/vm/${vm.id}`} className="font-medium hover:underline">
-                          {vm.vm_name}
+                        <Link href={`/vm/${vm?.id}`} className="font-medium hover:underline">
+                          {vm?.vm_name}
                         </Link>
         
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
                       <TableCell>
-                        <Badge variant="outline">{vm.projectName}</Badge>
+                        <Badge variant="outline">{vm?.projectName}</Badge>
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={vm.is_provisioned ? "success" : "warning"}>{vm.is_provisioned ? "Running" : "Not Running"}</Badge>
+                      <Badge variant={vm?.is_provisioned ? "success" : "warning"}>{vm?.is_provisioned ? "Running" : "Not Running"}</Badge>
                     </TableCell>
-                    <TableCell>{vm.vCpu}</TableCell>
-                    <TableCell>{vm.memory}</TableCell>
+                    <TableCell>{vm?.vCpu}</TableCell>
+                    <TableCell>{vm?.memory}</TableCell>
                    
                   </TableRow>
                 ))}

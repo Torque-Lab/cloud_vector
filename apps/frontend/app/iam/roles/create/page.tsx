@@ -38,7 +38,7 @@ export default function CreateRolePage() {
     },
     {
       name: "API Keys",
-      key: "api-keys",
+      key: "keys",
       permissions: [
         { key: "api-keys:read", name: "View API Keys", description: "Can view API key details and usage" },
         { key: "api-keys:write", name: "Manage API Keys", description: "Can create, edit, and revoke API keys" },

@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
         setIsLoading(false)
         setTimeout(() => {
           router.push("/signin")
-        }, 2000)
+        }, 1000)
 
       }else{
         setIsLoading(false)

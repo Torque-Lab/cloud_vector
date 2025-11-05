@@ -13,18 +13,18 @@ export default function AllDatabasesPage({databases,projects}: {databases: pgDat
   const [selectedProject, setSelectedProject] = useState("all")
 
   const filteredDatabases = databases.filter((db) => {
-    const matchesProject = selectedProject === "all" || db.projectId === selectedProject
+    const matchesProject = selectedProject === "all" || db?.projectId === selectedProject
     return matchesProject
   })
 
   const getProjectStats = () => {
     const projectDbs =
-      selectedProject === "all" ? databases : databases.filter((db) => db.projectId === selectedProject)
-    const totalSize = projectDbs.reduce((sum, db) => sum + Number.parseFloat(db.initialStorage.replace(" GB", "")), 0)
-    const healthyCount = projectDbs.filter((db) => db.is_provisioned=== true).length
+      selectedProject === "all" ? databases : databases?.filter((db) => db?.projectId === selectedProject)
+    const totalSize = projectDbs?.reduce((sum, db) => sum + Number.parseFloat(db?.initialStorage.replace(" GB", "")), 0)
+    const healthyCount = projectDbs?.filter((db) => db?.is_provisioned=== true).length
 
     return {
-      total: projectDbs.length,
+      total: projectDbs?.length,
       size: `${Math.round(totalSize)} GB`,
       healthy: healthyCount,
     }
@@ -57,15 +57,15 @@ export default function AllDatabasesPage({databases,projects}: {databases: pgDat
               <SelectContent>
                 <SelectItem value="all">All Projects</SelectItem>
                 {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
+                  <SelectItem key={project?.id} value={project?.id}>
+                    {project?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           {selectedProject !== "all" && (
-            <Badge variant="outline">{projects.find((p) => p.id === selectedProject)?.name}</Badge>
+            <Badge variant="outline">{projects.find((p) => p?.id === selectedProject)?.name}</Badge>
           )}
         </div>
 
@@ -113,7 +113,7 @@ export default function AllDatabasesPage({databases,projects}: {databases: pgDat
             <CardTitle>
               {selectedProject === "all"
                 ? "All Databases"
-                : `${projects.find((p) => p.id === selectedProject)?.name} Databases`}
+                : `${projects.find((p) => p?.id === selectedProject)?.name} Databases`}
             </CardTitle>
             <CardDescription>
               {selectedProject === "all"
@@ -135,25 +135,25 @@ export default function AllDatabasesPage({databases,projects}: {databases: pgDat
               </TableHeader>
               <TableBody>
                 {filteredDatabases.map((db) => (
-                  <TableRow key={db.id}>
+                  <TableRow key={db?.id}>
                     <TableCell>
                       <div>
-                        <Link href={`/postgres/${db.id}`} className="font-medium hover:underline">
-                          {db.database_name}
+                        <Link href={`/postgres/${db?.id}`} className="font-medium hover:underline">
+                          {db?.database_name}
                         </Link>
         
                       </div>
                     </TableCell>
                     {selectedProject === "all" && (
                       <TableCell>
-                        <Badge variant="outline">{db.projectName}</Badge>
+                        <Badge variant="outline">{db?.projectName}</Badge>
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={db.is_provisioned === true ? "success" : "warning"}>{db.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
+                      <Badge variant={db?.is_provisioned === true ? "success" : "warning"}>{db?.is_provisioned ? "Provisioned" : "Not Provisioned"}</Badge>
                     </TableCell>
-                    <TableCell>{db.initialStorage}</TableCell>
-                    <TableCell>{db.region}</TableCell>
+                    <TableCell>{db?.initialStorage}</TableCell>
+                    <TableCell>{db?.region}</TableCell>
                    
                   </TableRow>
                 ))}

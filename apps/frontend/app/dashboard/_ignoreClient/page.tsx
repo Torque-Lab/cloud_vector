@@ -214,7 +214,7 @@ export default function DashboardClientPage({data,projects}: {data: DashboardDat
                 <span className="text-sm">Launch RabbitMQ</span>
               </Button>
               <Button 
-              onClick={()=>router.push("/api-keys")}
+              onClick={()=>router.push("/keys")}
               variant="outline" className="h-20 flex-col space-y-2 cursor-pointer">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
